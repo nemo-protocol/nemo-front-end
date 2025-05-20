@@ -88,31 +88,10 @@ export default function MarketPage({
             ))}
           </div>
           <div className="bg-[#101823] rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs text-slate-400 uppercase">Yield APY</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-light">20.93%</span>
-                  <span className="text-xs bg-green-900 text-green-400 px-1.5 rounded-full">
-                    +2.09%
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex gap-3 text-sm">
-                {['1H', '1D', '1W'].map((t) => (
-                  <button
-                    key={t}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-700"
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
+            
 
             {/* Chart */}
-            <YieldChart data={chartData} />
+            <YieldChart  />
           </div>
         </div>
 
