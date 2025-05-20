@@ -1,78 +1,150 @@
 'use client';
 
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
 } from 'recharts';
 import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
-import { useApyHistory } from '@/hooks/useApyHistory';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { CoinConfig, Granularity } from '@/queries/types/market';
+import { useApyHistory } from '@/queries';
 
-const TABS = [
+/* 时间范围 Tab 配置 -------------------------------------------------- */
+const TABS: { label: string; granularity: Granularity, seconds: number }[] = [
   { label: '1M', granularity: 'MINUTELY', seconds: 60 * 60 },
   { label: '1H', granularity: 'HOURLY', seconds: 60 * 60 * 60 },
   { label: '1D', granularity: 'DAILY', seconds: 60 * 60 * 24 * 60 },
   { label: '1M', granularity: 'MONTHLY', seconds: 60 * 60 * 24 * 120 },
 ];
 
-export default function YieldChart() {
-  const [active, setActive] = useState(0);
-  const now = Math.floor(Date.now() / 1000);
-  const { granularity, seconds } = TABS[active];
+/* tokenType 下拉配置 -------------------------------------------------- */
+export type TokenType = 'PT' | 'YT' | 'LP';
+const TOKEN_TYPES: { label: string; value: TokenType }[] = [
+  { label: 'FIXED APY', value: 'PT' },
+  { label: 'YIELD APY', value: 'YT' },
+  { label: 'POOL  APY', value: 'LP' },
+];
 
-  /* ----------------- 拉数据 ----------------- */
-  const { data, loading, error } = useApyHistory({
+export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
+  /* —————————————————— 组件状态 —————————————————— */
+  const [activeTab, setActiveTab] = useState(0);
+  const [tokenType, setTokenType] = useState<TokenType>('PT');
+
+  /* 控制下拉开关与“点其它地方自动关闭” */
+  const [open, setOpen] = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  /* 监听点击页面其它区域后关闭下拉 */
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const now = Math.floor(Date.now() / 1000);
+  const { granularity, seconds } = TABS[activeTab];
+
+  const { data, isLoading, error } = useApyHistory({
     marketStateId:
       '0x92eaf1588c0acb7d5150be61ef329da4f97ad18ca8ed1ce2e2853ecc81aa397d',
-    tokenType: 'PT',
+    tokenType,
     granularity,
-    startTime: now - seconds,
-    endTime: now,
+    seconds,
+
   });
 
-  /* ----------------- 处理数据 ----------------- */
-  const { chartData, yDomain, xInterval } = useMemo(() => {
-    if (!data?.data?.length) return { chartData: [], yDomain: [0, 1], xInterval: 0 };
+  /* —————————————————— 数据预处理 —————————————————— */
+  const { chartData, yDomain, yTicks, xInterval } = useMemo(() => {
+    if (!data?.data?.length)
+      return { chartData: [], yDomain: [0, 1], yTicks: [], xInterval: 0 };
 
     const arr = data.data.map(d => ({
       apy: +d.apy,
       ts: dayjs(d.timeLabel, 'YYYY-MM-DD HH:mm:ss').valueOf(),
     }));
-
     const apys = arr.map(v => v.apy);
-    const domain = [Math.min(...apys), Math.max(...apys)];
+    const min = Math.min(...apys);
+    const max = Math.max(...apys);
 
-    const wantLabelCount = 6;
-    const interval = Math.max(0, Math.floor(arr.length / wantLabelCount) - 1);
+    const wantTickCount = 7;
+    const segmentCount = wantTickCount - 1;
+    const rawStep = (max - min) / segmentCount;
+    const step = Math.max(0.1, Math.ceil(rawStep * 10) / 10);
 
-    return { chartData: arr, yDomain: domain, xInterval: interval };
+    const tickStart = Math.floor(min / step) * step;
+    const ticks = Array.from({ length: wantTickCount }, (_, i) =>
+      +(tickStart + step * i).toFixed(4),
+    );
+
+    const yMin = tickStart - step * 0.5;
+    const yMax = tickStart + step * segmentCount + step * 0.5;
+    const wantX = 6;
+    const interval = Math.max(0, Math.floor(arr.length / wantX) - 1);
+
+    return { chartData: arr, yDomain: [yMin, yMax], yTicks: ticks, xInterval: interval };
   }, [data]);
 
-  /* ----------------- UI ----------------- */
-  if (loading) return <div className="text-sm text-gray-500">Loading...</div>;
-  if (error) return <div className="text-red-500">Error: {error.message}</div>;
+  /* —————————————————— UI —————————————————— */
+  if (isLoading) return <p className="text-sm text-gray-500">Loading…</p>;
+  if (error) return <p className="text-red-500">{error.message}</p>;
 
   return (
     <>
-      {/* 头部 */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-xs text-slate-400 uppercase">Yield APY</p>
-          <div className="flex items-center gap-2">
-            <span className="text-3xl font-light">20.93%</span>
-            <span className="text-xs bg-green-900 text-green-400 px-1.5 rounded-full">
-              +2.09%
-            </span>
-          </div>
+      {/* 头部：左侧下拉 + 右侧时间范围切换 */}
+      <div className="mb-4 flex items-center justify-between">
+        {/* 自定义下拉 */}
+        <div className="relative" ref={dropRef}>
+          <button
+            className="flex items-center gap-1 text-sm font-medium uppercase"
+            onClick={() => setOpen(o => !o)}
+          >
+            {TOKEN_TYPES.find(t => t.value === tokenType)!.label}
+            <svg width="10" height="10" viewBox="0 0 20 20">
+              <path d="M5 7l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" />
+            </svg>
+          </button>
+
+          {/* 下拉内容 */}
+          {open && (
+            <ul
+              className="absolute z-10 mt-2 w-32 rounded-md border border-gray-600/40
+                         bg-gray-800/90 backdrop-blur text-sm text-gray-200 shadow-lg"
+            >
+              {TOKEN_TYPES.map(opt => (
+                <li
+                  key={opt.value}
+                  onClick={() => {
+                    setTokenType(opt.value);
+                    setOpen(false);
+                  }}
+                  className={`cursor-pointer px-3 py-2 hover:bg-blue-600/60
+                              ${opt.value === tokenType ? 'text-white' : ''}`}
+                >
+                  {opt.label}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
+        {/* 时间范围 tab */}
         <div className="flex gap-3 text-sm">
           {TABS.map((t, i) => (
             <div
-              key={t.label}
-              className={`w-8 h-8 flex items-center justify-center rounded-full
-                         ${active === i ? 'bg-slate-700' : ''}`}
-              onClick={() => setActive(i)}
+              key={t.label + i}
+              onClick={() => setActiveTab(i)}
+              className={`h-8 w-8 cursor-pointer select-none rounded-full
+                          flex items-center justify-center
+                          ${activeTab === i ? 'bg-slate-700' : ''}`}
             >
               {t.label}
             </div>
@@ -80,33 +152,39 @@ export default function YieldChart() {
         </div>
       </div>
 
-      {/* 图表 */}
+      {/* 图表主体 */}
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData} margin={{ left: 16, right: 0 }}>
-          <CartesianGrid stroke="rgba(252, 252, 252, 0.10)" vertical={false} />
+          <CartesianGrid stroke="rgba(252,252,252,0.1)" vertical={false} />
           <XAxis
             dataKey="ts"
             interval={xInterval}
             tickFormatter={v => dayjs(v).format('DD.MM')}
-            tick={{ fill: 'rgba(252, 252, 252, 0.40)', fontSize: 14 }}
+            tick={{ fill: 'rgba(252,252,252,0.4)', fontSize: 10 }}
             axisLine={false}
             tickLine={false}
-            padding={{ left: 16, right: 0 }}      // ← 防止最左侧被裁
+            padding={{ left: 16, right: 0 }}
           />
           <YAxis
             orientation="right"
             domain={yDomain as [number, number]}
-            tickCount={6}                         // ← 控制 Y 轴刻度数
+            ticks={yTicks}
             axisLine={false}
             tickLine={false}
-            tick={{ fill: 'rgba(252, 252, 252, 0.40)', fontSize: 14 }}
+            tick={{ fill: 'rgba(252,252,252,0.4)', fontSize: 10 }}
           />
           <Tooltip
             contentStyle={{ background: '#111827', border: 'none' }}
             labelFormatter={v => dayjs(v).format('YYYY-MM-DD HH:mm')}
             formatter={(v: number) => `${v.toFixed(6)}%`}
           />
-          <Line type="stepAfter" dataKey="apy" stroke="#1785B7" strokeWidth={2} dot={false} />
+          <Line
+            type="stepAfter"
+            dataKey="apy"
+            stroke="#1785B7"
+            strokeWidth={2}
+            dot={false}
+          />
         </LineChart>
       </ResponsiveContainer>
     </>

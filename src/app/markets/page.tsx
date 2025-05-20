@@ -7,6 +7,7 @@ import TradeYTCard from './TradeYTCard';
 import { MarketStat, ChartPoint, TokenMeta } from '@/types/types';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { useCoinConfig } from '@/queries';
 
 
 /* ------- 假数据 ------- */
@@ -45,7 +46,12 @@ export default function MarketPage({
 
   const stats = getFakeStats();
   const chartData = getFakeChart();
-
+  
+  const {
+    data: coinConfig,
+    isLoading: isConfigLoading,
+    refetch: refetchCoinConfig,
+  } = useCoinConfig("0xaafc4f740de0dd0dde642a31148fb94517087052f19afb0f7bed1dc41a50c77b::scallop_sui::SCALLOP_SUI", "1771513200000")
   return (
     <main className="min-h-screen bg-[#080d16] text-slate-100 px-4 py-6"
 
@@ -91,7 +97,7 @@ export default function MarketPage({
             
 
             {/* Chart */}
-            <YieldChart  />
+            <YieldChart coinConfig={coinConfig} />
           </div>
         </div>
 
