@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dd": "NODE_ENV=development next dev -p 6368",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -59,6 +60,7 @@
     "@types/react-slick": "^0.23.13",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "code-inspector-plugin": "^0.20.10",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "eslint-plugin-react-hooks": "^4.6.2",

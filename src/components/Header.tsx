@@ -24,7 +24,7 @@ const MENU: {
   icon?: string;
   liCls?: string;
 }[] = [
-    { label: 'Markets', href: '/market-detail', icon: '/header/markets.svg' },
+    { label: 'Markets', href: '/market', icon: '/header/markets.svg' },
     { label: 'My Portfolio', href: '/portfolio', icon: '/header/portfolio.svg' },
     { label: 'Swap', href: '/swap', icon: '/header/swap.svg' },
     { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
@@ -36,7 +36,6 @@ const MENU: {
 export default function Header({ className }: { className?: string }) {
   const toast = useToast()
   const location = usePathname()
-  const { accounts } = useWallet()
   const { account: currentAccount, disconnect } = useWallet()
   const [open, setOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -91,7 +90,7 @@ export default function Header({ className }: { className?: string }) {
             ].join(" ")}
           >
           </span>
-          {location.pathname === "/swap" ? null : currentAccount?.address ? (
+          {location === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-x-1 border-none outline-none">
                 <span className="text-white">

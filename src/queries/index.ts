@@ -1,8 +1,9 @@
 import { nemoApi } from "./request"
+import { MarketState } from "@/hooks/types"
 import { handleInfinityValues } from "@/lib/utils"
 import { useWallet } from "@nemoprotocol/wallet-kit"
-// import useFetchMultiMarketState from "@/hooks/fetch/useMultiMarketState"
-// import useCalculatePoolMetrics from "@/hooks/actions/useCalculatePoolMetrics"
+import useFetchMultiMarketState from "@/hooks/fetch/useMultiMarketState"
+import useCalculatePoolMetrics from "@/hooks/actions/useCalculatePoolMetrics"
 import { useQuery, UseQueryResult, useMutation } from "@tanstack/react-query"
 import {
   PointItem,
@@ -12,12 +13,7 @@ import {
   PortfolioItem,
   FixedReturnItem,
   CoinInfoWithMetrics,
-  MarketState,
-  TokenType,
-  Granularity,
-  ApyHistoryData
 } from "./types/market"
-import { AxiosError } from "axios"
 
 interface CoinInfoListParams {
   name?: string
@@ -70,6 +66,21 @@ export function useQueryFixedReturnInfos() {
   })
 }
 
+function getCoinConfig(coinType: string, maturity: string, address?: string) {
+  const headers = new Headers()
+  if (address) {
+    headers.set("userAddress", address)
+  }
+  return nemoApi<CoinConfig>("/api/v1/market/config/detail")
+    .get(
+      {
+        coinType,
+        maturity,
+      },
+      headers,
+    )
+    .then(handleInfinityValues)
+}
 
 function getPortfolioList() {
   return nemoApi<PortfolioItem[]>("/api/v1/portfolio/detail").get()
@@ -173,97 +184,6 @@ export function useCoinConfig(
     queryFn: () => getCoinConfig(coinType!, maturity!, address),
   })
 }
-function getCoinConfig(coinType: string, maturity: string, address?: string) {
-  const headers = new Headers()
-  if (address) {
-    headers.set("userAddress", address)
-  }
-  return nemoApi<CoinConfig>("/api/v1/market/config/detail")
-    .get(
-      {
-        coinType,
-        maturity,
-      },
-      headers,
-    )
-    .then(handleInfinityValues)
-}
-
-export interface GetApyHistoryParams {
-  marketStateId: string;
-  tokenType: TokenType;
-  granularity: Granularity;
-  startTime?: number;
-  endTime?: number;
-  signal?: AbortSignal;
-  address?: string
-}
-export async function getApyHistory({
-  marketStateId,
-  tokenType,
-  granularity,
-  startTime,
-  endTime,
-  address,
-}: GetApyHistoryParams): Promise<ApyHistoryData> {
-  const headers = new Headers()
-  if (address) {
-    headers.set("userAddress", address)
-  }
-  return nemoApi<ApyHistoryData>("/api/v1/market/apyData/history")
-    .get(
-      {
-        marketStateId, tokenType, granularity, startTime, endTime
-      },
-      headers,
-    )
-    .then(handleInfinityValues)
-
-}
-
-export function useApyHistory(
-  params: {
-    marketStateId: string;
-    tokenType: TokenType;
-    granularity: Granularity;
-    seconds: number;
-    autoFetch?: boolean;
-    address?: string
-  },
-) {
-  const {
-    marketStateId, tokenType, granularity, seconds, autoFetch = true, address } = params;
-
-  return useQuery({
-    queryKey: ['apyHistory', marketStateId, tokenType, granularity],
-    queryFn: () => {
-      const now = Math.floor(Date.now() / 1000);
-      const startTime = now - seconds;
-      const endTime = now;
-      return getApyHistory({
-        marketStateId,
-        tokenType,
-        granularity,
-        startTime,
-        endTime,
-        address,
-      })
-    }
-    ,
-    enabled:
-      autoFetch &&
-      !!marketStateId &&
-      !!tokenType &&
-      !!granularity, // basic guard
-
-  }) as {
-    data: ReturnType<typeof getApyHistory> extends Promise<infer R> ? R : never;
-    error: AxiosError | Error | null;
-    isLoading: boolean;
-    isError: boolean;
-    refetch: () => void;
-  };
-}
 
 export function usePortfolioList() {
   return useQuery({
@@ -274,102 +194,102 @@ export function usePortfolioList() {
   })
 }
 
-// export function useCoinInfoList<T extends boolean = true>(
-//   params: CoinInfoListParams & { isCalc?: T } = {},
-// ): UseQueryResult<
-//   T extends true ? CoinInfoWithMetrics[] : BaseCoinInfo[],
-//   Error
-// > {
-//   const {
-//     name = "",
-//     address = "",
-//     isShowExpiry = 0,
-//     isCalc = true as T,
-//   } = params
-//   const { mutateAsync: calculateMetrics } = useCalculatePoolMetrics()
-//   const { mutateAsync: fetchMarketStates } = useFetchMultiMarketState()
+export function useCoinInfoList<T extends boolean = true>(
+  params: CoinInfoListParams & { isCalc?: T } = {},
+): UseQueryResult<
+  T extends true ? CoinInfoWithMetrics[] : BaseCoinInfo[],
+  Error
+> {
+  const {
+    name = "",
+    address = "",
+    isShowExpiry = 0,
+    isCalc = true as T,
+  } = params
+  const { mutateAsync: calculateMetrics } = useCalculatePoolMetrics()
+  const { mutateAsync: fetchMarketStates } = useFetchMultiMarketState()
 
-//   return useQuery({
-//     queryKey: ["coinInfoList", name, address, isShowExpiry],
-//     queryFn: async () => {
-//       const coinList = (await getCoinInfoList(params).catch(() => [])).filter(
-//         // ({ marketStateId }) =>
-//         //   marketStateId ===
-//         //   "0xa72ae88db5febc37fabb1bf10b6f0eeca002b59b7252998abd0b359c5269eed0",
-//         // ({ isTokenization }) => isTokenization,
-//         // ({ ptTokenType }) => !!ptTokenType,
-//         ({ marketStateId }) => !!marketStateId,
-//       )
+  return useQuery({
+    queryKey: ["coinInfoList", name, address, isShowExpiry],
+    queryFn: async () => {
+      const coinList = (await getCoinInfoList(params).catch(() => [])).filter(
+        // ({ marketStateId }) =>
+        //   marketStateId ===
+        //   "0xa72ae88db5febc37fabb1bf10b6f0eeca002b59b7252998abd0b359c5269eed0",
+        // ({ isTokenization }) => isTokenization,
+        // ({ ptTokenType }) => !!ptTokenType,
+        ({ marketStateId }) => !!marketStateId,
+      )
 
-//       if (!coinList.length) return []
+      if (!coinList.length) return []
 
-//       if (!isCalc) return coinList
+      if (!isCalc) return coinList
 
-//       const marketStateIds = coinList.map((coin) => coin.marketStateId)
+      const marketStateIds = coinList.map((coin) => coin.marketStateId)
 
-//       const marketStates = await fetchMarketStates(marketStateIds).catch(
-//         () => ({}) as { [key: string]: MarketState },
-//       )
+      const marketStates = await fetchMarketStates(marketStateIds).catch(
+        () => ({}) as { [key: string]: MarketState },
+      )
 
-//       const results = await Promise.all(
-//         coinList.map(async (coinInfo) => {
-//           const marketState = marketStates?.[coinInfo.marketStateId]
+      const results = await Promise.all(
+        coinList.map(async (coinInfo) => {
+          const marketState = marketStates?.[coinInfo.marketStateId]
 
-//           try {
-//             let flag = false
-//             if (
-//               coinInfo.ptApy === "" ||
-//               coinInfo.ytApy === "" ||
-//               coinInfo.scaledUnderlyingApy === "" ||
-//               coinInfo.scaledPtApy === "" ||
-//               coinInfo.incentiveApy === "" ||
-//               coinInfo.tvl === "" ||
-//               coinInfo.ptTvl === "" ||
-//               coinInfo.syTvl === "" ||
-//               coinInfo.ptPrice === "" ||
-//               coinInfo.ytPrice === "" ||
-//               coinInfo.poolApy === "" ||
-//               coinInfo.swapFeeApy === "" ||
-//               coinInfo.lpPrice === ""
-//             ) {
-//               flag = true
-//             }
-//             const metrics = flag
-//               ? await calculateMetrics({
-//                   coinInfo,
-//                   marketState,
-//                 })
-//               : {}
+          try {
+            let flag = false
+            if (
+              coinInfo.ptApy === "" ||
+              coinInfo.ytApy === "" ||
+              coinInfo.scaledUnderlyingApy === "" ||
+              coinInfo.scaledPtApy === "" ||
+              coinInfo.incentiveApy === "" ||
+              coinInfo.tvl === "" ||
+              coinInfo.ptTvl === "" ||
+              coinInfo.syTvl === "" ||
+              coinInfo.ptPrice === "" ||
+              coinInfo.ytPrice === "" ||
+              coinInfo.poolApy === "" ||
+              coinInfo.swapFeeApy === "" ||
+              coinInfo.lpPrice === ""
+            ) {
+              flag = true
+            }
+            const metrics = flag
+              ? await calculateMetrics({
+                  coinInfo,
+                  marketState,
+                })
+              : {}
 
-//             return {
-//               ...coinInfo,
-//               ...metrics,
-//             }
-//           } catch (error) {
-//             console.log("error", error)
-//             return {
-//               ...coinInfo,
-//               ptPrice: "",
-//               ytPrice: "",
-//               ptApy: "",
-//               ytApy: "",
-//               tvl: "",
-//               poolApy: "",
-//               ptTvl: "",
-//               syTvl: "",
-//               marketState,
-//             }
-//           }
-//         }),
-//       )
+            return {
+              ...coinInfo,
+              ...metrics,
+            }
+          } catch (error) {
+            console.log("error", error)
+            return {
+              ...coinInfo,
+              ptPrice: "",
+              ytPrice: "",
+              ptApy: "",
+              ytApy: "",
+              tvl: "",
+              poolApy: "",
+              ptTvl: "",
+              syTvl: "",
+              marketState,
+            }
+          }
+        }),
+      )
 
-//       return results
-//     },
-//     staleTime: 10000,
-//     gcTime: 30000,
-//     retry: 2,
-//   })
-// }
+      return results
+    },
+    staleTime: 10000,
+    gcTime: 30000,
+    retry: 2,
+  })
+}
 
 export function useRewardList() {
   const { address } = useWallet()
