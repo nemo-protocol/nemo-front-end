@@ -367,8 +367,8 @@ export function formatPortfolioNumber(
 
 export function shortenAddress(
   addr: string | undefined | null,
-  left = 4,
-  right = 4,
+  left = 18,
+  right = 18,
 ): string {
   if (!addr) return '';
   if (addr.length <= left + right + 3) return addr; // 3 = '...'

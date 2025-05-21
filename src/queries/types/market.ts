@@ -91,6 +91,13 @@ interface BuiltOn {
 }
 
 export interface CoinConfig extends BaseCoinInfo {
+  marketAddress: string | null | undefined
+  ptAddress: string | null | undefined
+  ytAddress: string | null | undefined
+  assetAddress: string | null | undefined
+  marketIntro: string
+  
+  PtAddress: string | null | undefined
   PoolApyRateChange: string 
   poolApy: string 
   yieldApyRateChange: string 

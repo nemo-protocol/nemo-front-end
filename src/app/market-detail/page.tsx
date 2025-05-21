@@ -62,7 +62,7 @@ export default function MarketPage({
          
           <StatCard coinConfig={coinConfig} />
           
-           <div className="bg-[#101823] rounded-xl p-6">
+           <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
             {/* Chart */}
             <YieldChart coinConfig={coinConfig} />
           </div>

@@ -23,7 +23,7 @@ export default function AssetHeader({ coinConfig }: Props) {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 relative">
+    <div className="flex items-center gap-2 relative mt-6">
       <Image
         src={coinConfig.coinLogo}
         alt={coinConfig.coinName}
@@ -31,32 +31,39 @@ export default function AssetHeader({ coinConfig }: Props) {
         height={32}
         className="shrink-0"
       />
-      <h1 className="text-3xl font-light">{coinConfig.coinName}</h1>
+      <h1 className="fallback #FCFCFC 
+        text-[color:var(--typo-primary,#FCFCFC)]
+        [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] text-3xl font-light">{coinConfig.coinName}</h1>
 
-      {/* info 图标 + 弹窗容器 */}
       <div className="relative" ref={popRef}>
         <button
           onClick={() => setOpen(o => !o)}
-          className="text-xs bg-slate-700 rounded-full px-1.5
-                     inline-flex items-center justify-center leading-none
-                     w-4 h-4 select-none cursor-pointer"
+          className="text-xs rounded-full
+                     inline-flex justify-center leading-none
+                     w-4 h-8 select-none cursor-pointer"
         >
-          i
+          <Image
+            src={"/tip.svg"}
+            alt={""}
+            width={16}
+            height={16}
+            className="shrink-0"
+          />
         </button>
 
         {open && (
           <div
             className="
-              absolute top-0 left-full ml-4 w-[320px] max-w-xs rounded-xl border
-              border-slate-600/40 bg-slate-800/90 backdrop-blur p-5 text-sm
-              animate-fade-in
+              absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
+              border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
+              animate-fade-in z-10
             "
           >
             {/* MARKET INTRO */}
-            <Item label="MARKET INTRO" value={coinConfig.intro || '—'} isLong />
+            <Item label="MARKET INTRO" value={coinConfig.marketIntro || '—'} isLong />
 
             {/* BUILT ON */}
-            <Item label="BUILT ON">
+            <Item label="BUILT ON"   link={coinConfig.builtOn?.[0]?.url}>
               <div className="flex items-center gap-2">
                 <img
                   src={coinConfig.builtOn?.[0]?.logo}
@@ -72,40 +79,40 @@ export default function AssetHeader({ coinConfig }: Props) {
             {/* 各种地址 */}
             <Item
               label="ASSET ADDRESS"
-              value={shortenAddress(coinConfig.marketPositionType)}
+              value={shortenAddress(coinConfig.assetAddress)}
               link={coinConfig.marketPositionType}
             />
             <Item
               label="YT ADDRESS"
-              value={shortenAddress(coinConfig.marketPositionType)}
+              value={shortenAddress(coinConfig.ytAddress)}
               link={coinConfig.marketPositionType}
             />
             <Item
               label="PT ADDRESS"
-              value={shortenAddress(coinConfig.marketPositionType)}
+              value={shortenAddress(coinConfig.ptAddress)}
               link={coinConfig.marketPositionType}
             />
             <Item
               label="MARKET ADDRESS"
-              value={shortenAddress(coinConfig.marketPositionType)}
+              value={shortenAddress(coinConfig.marketAddress)}
               link={coinConfig.marketPositionType}
             />
 
             {/* AUDIT BY */}
             {coinConfig.coinLogo && (
               <>
-                <div className="mt-4 h-px w-full bg-slate-600/40" />
+                <div className="mt-4 h-px w-full " />
                 <Item label="AUDIT  BY">
                   <a
-                    href={coinConfig.underlyingCoinLogo}
+                    href={coinConfig.builtOn}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-2 underline"
                   >
                     <Image
-                      src={coinConfig.coinLogo}
+                      src={'/movebit.png'}
                       alt="audit"
-                      width={70}
+                      width={80}
                       height={15}
                       className="object-contain"
                     />
@@ -137,7 +144,7 @@ function Item({
 }) {
   return (
     <div className={`flex ${isLong ? 'items-start' : 'items-center'} gap-6 mb-4`}>
-      <p className="w-32 shrink-0 text-slate-400 uppercase">{label}</p>
+      <p className="w-32 shrink-0 text-[#6D7177] uppercase">{label}</p>
       {children ? (
         children
       ) : link ? (

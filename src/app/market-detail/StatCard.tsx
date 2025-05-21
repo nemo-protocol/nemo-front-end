@@ -73,30 +73,44 @@ export default function StatCard({ coinConfig }: Props) {
     })(),
   ];
 
-  /* 2. 渲染 */
   return (
-    <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map(stat => (
+    <div className="mt-0 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {stats.map((stat, index) => (
         <div
           key={stat.label}
-          className="bg-[#101823] rounded-xl p-5 w-full"
+          className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6 w-full"
         >
-          <p className="text-xs tracking-widest text-slate-400 uppercase mb-1">
+          <p className="text-[12px] tracking-widest text-[#FCFCFC66] uppercase mb-4">
             {stat.label}
           </p>
 
-          <p className="text-xl font-medium mb-1">{stat.value}</p>
+          <p className="text-[20px] text-[#FCFCFC] font-[550] mb-1">{stat.value}</p>
 
-          {!!stat.delta && (
+          {(!!stat.delta && index !== 3) ? (
             <span
-              className={`text-xs py-0.5 px-1.5 rounded-full
+              className={`text-xs inline-flex py-0.5 px-1.5 rounded-[8px]
                 ${stat.deltaPositive
-                  ? 'bg-green-900 text-green-400'
-                  : 'bg-red-900 text-red-400'}`}
+                  ? 'bg-[#4CC8771A] text-[#4CC877]'
+                  : 'bg-[#FF2E541A] text-[#FF2E54]'}`}
             >
               {stat.delta}
+              <Image
+                src={`/arrow-${stat.deltaPositive ? 'up' : 'down'}-right.svg`}
+                alt={""}
+                width={16}
+                height={16}
+                className="shrink-0"
+              />
+
             </span>
-          )}
+          ) : <span
+            className={`text-xs inline-flex py-0.5 px-1.5 rounded-[8px] bg-[#FF88001A] text-[#FF8800]`}
+               
+          >
+            {stat.delta}
+           
+
+          </span>}
         </div>
       ))}
     </div>

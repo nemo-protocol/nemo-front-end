@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CoinConfig, Granularity } from '@/queries/types/market';
 import { useApyHistory } from '@/queries';
+import Image from 'next/image';
 
 /* 时间范围 Tab 配置 -------------------------------------------------- */
 const TABS: { label: string; granularity: Granularity, seconds: number }[] = [
@@ -137,10 +138,10 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     <>
 
       <div className="mb-4 flex items-center justify-between">
-       
+
         <div className="relative" ref={dropRef}>
           <button
-            className="flex items-center gap-1 text-sm font-medium uppercase "
+            className="flex text-[#FCFCFC66] cursor-pointer items-center gap-1 text-[12px] font-medium uppercase "
             onClick={() => setOpen(o => !o)}
           >
             {TOKEN_TYPES.find(t => t.value === tokenType)!.label}
@@ -149,29 +150,35 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
             </svg>
           </button>
 
-          <div className="flex items-center gap-2">
-            <p className="text-3xl font-semibold">{mainMetric.value}</p>
+          <div className="flex items-center mt-2 gap-2">
+            <p className="text-[20px] font-[550]">{mainMetric.value}</p>
 
             {!!mainMetric.delta && (
               <span
                 className={`
                   text-xs py-0.5 px-1.5 rounded-full flex items-center gap-1
                   ${mainMetric.positive
-                    ? 'bg-green-900 text-green-400'
-                    : 'bg-red-900 text-red-400'}
+                    ? 'bg-[#4CC8771A] text-[#4CC877]'
+                    : 'bg-[#FF2E541A] text-[#FF2E54]'}
                 `}
               >
                 {mainMetric.positive ? '+' : ''}
                 {mainMetric.delta}
-                {getArrow(mainMetric.positive)}
+                <Image
+                  src={`/arrow-${mainMetric.positive ? 'up' : 'down'}-right.svg`}
+                  alt={""}
+                  width={16}
+                  height={16}
+                  className="shrink-0"
+                />
+
               </span>
             )}
           </div>
 
           {open && (
             <ul
-              className="absolute z-10 mt-2 w-32 rounded-md border border-gray-600/40
-                         bg-gray-800/90 backdrop-blur text-sm text-gray-200 shadow-lg"
+              className="absolute z-10 mt-0 top-[20px] w-32 rounded-md border border-[#3F3F3F] bg-[#0E1520] backdrop-blur text-[12px] text-[#FCFCFC66] shadow-lg"
             >
               {TOKEN_TYPES.map(opt => (
                 <li
@@ -180,8 +187,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
                     setTokenType(opt.value);
                     setOpen(false);
                   }}
-                  className={`cursor-pointer px-3 py-2 hover:bg-blue-600/60
-                              ${opt.value === tokenType ? 'text-white' : ''}`}
+                  className={`cursor-pointer px-3 py-2 hover:bg-white/10`}
                 >
                   {opt.label}
                 </li>
@@ -191,14 +197,18 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
         </div>
 
 
-        <div className="flex gap-3 text-sm">
+        <div className="flex gap-3 text-[12px]">
           {TABS.map((t, i) => (
             <div
               key={t.label + i}
               onClick={() => setActiveTab(i)}
-              className={`h-8 w-8 cursor-pointer select-none rounded-full
+              className={`h-8 w-8 cursor-pointer select-none rounded-[12px]
                           flex items-center justify-center
-                          ${activeTab === i ? 'bg-slate-700' : ''}`}
+
+                          ${activeTab === i
+                            ? 'bg-gradient-to-r from-white/10 to-white/5 text-white'
+                            : 'text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5'}
+                          `}
             >
               {t.label}
             </div>
