@@ -28,23 +28,21 @@ export default function MarketPage({
   } = useCoinConfig("0xaafc4f740de0dd0dde642a31148fb94517087052f19afb0f7bed1dc41a50c77b::scallop_sui::SCALLOP_SUI", "1771513200000")
 
   return (
-    <main className="min-h-screen bg-[#080d16] text-slate-100 px-4 py-6"
+    <main className="min-h-screen bg-[#080d16] text-slate-100 px-7.5 py-4"
 
     >
       {/* 返回按钮 */}
       <div
         onClick={() => history.back()}
-        className="hover:bg-[#ffffff]"
+        className='text-white bg-gradient-to-r from-white/10 to-white/5 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/5'
         style={{
           cursor: 'pointer',
-          backgroundColor: '#FCFCFC08',
           display: 'inline-flex',
-          padding: '8px 12px',
-          borderRadius: '12px',
-          gap: '4px',
+          padding: '8px 10px',
+          borderRadius: '16px',
+          gap: '8px',
           fontSize: '14px',
           alignItems: 'center',
-          color: '#FCFCFC'
         }}
       >
         <ArrowLeft width={16} />Back

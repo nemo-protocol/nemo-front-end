@@ -18,15 +18,28 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+const MENU: {
+  label: string;
+  href: string;
+  icon?: string;
+  liCls?: string;
+}[] = [
+    { label: 'Markets', href: '/market-detail', icon: '/header/markets.svg' },
+    { label: 'My Portfolio', href: '/portfolio', icon: '/header/portfolio.svg' },
+    { label: 'Swap', href: '/swap', icon: '/header/swap.svg' },
+    { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
+    { label: 'Leaderboard', href: '/leaderboard', icon: '/header/leaderboard.svg' },
+    { label: 'Airdrop', href: '/airdrop', icon: '/header/airdrop.svg' },
+
+  ];
 
 export default function Header({ className }: { className?: string }) {
   const toast = useToast()
   const location = usePathname()
-  // const { accounts } = useWallet()
+  const { accounts } = useWallet()
   const { account: currentAccount, disconnect } = useWallet()
   const [open, setOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-
   const copyToClipboard = async (text: string) => {
     try {
       await copy(text)
@@ -37,101 +50,39 @@ export default function Header({ className }: { className?: string }) {
   }
 
   return (
-    <header className={cn("h-16 shrink-0", className)}>
-      <div className=" w-full h-full mx-auto flex items-cente bg-[#444] justify-between text-xs">
-        <Link href="/" className="flex gap-x-2 items-center">
-          <img src="/logo-nemo.svg" alt="logo" className="w-30 h-auto" />
-         
-        </Link>
-        <ul className="md:flex items-center text-sm hidden h-full">
-          <li
-            className={[
-              "w-24 h-full text-center cursor-pointer flex items-center justify-center hidden",
-              location.pathname === "/fixed-return"
-                ? "!bg-[#12121B] border-b border-b-white"
-                : "bg-transparent",
-            ].join(" ")}
-          >
-            <Link
-              href="/fixed-return"
-              className={[
-                location.pathname === "/fixed-return"
-                  ? "text-white"
-                  : "text-white/50",
-                "flex items-center gap-x-1",
-              ].join(" ")}
-            >
-              <span>Fixed Return</span>
-              <img src="/images/svg/hot.svg" alt="hot" className="size-3" />
-            </Link>
-          </li>
-          <li className={["w-24 h-full text-center"].join(" ")}>
-            <Link
-              href="/market"
-              className={[
-                location.pathname === "/market"
-                  ? "text-white bg-[#12121B] border-b border-b-white"
-                  : "text-white/50 bg-transparent hover:bg-[#12121B] hover:text-white",
-                "flex items-center justify-center h-full cursor-pointer",
-              ].join(" ")}
-            >
-              Market
-            </Link>
-          </li>
-          <li className={["w-24 h-full text-center"].join(" ")}>
-            <Link
-              href="/portfolio"
-              className={[
-                location.pathname === "/portfolio"
-                  ? "text-white bg-[#12121B] border-b border-b-white"
-                  : "text-white/50 bg-transparent hover:bg-[#12121B] hover:text-white",
-                "flex items-center justify-center h-full cursor-pointer",
-              ].join(" ")}
-            >
-              Portfolio
-            </Link>
-          </li>
-          <li className={["w-24 h-full text-center"].join(" ")}>
-            <Link
+    <header className={cn("h-24.5 shrink-0", className)}>
+      <div className=" w-full h-full mx-auto flex bg-[#080E16] justify-between text-xs"
 
-              href="/swap"
-              className={[
-                location.pathname === "/swap"
-                  ? "text-white bg-[#12121B] border-b border-b-white"
-                  : "text-white/50 bg-transparent hover:bg-[#12121B] hover:text-white",
-                "flex items-center justify-center h-full cursor-pointer",
-              ].join(" ")}
-            >
-              Swap
-            </Link>
-          </li>
-          <li className={["w-24 h-full text-center"].join(" ")}>
-            <Link
-              href="/learn"
-              className={[
-                location.pathname === "/learn"
-                  ? "text-white bg-[#12121B] border-b border-b-white"
-                  : "text-white/50 bg-transparent hover:bg-[#12121B] hover:text-white",
-                "flex items-center justify-center h-full cursor-pointer",
-              ].join(" ")}
-            >
-              Learn
-            </Link>
-          </li>
-          <li className={["w-24 h-full text-center"].join(" ")}>
-            <Link
-              href="/points"
-              className={[
-                location.pathname === "/points"
-                  ? "text-white bg-[#12121B] border-b border-b-white"
-                  : "text-white/50 bg-transparent hover:bg-[#12121B] hover:text-white",
-                "flex items-center justify-center h-full cursor-pointer",
-              ].join(" ")}
-            >
-              Points
-            </Link>
-          </li>
-        </ul>
+        style={{ padding: '0 30px' }}>
+        <div className="flex items-center gap-x-14"><Link href="/" className="flex gap-x-2 items-center">
+          <img src="/logo-nemo.svg" alt="logo" className="w-26 h-auto" />
+
+        </Link>
+
+          <ul className="md:flex gap-x-4 items-center hidden h-full text-sm font-medium">
+            {MENU.map(({ label, href, icon, liCls = '' }) => {
+              const active = location === href;
+
+              return (
+                <li key={href} className={liCls}>
+                  <Link
+                    href={href}
+                    className={`
+                flex items-center gap-x-2 px-3 py-2 rounded-full
+                transition-colors duration-200
+                ${active
+                        ? 'bg-gradient-to-r from-white/10 to-white/5 text-white'
+                        : 'text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5'}
+              `}
+                  >
+                    {icon && <img src={icon} alt="" className="w-4 h-4" />}
+                    <span>{label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
         <div className="flex items-center gap-x-2 sm:gap-x-6 h-full">
           <span
             className={[
@@ -174,23 +125,24 @@ export default function Header({ className }: { className?: string }) {
               theme="dark"
               open={open}
               onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
-              // trigger={
-              //   <button
-              //     disabled={!!currentAccount}
-              //     className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
-              //   >
-              //     <span className="hidden md:inline-block">Connect Wallet</span>
-              //     <span className="inline-block md:hidden text-xs">
-              //       Connect
-              //     </span>
-              //   </button>
-              // }
+            // trigger={
+            //   <button
+            //     disabled={!!currentAccount}
+            //     className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
+            //   >
+            //     <span className="hidden md:inline-block">Connect Wallet</span>
+            //     <span className="inline-block md:hidden text-xs">
+            //       Connect
+            //     </span>
+            //   </button>
+            // }
             >
               <button
                 disabled={!!currentAccount}
-                className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
+                
+                className="bg-gradient-to-r from-white/10 to-white/5 text-white flex gap-x-2 items-center justify-center cursor-pointer text-white outline-none py-2 px-2.5 rounded-2xl"
               >
-                <span className="hidden md:inline-block">Connect Wallet</span>
+                <img src={"/header/wallet.svg"} alt="icon" className="size-4 ml-1" /> <span className="hidden md:inline-block">  Connect Wallet</span>
                 <span className="inline-block md:hidden text-xs">Connect</span>
               </button>
             </ConnectModal>
@@ -254,7 +206,7 @@ export default function Header({ className }: { className?: string }) {
           </a>
           {IS_DEV && (
             <Link
-            href="/test"
+              href="/test"
               className="py-3 text-white/90 hover:text-white text-base"
             >
               Test
