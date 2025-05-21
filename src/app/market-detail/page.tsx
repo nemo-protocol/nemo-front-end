@@ -10,48 +10,23 @@ import { ArrowLeft } from 'lucide-react';
 import { useCoinConfig } from '@/queries';
 
 
-/* ------- 假数据 ------- */
-const tokens: Record<string, TokenMeta> = {
-  xsui: {
-    symbol: 'xSUI',
-    name: 'Sui Staked Token',
-    logo: '',
-  },
-};
 
-function getFakeStats(): MarketStat[] {
-  return [
-    { label: 'Liquidity', value: '$30.12M', delta: '4.11%', deltaPositive: true },
-    { label: '24h Volume', value: '$5.32M', delta: '1.12%', deltaPositive: false },
-    { label: 'Yield APY', value: '14.33%', delta: '4.56%', deltaPositive: true },
-    { label: 'Maturity', value: '110 Days', delta: '2025-08-10', deltaPositive: true },
-  ];
-}
 
-function getFakeChart(): ChartPoint[] {
-  return new Array(20).fill(0).map((_, i) => ({
-    ts: Date.now() - (20 - i) * 86400000,
-    apy: 12 + Math.random() * 10,
-  }));
-}
-/* --------------------- */
+
+
 
 export default function MarketPage({
   params,
 }: {
   params: { symbol: string };
 }) {
-  const token = tokens.xsui
-  if (!token) notFound();
 
-  const stats = getFakeStats();
-  const chartData = getFakeChart();
-  
   const {
     data: coinConfig,
     isLoading: isConfigLoading,
     refetch: refetchCoinConfig,
   } = useCoinConfig("0xaafc4f740de0dd0dde642a31148fb94517087052f19afb0f7bed1dc41a50c77b::scallop_sui::SCALLOP_SUI", "1771513200000")
+
   return (
     <main className="min-h-screen bg-[#080d16] text-slate-100 px-4 py-6"
 
@@ -76,30 +51,24 @@ export default function MarketPage({
       </div>
 
       {/* token 标题 */}
-      <AssetHeader token={token} />
+      {coinConfig && <AssetHeader coinConfig={coinConfig} />}
 
-      {/* 概览指标 */}
 
 
       {/* 主布局 */}
       <div className="mt-6 grid lg:grid-cols-4 gap-6">
         {/* 左侧  (span 2) */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Chart Card */}
+        {coinConfig &&<div className="lg:col-span-2 flex flex-col gap-6">
 
           {/* 概览指标 */}
-          <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((s) => (
-              <StatCard key={s.label} stat={s} />
-            ))}
-          </div>
-          <div className="bg-[#101823] rounded-xl p-6">
-            
-
+         
+          <StatCard coinConfig={coinConfig} />
+          
+           <div className="bg-[#101823] rounded-xl p-6">
             {/* Chart */}
             <YieldChart coinConfig={coinConfig} />
           </div>
-        </div>
+        </div>}
 
         {/* 右侧 Trade 面板 */}
         <TradeYTCard />

@@ -91,6 +91,11 @@ interface BuiltOn {
 }
 
 export interface CoinConfig extends BaseCoinInfo {
+  fixedApyRateChange: string 
+  fixedApy: string 
+  volumeRateChange: string
+  liquidityRateChange: string 
+  liquidity: string
   pyStoreId: string
   pyPosition: string
   pyPositionType: string

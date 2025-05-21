@@ -40,8 +40,8 @@ export default function Header({ className }: { className?: string }) {
     <header className={cn("h-16 shrink-0", className)}>
       <div className=" w-full h-full mx-auto flex items-cente bg-black justify-between text-xs">
         <Link href="/" className="flex gap-x-2 items-center">
-          <img src="/images/svg/logo.svg" alt="logo" className="w-30 h-auto" />
-          <span className="text-[#44E0C3] border border-[#44E0C3] py-1 px-2 rounded-full text-xs scale-75 origin-left">Beta</span>
+          <img src="/logo-nemo.svg" alt="logo" className="w-30 h-auto" />
+         
         </Link>
         <ul className="md:flex items-center text-sm hidden h-full">
           <li
@@ -139,39 +139,6 @@ export default function Header({ className }: { className?: string }) {
               "bg-transparent md:flex hidden",
             ].join(" ")}
           >
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-x-1 border-none outline-none">
-                <span className="text-white">More</span>
-                <ChevronDown className="size-3 mt-1" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#0E0F16] border-none">
-                <DropdownMenuItem>
-                  <Link
-                    to="/mint"
-                    className="px-2 py-1.5 hover:bg-[#131520] text-white hover:text-[#5D94FF] cursor-pointer text-center w-[100px] h-8"
-                  >
-                    Mint
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link
-                    to="/tool"
-                    className="px-2 py-1.5 hover:bg-[#131520] text-white hover:text-[#5D94FF] cursor-pointer text-center w-[100px] h-8"
-                  >
-                    Tool
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <a
-                    className="px-2 py-1.5 hover:bg-[#131520] text-white hover:text-[#5D94FF] cursor-pointer text-center w-[100px] h-8"
-                    href="https://www.sentio.xyz/"
-                    target="_blank"
-                  >
-                    Sentio
-                  </a>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
           </span>
           {location.pathname === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>

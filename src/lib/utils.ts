@@ -363,3 +363,15 @@ export function formatPortfolioNumber(
 
   return `${val.div(1_000_000_000).toFixed(2)}B`
 }
+
+
+export function shortenAddress(
+  addr: string | undefined | null,
+  left = 4,
+  right = 4,
+): string {
+  if (!addr) return '';
+  if (addr.length <= left + right + 3) return addr; // 3 = '...'
+
+  return `${addr.slice(0, left)}…${addr.slice(-right)}`;
+}

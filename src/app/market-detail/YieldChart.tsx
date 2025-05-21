@@ -41,6 +41,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
 
   /* 监听点击页面其它区域后关闭下拉 */
   useEffect(() => {
+    console.log(coinConfig,'sixu')
     function handleClick(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setOpen(false);
@@ -104,7 +105,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
         {/* 自定义下拉 */}
         <div className="relative" ref={dropRef}>
           <button
-            className="flex items-center gap-1 text-sm font-medium uppercase"
+            className="flex items-center gap-1 text-sm font-medium uppercase "
             onClick={() => setOpen(o => !o)}
           >
             {TOKEN_TYPES.find(t => t.value === tokenType)!.label}
@@ -112,7 +113,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
               <path d="M5 7l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" />
             </svg>
           </button>
-
+          {coinConfig.LiquidityRateChange}
           {/* 下拉内容 */}
           {open && (
             <ul
