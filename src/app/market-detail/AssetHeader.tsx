@@ -29,7 +29,7 @@ export default function AssetHeader({ coinConfig }: Props) {
         alt={coinConfig.coinName}
         width={32}
         height={32}
-        className="rounded-full shrink-0"
+        className="shrink-0"
       />
       <h1 className="text-3xl font-light">{coinConfig.coinName}</h1>
 
@@ -58,14 +58,14 @@ export default function AssetHeader({ coinConfig }: Props) {
             {/* BUILT ON */}
             <Item label="BUILT ON">
               <div className="flex items-center gap-2">
-                <Image
-                  src={coinConfig.coinLogo}
+                <img
+                  src={coinConfig.builtOn?.[0]?.logo}
                   alt=""
                   width={18}
                   height={18}
                   className="rounded-full"
                 />
-                <span className="underline">{coinConfig.coinName}</span>
+                <span className="underline">{coinConfig.builtOn?.[0]?.name}</span>
               </div>
             </Item>
 

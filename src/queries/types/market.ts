@@ -91,6 +91,10 @@ interface BuiltOn {
 }
 
 export interface CoinConfig extends BaseCoinInfo {
+  PoolApyRateChange: string 
+  poolApy: string 
+  yieldApyRateChange: string 
+  yieldApy: string 
   fixedApyRateChange: string 
   fixedApy: string 
   volumeRateChange: string

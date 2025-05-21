@@ -38,7 +38,7 @@ export default function Header({ className }: { className?: string }) {
 
   return (
     <header className={cn("h-16 shrink-0", className)}>
-      <div className=" w-full h-full mx-auto flex items-cente bg-black justify-between text-xs">
+      <div className=" w-full h-full mx-auto flex items-cente bg-[#444] justify-between text-xs">
         <Link href="/" className="flex gap-x-2 items-center">
           <img src="/logo-nemo.svg" alt="logo" className="w-30 h-auto" />
          

@@ -23,25 +23,60 @@ const TABS: { label: string; granularity: Granularity, seconds: number }[] = [
 ];
 
 /* tokenType 下拉配置 -------------------------------------------------- */
-export type TokenType = 'PT' | 'YT' | 'LP';
+export type TokenType = 'FIXED' | 'YIELD' | 'POOL';
 const TOKEN_TYPES: { label: string; value: TokenType }[] = [
-  { label: 'FIXED APY', value: 'PT' },
-  { label: 'YIELD APY', value: 'YT' },
-  { label: 'POOL  APY', value: 'LP' },
+  { label: 'FIXED APY', value: 'FIXED' },
+  { label: 'YIELD APY', value: 'YIELD' },
+  { label: 'POOL  APY', value: 'POOL' },
 ];
+/* ------------------ 辅助函数 ------------------ */
+function formatPercent(num?: string | number, digits = 2) {
+  if (num == null) return '—';
+  const n = +num;
+  if (Number.isNaN(n)) return '—';
+  return `${(n * 1).toFixed(digits)}%`;  // *1 兼容字符串科学计数
+}
 
+function getArrow(isPositive: boolean) {
+  return isPositive ? '▲' : '▼';
+}
 export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
-  /* —————————————————— 组件状态 —————————————————— */
-  const [activeTab, setActiveTab] = useState(0);
-  const [tokenType, setTokenType] = useState<TokenType>('PT');
 
-  /* 控制下拉开关与“点其它地方自动关闭” */
+  const [activeTab, setActiveTab] = useState(0);
+  const [tokenType, setTokenType] = useState<TokenType>('FIXED');
+
+
   const [open, setOpen] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
-
-  /* 监听点击页面其它区域后关闭下拉 */
+  const mainMetric = useMemo(() => {
+    switch (tokenType) {
+      case 'FIXED':
+        return {
+          label: 'FIXED APY',
+          value: formatPercent(coinConfig.fixedApy),
+          delta: formatPercent(coinConfig.fixedApyRateChange),
+          positive: +coinConfig.fixedApyRateChange >= 0,
+        };
+      case 'YIELD':
+        return {
+          label: 'YIELD APY',
+          value: formatPercent(coinConfig.yieldApy),
+          delta: formatPercent(coinConfig.yieldApyRateChange),
+          positive: +coinConfig.yieldApyRateChange >= 0,
+        };
+      case 'POOL':
+        return {
+          label: 'POOL APY',
+          value: formatPercent(coinConfig.poolApy),
+          delta: formatPercent(coinConfig.PoolApyRateChange),
+          positive: +coinConfig.PoolApyRateChange >= 0,
+        };
+      default:
+        return { label: '', value: '—', delta: '', positive: true };
+    }
+  }, [tokenType, coinConfig]);
   useEffect(() => {
-    console.log(coinConfig,'sixu')
+    console.log(coinConfig, 'sixu')
     function handleClick(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setOpen(false);
@@ -63,7 +98,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
 
   });
 
-  /* —————————————————— 数据预处理 —————————————————— */
+
   const { chartData, yDomain, yTicks, xInterval } = useMemo(() => {
     if (!data?.data?.length)
       return { chartData: [], yDomain: [0, 1], yTicks: [], xInterval: 0 };
@@ -94,15 +129,15 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     return { chartData: arr, yDomain: [yMin, yMax], yTicks: ticks, xInterval: interval };
   }, [data]);
 
-  /* —————————————————— UI —————————————————— */
-  if (isLoading) return <p className="text-sm text-gray-500">Loading…</p>;
+
+  // if (isLoading) return <p className="text-sm text-gray-500">Loading…</p>;
   if (error) return <p className="text-red-500">{error.message}</p>;
 
   return (
     <>
-      {/* 头部：左侧下拉 + 右侧时间范围切换 */}
+
       <div className="mb-4 flex items-center justify-between">
-        {/* 自定义下拉 */}
+       
         <div className="relative" ref={dropRef}>
           <button
             className="flex items-center gap-1 text-sm font-medium uppercase "
@@ -113,8 +148,26 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
               <path d="M5 7l5 5 5-5" stroke="currentColor" strokeWidth="2" fill="none" />
             </svg>
           </button>
-          {coinConfig.LiquidityRateChange}
-          {/* 下拉内容 */}
+
+          <div className="flex items-center gap-2">
+            <p className="text-3xl font-semibold">{mainMetric.value}</p>
+
+            {!!mainMetric.delta && (
+              <span
+                className={`
+                  text-xs py-0.5 px-1.5 rounded-full flex items-center gap-1
+                  ${mainMetric.positive
+                    ? 'bg-green-900 text-green-400'
+                    : 'bg-red-900 text-red-400'}
+                `}
+              >
+                {mainMetric.positive ? '+' : ''}
+                {mainMetric.delta}
+                {getArrow(mainMetric.positive)}
+              </span>
+            )}
+          </div>
+
           {open && (
             <ul
               className="absolute z-10 mt-2 w-32 rounded-md border border-gray-600/40
@@ -137,7 +190,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
           )}
         </div>
 
-        {/* 时间范围 tab */}
+
         <div className="flex gap-3 text-sm">
           {TABS.map((t, i) => (
             <div
@@ -153,7 +206,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
         </div>
       </div>
 
-      {/* 图表主体 */}
+
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData} margin={{ left: 16, right: 0 }}>
           <CartesianGrid stroke="rgba(252,252,252,0.1)" vertical={false} />
