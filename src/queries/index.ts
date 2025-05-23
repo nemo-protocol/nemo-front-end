@@ -48,7 +48,7 @@ function getRewardList(address?: string) {
     {
       pageSize: 100,
     },
-    headers,
+    headers
   )
 }
 
@@ -66,7 +66,7 @@ export function useQueryFixedReturnInfos() {
   })
 }
 
-function getCoinConfig(coinType: string, maturity: string, address?: string) {
+function getCoinConfig(id: string, address?: string) {
   const headers = new Headers()
   if (address) {
     headers.set("userAddress", address)
@@ -74,10 +74,9 @@ function getCoinConfig(coinType: string, maturity: string, address?: string) {
   return nemoApi<CoinConfig>("/api/v1/market/config/detail")
     .get(
       {
-        coinType,
-        maturity,
+        id,
       },
-      headers,
+      headers
     )
     .then(handleInfinityValues)
 }
@@ -89,10 +88,10 @@ function getPortfolioList() {
 async function getMintLpAmount(
   marketStateId: string,
   syCoinAmount: string,
-  ptCoinAmount: string,
+  ptCoinAmount: string
 ) {
   const { amount } = await nemoApi<{ amount: string }>(
-    "/api/v1/market/lp/mintConfig",
+    "/api/v1/market/lp/mintConfig"
   ).get({
     marketStateId,
     syCoinAmount,
@@ -131,7 +130,7 @@ interface LPResult {
 export async function getLPRatio(
   marketStateId: string,
   address: string,
-  mintType?: string,
+  mintType?: string
 ) {
   const headers = new Headers()
   headers.set("userAddress", address)
@@ -140,7 +139,7 @@ export async function getLPRatio(
       marketStateId,
       mintType,
     },
-    headers,
+    headers
   )
   return handleInfinityValues(response)
 }
@@ -149,7 +148,7 @@ export function useQueryMintLpAmount(
   marketStateId: string,
   syCoinAmount: string,
   ptCoinAmount: string,
-  enabled: boolean,
+  enabled: boolean
 ) {
   return useQuery({
     queryKey: ["coinInfoList", marketStateId, syCoinAmount, ptCoinAmount],
@@ -161,7 +160,7 @@ export function useQueryMintLpAmount(
 export function useQueryLPRatio(
   address?: string,
   marketStateId?: string,
-  mintType?: string,
+  mintType?: string
 ) {
   return useQuery({
     enabled: !!marketStateId,
@@ -172,16 +171,13 @@ export function useQueryLPRatio(
   })
 }
 
-export function useCoinConfig(
-  coinType?: string,
-  maturity?: string,
-  address?: string,
-) {
+export function useCoinConfig(id: string) {
+  const { address } = useWallet()
   return useQuery({
-    enabled: !!coinType && !!maturity,
     // FIXME： queryKey dose not work
-    queryKey: ["coinConfig", coinType, maturity],
-    queryFn: () => getCoinConfig(coinType!, maturity!, address),
+    queryKey: ["coinConfig", id],
+    queryFn: () => getCoinConfig(id, address),
+    enabled: !!id,
   })
 }
 
@@ -195,7 +191,7 @@ export function usePortfolioList() {
 }
 
 export function useCoinInfoList<T extends boolean = true>(
-  params: CoinInfoListParams & { isCalc?: T } = {},
+  params: CoinInfoListParams & { isCalc?: T } = {}
 ): UseQueryResult<
   T extends true ? CoinInfoWithMetrics[] : BaseCoinInfo[],
   Error
@@ -218,7 +214,7 @@ export function useCoinInfoList<T extends boolean = true>(
         //   "0xa72ae88db5febc37fabb1bf10b6f0eeca002b59b7252998abd0b359c5269eed0",
         // ({ isTokenization }) => isTokenization,
         // ({ ptTokenType }) => !!ptTokenType,
-        ({ marketStateId }) => !!marketStateId,
+        ({ marketStateId }) => !!marketStateId
       )
 
       if (!coinList.length) return []
@@ -228,7 +224,7 @@ export function useCoinInfoList<T extends boolean = true>(
       const marketStateIds = coinList.map((coin) => coin.marketStateId)
 
       const marketStates = await fetchMarketStates(marketStateIds).catch(
-        () => ({}) as { [key: string]: MarketState },
+        () => ({} as { [key: string]: MarketState })
       )
 
       const results = await Promise.all(
@@ -280,7 +276,7 @@ export function useCoinInfoList<T extends boolean = true>(
               marketState,
             }
           }
-        }),
+        })
       )
 
       return results
@@ -326,5 +322,52 @@ export const getTokenInfo = async (): Promise<TokenInfoMap> => {
 export const useTokenInfo = () => {
   return useMutation<TokenInfoMap, Error>({
     mutationFn: getTokenInfo,
+  })
+}
+
+export type Granularity = "YEARLY" | "MONTHLY" | "DAILY" | "HOURLY" | "MINUTELY"
+
+
+export function useApyHistory({
+  marketStateId,
+  tokenType,
+  granularity,
+  startTime,
+  endTime,
+}: {
+  marketStateId: string
+  tokenType: "FIXED" | "YIELD" | "POOL"
+  granularity: Granularity
+  startTime?: number
+  endTime?: number
+}) {
+  if (startTime && startTime.toString().length !== 10) {
+    throw new Error("startTime must be a 10 digit timestamp in seconds")
+  }
+  if (endTime && endTime.toString().length !== 10) {
+    throw new Error("endTime must be a 10 digit timestamp in seconds")
+  }
+
+  return useQuery({
+    queryKey: [
+      "apyHistory",
+      marketStateId,
+      tokenType,
+      granularity,
+      startTime,
+      endTime,
+    ],
+    queryFn: () =>
+      nemoApi<{ data: { apy: string; timeLabel: string }[] }>(
+        "/api/v1/market/apyData/history"
+      )
+        .get({
+          marketStateId,
+          tokenType,
+          granularity,
+          startTime,
+          endTime,
+        })
+        .then(handleInfinityValues),
   })
 }

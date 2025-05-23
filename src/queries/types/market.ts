@@ -13,7 +13,6 @@ export interface MarketState {
   }[]
 }
 
-
 // FIXME: optimize this
 export interface BaseCoinInfo {
   id: string
@@ -96,16 +95,16 @@ export interface CoinConfig extends BaseCoinInfo {
   ytAddress: string | null | undefined
   assetAddress: string | null | undefined
   marketIntro: string
-  
+
   PtAddress: string | null | undefined
-  PoolApyRateChange: string 
-  poolApy: string 
-  yieldApyRateChange: string 
-  yieldApy: string 
-  fixedApyRateChange: string 
-  fixedApy: string 
+  PoolApyRateChange: string
+  poolApy: string
+  yieldApyRateChange: string
+  yieldApy: string
+  fixedApyRateChange: string
+  fixedApy: string
   volumeRateChange: string
-  liquidityRateChange: string 
+  liquidityRateChange: string
   liquidity: string
   pyStoreId: string
   pyPosition: string
@@ -167,24 +166,26 @@ export interface TokenInfoMap {
   [key: string]: TokenInfo
 }
 
-
-export type TokenType    = 'PT' | 'YT' | 'LP';
-export type Granularity  = 'YEARLY' | 'MONTHLY' | 'DAILY' | 'HOURLY' | 'MINUTELY';
+export type Granularity = "YEARLY" | "MONTHLY" | "DAILY" | "HOURLY" | "MINUTELY"
 
 export interface ApyHistoryPoint {
-  apy:  number;
-  price:number;
-  timeLabel:number;
+  apy: number
+  price: number
+  timeLabel: number
 }
 
 export interface ApyHistoryData {
-  marketStateId: string;
-  tokenType:     TokenType;
-  granularity:   Granularity;
-  data:          ApyHistoryPoint[];
+  marketStateId: string
+  tokenType: TokenType
+  granularity: Granularity
+  data: ApyHistoryPoint[]
 }
 
 export interface ApyHistoryResponse {
-  data: ApyHistoryData;
-  msg : string;
+  data: ApyHistoryData
+  msg: string
 }
+
+export type Action = "mint" | "trade" | "provide" | "redeem"
+
+export type TokenType = "yt" | "pt" | "lp" | "py"

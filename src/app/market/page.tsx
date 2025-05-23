@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react"
 import { Info, ChevronDown, Plus, Sparkles, Gift } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
   Table,
   TableHeader,
@@ -11,7 +12,11 @@ import {
   TableCell,
 } from "@/components/ui/table"
 import { useCoinInfoList } from "@/queries"
-import type { CoinInfoWithMetrics } from "@/queries/types/market"
+import type {
+  Action,
+  CoinInfoWithMetrics,
+  TokenType,
+} from "@/queries/types/market"
 import dayjs from "dayjs"
 import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
 
@@ -27,6 +32,7 @@ function ProgressBar({ percent }: { percent: number }) {
 }
 
 export default function MarketPage() {
+  const router = useRouter()
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const { data: coinList = [] } = useCoinInfoList()
 
@@ -49,6 +55,15 @@ export default function MarketPage() {
     groupArr.sort((a, b) => b.totalTvl - a.totalTvl)
     return groupArr
   }, [coinList])
+
+  const handleTokenClick = (
+    id: string,
+    coinType: string,
+    action: Action,
+    tokenType: TokenType
+  ) => {
+    router.push(`/market-detail/${id}/${coinType}/${action}/${tokenType}`)
+  }
 
   return (
     <div className="bg-[#080E16] min-h-screen text-white p-8">
@@ -188,11 +203,29 @@ export default function MarketPage() {
                           </TableCell>
                           <TableCell className="w-[18%]">
                             <div className="flex items-center gap-2">
-                              <button className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#23243A] text-white font-bold">
+                              <button
+                                onClick={() =>
+                                  handleTokenClick(
+                                    row.id,
+                                    row.coinType,
+                                    "trade",
+                                    "yt"
+                                  )
+                                }
+                                className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#23243A] text-white font-bold cursor-pointer hover:bg-[#2a2b32] transition-colors"
+                              >
                                 {formatLargeNumber(row.ytApy, 2)}%
                               </button>
                               <div
-                                className="flex items-center justify-center rounded-full px-4 py-2 font-bold text-white"
+                                onClick={() =>
+                                  handleTokenClick(
+                                    row.id,
+                                    row.coinType,
+                                    "trade",
+                                    "yt"
+                                  )
+                                }
+                                className="flex items-center justify-center rounded-full px-4 py-2 font-bold text-white cursor-pointer hover:opacity-90 transition-opacity"
                                 style={{
                                   background:
                                     "linear-gradient(90deg, #fff 0%, #5D94FF 100%)",
@@ -210,11 +243,29 @@ export default function MarketPage() {
                           </TableCell>
                           <TableCell className="w-[18%]">
                             <div className="flex items-center gap-2">
-                              <button className="flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-[#3FE0C5]/30 to-[#23243A] text-[#3FE0C5] font-bold">
+                              <button
+                                onClick={() =>
+                                  handleTokenClick(
+                                    row.id,
+                                    row.coinType,
+                                    "trade",
+                                    "pt"
+                                  )
+                                }
+                                className="flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-[#3FE0C5]/30 to-[#23243A] text-[#3FE0C5] font-bold cursor-pointer hover:from-[#3FE0C5]/40 hover:to-[#2a2b32] transition-colors"
+                              >
                                 {formatLargeNumber(row.ptApy, 2)}%
                               </button>
                               <div
-                                className="flex items-center justify-center rounded-full px-4 py-2 font-bold text-white"
+                                onClick={() =>
+                                  handleTokenClick(
+                                    row.id,
+                                    row.coinType,
+                                    "trade",
+                                    "pt"
+                                  )
+                                }
+                                className="flex items-center justify-center rounded-full px-4 py-2 font-bold text-white cursor-pointer hover:opacity-90 transition-opacity"
                                 style={{
                                   background:
                                     "linear-gradient(90deg, #fff 0%, #3FE0C5 100%)",
@@ -231,7 +282,17 @@ export default function MarketPage() {
                             </div>
                           </TableCell>
                           <TableCell className="w-[14%]">
-                            <button className="flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-[#B09FFF]/30 to-[#23243A] text-[#FFF7B2] font-bold shadow-lg w-full justify-center">
+                            <button
+                              onClick={() =>
+                                handleTokenClick(
+                                  row.id,
+                                  row.coinType,
+                                  "provide",
+                                  "lp" as TokenType
+                                )
+                              }
+                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-[#B09FFF]/30 to-[#23243A] text-[#FFF7B2] font-bold shadow-lg w-full justify-center cursor-pointer hover:from-[#B09FFF]/40 hover:to-[#2a2b32] transition-colors"
+                            >
                               {formatLargeNumber(row.poolApy, 2)}%{" "}
                               <Sparkles size={16} className="inline ml-1" />{" "}
                               <Gift size={16} className="inline ml-1" />{" "}

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import axios, { AxiosError, CancelTokenSource } from 'axios';
 import http from '@/lib/http';
+import { TokenType } from '@/queries/types/market';
 
 /* ==========================
  *  类型声明，可根据接口调整
  * ========================== */
-export type TokenType = 'PT' | 'YT' | 'LP';
 export type Granularity = 'YEARLY' | 'MONTHLY' | 'DAILY' | 'HOURLY' | 'MINUTELY';
 
 /** 接口返回结构（示例，可根据实际 response.ApyHistoryCommonResponse 调整） */
