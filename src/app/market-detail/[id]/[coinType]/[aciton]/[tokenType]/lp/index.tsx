@@ -11,66 +11,74 @@ import { ChevronsDown } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import ActionButton from "../components/ActionButton"
 import { useWallet } from "@nemoprotocol/wallet-kit"
-import { useParams, useRouter } from "next/navigation"
-import { formatDecimalValue, isValidAmount } from "@/lib/utils"
-import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
+import {
+  debounce,
+  formatDecimalValue,
+  isValidAmount,
+  formatTimeDiff,
+} from "@/lib/utils"
 import useMarketStateData from "@/hooks/useMarketStateData"
-import { useAddLiquidityRatio } from "@/hooks/actions/useAddLiquidityRatio"
 import { useCalculateLpAmount } from "@/hooks/dryRun/lp/useCalculateLpDryRun"
 import { useAddLiquiditySingleSy } from "@/hooks/actions/useAddLiquiditySingleSy"
 import { useMintLp } from "@/hooks/actions/useMintLp"
 import { showTransactionDialog } from "@/lib/dialog"
 import { network } from "@/config"
 import { parseErrorMessage } from "@/lib/errorMapping"
-import { Transaction } from "@mysten/sui/transactions"
-import { initPyPosition, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
+import { Transaction, TransactionArgument } from "@mysten/sui/transactions"
+import { splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { mintSCoin } from "@/lib/txHelper/coin"
 import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
 import useCoinData from "@/hooks/query/useCoinData"
 import usePyPositionData from "@/hooks/usePyPositionData"
 import useInputLoadingState from "@/hooks/useInputLoadingState"
-import { useRatioLoadingState } from "@/hooks/useRatioLoadingState"
 import Decimal from "decimal.js"
+import {
+  initPyPosition,
+  useQueryConversionRate,
+} from "@nemoprotocol/contract-sdk"
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectGroup,
+  SelectTrigger,
+  SelectContent,
+} from "@/components/ui/select"
+import SlippageSetting from "../components/SlippageSetting"
 import dayjs from "dayjs"
-// import useQueryConversionRate from "@/hooks/query/useQueryConversionRate"
-import { useQueryConversionRate } from "@nemoprotocol/contract-sdk"
+import { CoinData } from "@/types"
 
 interface Props {
   coinConfig: CoinConfig
 }
 
 export default function YTMarketDetail({ coinConfig }: Props) {
-  const router = useRouter()
   const [warning, setWarning] = useState("")
-  const [error, setError] = useState("")
-  const [errorDetail, setErrorDetail] = useState("")
-  const params = useParams()
-  const coinType = params.coinType as string
-  const maturity = params.maturity as string
+  const [error, setError] = useState<string>()
+  const [errorDetail, setErrorDetail] = useState<string>()
   const [addValue, setAddValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
   const [tokenType, setTokenType] = useState<number>(0)
   const [lpAmount, setLpAmount] = useState<string>()
   const [lpFeeAmount, setLpFeeAmount] = useState<string>()
-  const [ytAmount, setYtAmount] = useState<string>()
   const [isAdding, setIsAdding] = useState(false)
   const { account: currentAccount, signAndExecuteTransaction } = useWallet()
   const [isCalculating, setIsCalculating] = useState(false)
   const [ratio, setRatio] = useState<string>()
   const [addType, setAddType] = useState<"mint" | "seed" | "add">()
 
+  const coinType = coinConfig.coinType
+  const maturity = coinConfig.maturity
+
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
 
-  const { data: marketStateData, isLoading: isMarketStateDataLoading } =
-    useMarketStateData(coinConfig?.marketStateId)
+  const { data: marketStateData } = useMarketStateData(
+    coinConfig?.marketStateId
+  )
 
   const { data: conversionRate } = useQueryConversionRate(coinConfig)
-
-  useEffect(() => {
-    console.log("conversionRate", conversionRate)
-  }, [conversionRate])
 
   const { mutateAsync: handleAddLiquiditySingleSy } =
     useAddLiquiditySingleSy(coinConfig)
@@ -84,7 +92,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     coinConfig?.pyPositionTypeList
   )
 
-  const { data: coinData, isLoading: isBalanceLoading } = useCoinData(
+  const { data: coinData } = useCoinData(
     address,
     tokenType === 0 ? coinConfig?.underlyingCoinType : coinType
   )
@@ -127,28 +135,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     [coinBalance, addValue]
   )
 
-  const { data: ptYtData } = useCalculatePtYt(coinConfig, marketStateData)
-  const [ptRatio, syRatio] = useMemo(() => {
-    if (
-      ptYtData?.ptTvl &&
-      ptYtData?.syTvl &&
-      !new Decimal(ptYtData.ptTvl).isZero() &&
-      !new Decimal(ptYtData.syTvl).isZero()
-    ) {
-      const totalTvl = new Decimal(ptYtData.ptTvl).add(
-        new Decimal(ptYtData.syTvl)
-      )
-      return [
-        new Decimal(ptYtData.ptTvl).div(totalTvl).mul(100).toFixed(2),
-        new Decimal(ptYtData.syTvl).div(totalTvl).mul(100).toFixed(2),
-      ]
-    }
-    return ["0", "0"]
-  }, [ptYtData])
-
   const { isLoading } = useInputLoadingState(addValue, isCalculating)
-
-  const { isLoading: isRatioLoading } = useRatioLoadingState(isCalculating)
 
   const btnDisabled = useMemo(() => {
     return (
@@ -168,11 +155,6 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     }
     return "Add"
   }, [insufficientBalance, addValue, coinName])
-
-  const { mutateAsync: calculateRatio } = useAddLiquidityRatio(
-    coinConfig,
-    marketStateData
-  )
 
   const { mutate: calculateLpAmount } = useCalculateLpAmount(
     coinConfig,
@@ -194,9 +176,9 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     addAmount: string,
     tokenType: number,
     coinConfig: CoinConfig,
-    coinData: any[],
+    coinData: CoinData[],
     coinType: string,
-    pyPosition: any,
+    pyPosition: TransactionArgument,
     address: string,
     minLpAmount: string
   ): Promise<void> {
@@ -257,9 +239,9 @@ export default function YTMarketDetail({ coinConfig }: Props) {
       decimal &&
       addType &&
       address &&
-      coinType &&
       slippage &&
       lpAmount &&
+      coinType &&
       coinConfig &&
       conversionRate &&
       marketStateData &&
@@ -271,14 +253,12 @@ export default function YTMarketDetail({ coinConfig }: Props) {
         const addAmount = new Decimal(addValue).mul(10 ** decimal).toFixed(0)
         const tx = new Transaction()
 
-        let pyPosition
-        let created = false
-        if (!pyPositionData?.length) {
-          created = true
-          pyPosition = initPyPosition(tx, coinConfig)
-        } else {
-          pyPosition = tx.object(pyPositionData[0].id)
-        }
+        //TODO: put tx in @nemoprotocol/contract-sdk
+        const { pyPosition, created } = initPyPosition({
+          tx,
+          coinConfig,
+          pyPositions: pyPositionData,
+        })
 
         const minLpAmount = new Decimal(lpAmount)
           .mul(10 ** decimal)
@@ -292,7 +272,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             tokenType,
             coinConfig,
             coinData,
-            coinType,
+            coinConfig.coinType,
             pyPosition,
             address,
             minLpAmount
@@ -319,7 +299,6 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             address,
             vaultId,
             slippage,
-            coinType,
             coinData,
             addAmount,
             tokenType,
@@ -327,6 +306,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             coinConfig,
             minLpAmount,
             conversionRate,
+            coinType: coinConfig.coinType,
           })
         }
 
@@ -365,6 +345,70 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     }
   }
 
+  useEffect(() => {
+    const getLpPosition = debounce(async () => {
+      setError("")
+      if (
+        decimal &&
+        coinConfig &&
+        pyPositionData &&
+        marketStateData &&
+        coinData?.length &&
+        isValidAmount(addValue)
+      ) {
+        setIsCalculating(true)
+        const inputAmount = new Decimal(addValue).mul(10 ** decimal).toString()
+        try {
+          calculateLpAmount(
+            {
+              vaultId,
+              decimal,
+              slippage,
+              coinData,
+              tokenType,
+              inputAmount,
+              pyPositionData,
+            },
+            {
+              onSuccess: (result) => {
+                console.log("result", result)
+                setRatio(result.ratio)
+                setError(result.error)
+                setAddType(result.addType)
+                setLpAmount(result.lpAmount)
+                setLpFeeAmount(result.lpFeeAmount)
+                setErrorDetail(result.errorDetail)
+              },
+              onSettled: () => {
+                setIsCalculating(false)
+              },
+            }
+          )
+        } catch (error) {
+          setIsCalculating(false)
+        }
+      } else {
+        setLpAmount(undefined)
+      }
+    }, 500)
+
+    getLpPosition()
+    return () => {
+      getLpPosition.cancel()
+    }
+  }, [
+    vaultId,
+    decimal,
+    slippage,
+    coinData,
+    addValue,
+    tokenType,
+    coinConfig,
+    pyPositionData,
+    marketStateData,
+    calculateLpAmount,
+  ])
+
   return (
     <div className="flex flex-col gap-6">
       {/* token 标题 */}
@@ -384,14 +428,14 @@ export default function YTMarketDetail({ coinConfig }: Props) {
         </div>
 
         {/* 右侧 Trade 面板 */}
-        <div className="bg-[#101823] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
+        <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
           {/* Tab 切换 */}
           <Tabs
             title="Provide liquidity"
             desc="Provide liquidity to the market to earn fees and rewards."
             tabs={[
-              { key: "mint", label: "MINT & SUPPLY" },
-              { key: "pt", label: "MINT & SUPPLY" },
+              { key: "mint", label: "SWAP & SUPPLY" },
+              { key: "swap", label: "MINT & SUPPLY", disabled: true },
             ]}
             onChange={(key) => {
               console.log("Selected tab:", key)
@@ -403,18 +447,47 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             error={error}
             price={price}
             decimal={decimal}
+            warning={warning}
             amount={addValue}
             coinName={coinName}
             coinLogo={coinLogo}
             isLoading={isLoading}
+            setWarning={setWarning}
             coinBalance={coinBalance}
             isConnected={isConnected}
-            warning={warning}
             errorDetail={errorDetail}
-            setWarning={setWarning}
             onChange={(value) => {
               setAddValue(value)
             }}
+            coinNameComponent={
+              <Select
+                value={tokenType.toString()}
+                onValueChange={(value) => {
+                  setAddValue("")
+                  setTokenType(Number(value))
+                }}
+              >
+                <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
+                  <SelectValue placeholder="Select token type" />
+                </SelectTrigger>
+                <SelectContent className="border-none outline-none bg-[#0E0F16]">
+                  <SelectGroup>
+                    <SelectItem
+                      value={"0"}
+                      className="cursor-pointer text-white"
+                    >
+                      {coinConfig?.underlyingCoinName}
+                    </SelectItem>
+                    <SelectItem
+                      value={"1"}
+                      className="cursor-pointer text-white"
+                    >
+                      {coinConfig?.coinName}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            }
           />
 
           {/* swap icon */}
@@ -423,68 +496,89 @@ export default function YTMarketDetail({ coinConfig }: Props) {
           </div>
 
           {/* 输出框 */}
-          <div className="bg-[#0f1624] rounded-xl p-4 flex justify-between">
-            <div>
-              <p className="text-xs text-slate-400 uppercase">Receive</p>
-              <p className="text-2xl">
+          <div className="bg-[#FCFCFC]/[0.03] rounded-2xl shadow-lg px-6 py-6 w-full flex items-center justify-between min-h-[80px]">
+            {/* 左侧：LP POSITION 和数值 */}
+            <div className="flex flex-col justify-center">
+              <span className="text-xs text-[#FCFCFC]/40 font-medium">
+                Receive
+              </span>
+              <span className="mt-2 text-2xl sm:text-3xl font-bold text-white flex items-center gap-x-2">
                 {!addValue ? (
                   "--"
                 ) : isCalculating ? (
-                  <Skeleton className="h-6 w-36 bg-[#2D2D48]" />
+                  <Skeleton className="h-7 sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
                 ) : !decimal ? (
                   "--"
                 ) : (
-                  `≈ ${formatDecimalValue(lpAmount, decimal)} LP ${
-                    coinConfig?.coinName
-                  }`
+                  <>{formatDecimalValue(lpAmount, decimal)}</>
                 )}
-              </p>
+              </span>
             </div>
-            <div className="text-right">
-              <p className="text-lg">YT {coinConfig?.coinName}</p>
-              <p className="text-xs text-slate-500">
-                {dayjs(Number(coinConfig?.maturity ?? 0)).format("MMM DD YYYY")}
+
+            {/* 右侧：LP xSUI、图标和剩余天数 */}
+            <div className="flex flex-col items-end justify-center gap-y-1">
+              <div className="flex items-center gap-x-2">
+                <span className="text-xl font-[650] text-white">LP xSUI</span>
+                {coinConfig?.coinLogo && (
+                  <img
+                    src={coinConfig.coinLogo}
+                    alt={coinConfig.coinName}
+                    className="size-5 rounded-full"
+                  />
+                )}
+              </div>
+              <span className="text-xs text-[#FCFCFC]/40 mt-1.5 flex items-center gap-x-1">
+                <span>
+                  {`${formatTimeDiff(parseInt(maturity))} LEFT・ ${dayjs(
+                    parseInt(maturity)
+                  ).format("DD MMM YYYY")}`}
+                </span>
+                <img
+                  src="/assets/images/date.svg"
+                  alt="date"
+                  className="size-3"
+                />
+              </span>
+            </div>
+          </div>
+
+          <div className="divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
+            <p className="flex justify-between text-sm pb-2">
+              <span>Pool APY Change</span>
+              <span className="text-white">X% - Y%</span>
+            </p>
+
+            <div className="space-y-2">
+              <p className="flex justify-between">
+                <span>Price</span>
+                <span className="text-white">
+                  {ratio
+                    ? `1 ${coinName} = ${formatDecimalValue(ratio, 4)} LP ${
+                        coinConfig?.coinName
+                      }`
+                    : "--"}
+                </span>
+              </p>
+              <p className="flex justify-between">
+                <span>Trading Fees</span>
+                <span className="text-white">{lpFeeAmount || "-"}</span>
+              </p>
+              <p className="flex justify-between">
+                <span>Slippage</span>
+                <SlippageSetting
+                  slippage={slippage}
+                  setSlippage={setSlippage}
+                />
               </p>
             </div>
           </div>
 
-          {/* 详情行 */}
-          <div className="text-sm text-slate-400 flex flex-col gap-2 pt-4 border-t border-slate-800">
-            <p className="flex justify-between">
-              <span>Yield APY Change</span>
-              <span className="text-white">
-                {ptYtData?.poolApy
-                  ? `${Number(ptYtData.poolApy).toFixed(6)}%`
-                  : "--"}
-              </span>
-            </p>
-            <p className="flex justify-between">
-              <span>Price</span>
-              <span className="text-white">
-                {ratio
-                  ? `1 ${coinName} = ${ratio} LP ${coinConfig?.coinName}`
-                  : "--"}
-              </span>
-            </p>
-            <p className="flex justify-between">
-              <span>Trading Fees</span>
-              <span className="text-white">{lpFeeAmount || "-"}</span>
-            </p>
-            <p className="flex justify-between">
-              <span>Slippage</span>
-              <span className="text-white">{slippage}%</span>
-            </p>
-          </div>
-
-          {/* 按钮组 */}
-          <div className="flex gap-4 pt-4">
-            <ActionButton
-              onClick={add}
-              btnText={btnText}
-              disabled={btnDisabled}
-              loading={isAdding || isCalculating}
-            />
-          </div>
+          <ActionButton
+            onClick={add}
+            btnText={btnText}
+            disabled={btnDisabled}
+            loading={isAdding || isCalculating}
+          />
         </div>
       </div>
     </div>

@@ -27,8 +27,6 @@ const { networkConfig } = createNetworkConfig({
   },
 })
 
-console.log("SuiMainnetChain", SuiMainnetChain)
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

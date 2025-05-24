@@ -344,9 +344,53 @@ var require_dayjs_min = __commonJS({
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  initPyPosition: () => initPyPosition,
   useQueryConversionRate: () => useQueryConversionRate
 });
 module.exports = __toCommonJS(index_exports);
+
+// src/lib/txHelper/position.ts
+var initPyPosition = ({
+  tx,
+  coinConfig,
+  pyPositions,
+  returnDebugInfo
+}) => {
+  let pyPosition;
+  let created = false;
+  if (!(pyPositions == null ? void 0 : pyPositions.length)) {
+    created = true;
+    const moveCallInfo = {
+      target: `${coinConfig.nemoContractId}::py::init_py_position`,
+      arguments: [
+        { name: "version", value: coinConfig.version },
+        { name: "py_state", value: coinConfig.pyStateId },
+        { name: "clock", value: "0x6" }
+      ],
+      typeArguments: [coinConfig.syCoinType]
+    };
+    const txMoveCall = {
+      target: moveCallInfo.target,
+      arguments: [
+        tx.object(coinConfig.version),
+        tx.object(coinConfig.pyStateId),
+        tx.object("0x6")
+      ],
+      typeArguments: moveCallInfo.typeArguments
+    };
+    const [result] = tx.moveCall(txMoveCall);
+    pyPosition = result;
+    return returnDebugInfo ? [{ pyPosition, created }, moveCallInfo] : { pyPosition, created };
+  } else {
+    const moveCallInfo = {
+      target: `0x2::object::object`,
+      arguments: [{ name: "id", value: pyPositions[0].id }],
+      typeArguments: []
+    };
+    pyPosition = tx.object(pyPositions[0].id);
+    return returnDebugInfo ? [{ pyPosition, created }, moveCallInfo] : { pyPosition, created };
+  }
+};
 
 // src/lib/constants.ts
 var AFTERMATH = {
@@ -10243,7 +10287,6 @@ function useGetConversionRateDryRun(debug = false) {
       if (!coinConfig) {
         throw new Error("Please select a pool");
       }
-      console.log("useGetConversionRateDryRun coinConfig", coinConfig);
       const tx = new Transaction();
       tx.setSender(address);
       const [priceVoucher, priceVoucherMoveCallInfo] = getPriceVoucher(
@@ -10273,7 +10316,6 @@ function useGetConversionRateDryRun(debug = false) {
             onlyTransactionKind: true
           })
         });
-        console.log("useGetConversionRateDryRun result", result);
         debugInfo.rawResult = result;
         if (result == null ? void 0 : result.error) {
           throw new ContractError(result.error, debugInfo);
@@ -10308,7 +10350,6 @@ function useGetConversionRateDryRun(debug = false) {
         debugInfo.result = formattedConversionRate;
         return debug ? [formattedConversionRate, debugInfo] : formattedConversionRate;
       } catch (error) {
-        console.log("useGetConversionRateDryRun error", error);
         throw new ContractError(error.message, debugInfo);
       }
     }
@@ -10331,6 +10372,7 @@ function useQueryConversionRate(coinConfig) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  initPyPosition,
   useQueryConversionRate
 });
 /*! Bundled license information:

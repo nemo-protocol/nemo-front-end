@@ -1,4 +1,14 @@
+import { TransactionArgument, Transaction } from '@mysten/sui/transactions';
 import * as _tanstack_react_query from '@tanstack/react-query';
+
+interface MoveCallInfo {
+    target: string;
+    arguments: {
+        name: string;
+        value: string | TransactionArgument;
+    }[];
+    typeArguments: string[];
+}
 
 interface BaseCoinInfo {
     id: string;
@@ -59,6 +69,23 @@ interface CoinConfig extends BaseCoinInfo {
     yieldFactoryConfigId: string;
 }
 
+interface InitPyPositionParams<T extends boolean = false> {
+    tx: Transaction;
+    coinConfig: CoinConfig;
+    pyPositions?: {
+        id: string;
+    }[];
+    returnDebugInfo?: T;
+}
+type InitPyPositionResult<T extends boolean> = T extends true ? [{
+    pyPosition: TransactionArgument;
+    created: boolean;
+}, MoveCallInfo] : {
+    pyPosition: TransactionArgument;
+    created: boolean;
+};
+declare const initPyPosition: <T extends boolean = false>({ tx, coinConfig, pyPositions, returnDebugInfo, }: InitPyPositionParams<T>) => InitPyPositionResult<T>;
+
 declare function useQueryConversionRate(coinConfig?: CoinConfig): _tanstack_react_query.UseQueryResult<string | undefined, Error>;
 
-export { useQueryConversionRate };
+export { initPyPosition, useQueryConversionRate };

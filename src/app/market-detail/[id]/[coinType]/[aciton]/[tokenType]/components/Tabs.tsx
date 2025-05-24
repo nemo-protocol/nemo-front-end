@@ -6,6 +6,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 interface Tab {
   key: string
   label: string
+  disabled?: boolean
 }
 
 interface TradeTabsProps {
@@ -16,6 +17,7 @@ interface TradeTabsProps {
   desc?: string
 }
 
+// TODO： disabled & active cursor style
 export default function TradeTabs({ 
   title, 
   tabs, 
@@ -71,6 +73,7 @@ export default function TradeTabs({
         {tabs.map((tab) => (
           <button
             key={tab.key}
+            disabled={tab.disabled}
             className={`
               px-1.5 py-1 rounded-lg
               font-['Season_Sans_TRIAL']
@@ -83,8 +86,9 @@ export default function TradeTabs({
                 ? "bg-[rgba(252,252,252,0.03)] text-[var(--typo-primary,#FCFCFC)]" 
                 : "text-[var(--typo-secondary,rgba(252,252,252,0.40))]"
               }
+              ${tab.disabled ? "opacity-50 cursor-not-allowed" : ""}
             `}
-            onClick={() => handleTabChange(tab.key)}
+            onClick={() => !tab.disabled && handleTabChange(tab.key)}
           >
             {tab.label}
           </button>

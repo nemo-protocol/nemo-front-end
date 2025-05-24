@@ -65,7 +65,7 @@ export default function AmountInput({
         )}
       >
         <div className="flex items-center justify-between h-auto sm:h-12">
-          <div className="flex items-center rounded-xl gap-x-1 sm:gap-x-2 bg-[#0E0F16] shrink-0">
+          <div className="flex items-center rounded-xl gap-x-1 sm:gap-x-2 shrink-0">
             <div className="flex items-center gap-x-2 sm:gap-x-4">
               {isConfigLoading ? (
                 <Skeleton className="size-8 sm:size-12 rounded-full bg-[#2D2D48]" />
