@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import AssetHeader from "../components/AssetHeader"
 import StatCard from "../components/StatCard"
 import YieldChart from "../components/YieldChart"
@@ -11,12 +11,12 @@ import { ChevronsDown } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import ActionButton from "../components/ActionButton"
 import { useWallet } from "@nemoprotocol/wallet-kit"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useRouter } from "next/navigation"
 import { formatDecimalValue, isValidAmount } from "@/lib/utils"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 import useMarketStateData from "@/hooks/useMarketStateData"
 import { useAddLiquidityRatio } from "@/hooks/actions/useAddLiquidityRatio"
-import { useCalculateLpAmount } from "@/hooks/dryRun/lp/useCalculateLpAmount"
+import { useCalculateLpAmount } from "@/hooks/dryRun/lp/useCalculateLpDryRun"
 import { useAddLiquiditySingleSy } from "@/hooks/actions/useAddLiquiditySingleSy"
 import { useMintLp } from "@/hooks/actions/useMintLp"
 import { showTransactionDialog } from "@/lib/dialog"
@@ -27,24 +27,27 @@ import { initPyPosition, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { mintSCoin } from "@/lib/txHelper/coin"
 import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
-import { useQueryConversionRate } from "@/hooks/query/useQueryConversionRate"
 import useCoinData from "@/hooks/query/useCoinData"
 import usePyPositionData from "@/hooks/usePyPositionData"
 import useInputLoadingState from "@/hooks/useInputLoadingState"
 import { useRatioLoadingState } from "@/hooks/useRatioLoadingState"
 import Decimal from "decimal.js"
 import dayjs from "dayjs"
+// import useQueryConversionRate from "@/hooks/query/useQueryConversionRate"
+import { useQueryConversionRate } from "@nemoprotocol/contract-sdk"
 
 interface Props {
   coinConfig: CoinConfig
 }
 
 export default function YTMarketDetail({ coinConfig }: Props) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [warning, setWarning] = useState("")
   const [error, setError] = useState("")
   const [errorDetail, setErrorDetail] = useState("")
-  const { coinType, maturity } = useParams()
+  const params = useParams()
+  const coinType = params.coinType as string
+  const maturity = params.maturity as string
   const [addValue, setAddValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
   const [tokenType, setTokenType] = useState<number>(0)
@@ -60,14 +63,17 @@ export default function YTMarketDetail({ coinConfig }: Props) {
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
 
-  const {
-    data: marketStateData,
-    isLoading: isMarketStateDataLoading
-  } = useMarketStateData(coinConfig?.marketStateId)
+  const { data: marketStateData, isLoading: isMarketStateDataLoading } =
+    useMarketStateData(coinConfig?.marketStateId)
 
-  const { data: conversionRate, error: conversionRateError } = useQueryConversionRate(coinConfig)
+  const { data: conversionRate } = useQueryConversionRate(coinConfig)
 
-  const { mutateAsync: handleAddLiquiditySingleSy } = useAddLiquiditySingleSy(coinConfig)
+  useEffect(() => {
+    console.log("conversionRate", conversionRate)
+  }, [conversionRate])
+
+  const { mutateAsync: handleAddLiquiditySingleSy } =
+    useAddLiquiditySingleSy(coinConfig)
 
   const { mutateAsync: handleMintLp } = useMintLp(coinConfig, marketStateData)
 
@@ -75,30 +81,33 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     address,
     coinConfig?.pyStateId,
     coinConfig?.maturity,
-    coinConfig?.pyPositionTypeList,
+    coinConfig?.pyPositionTypeList
   )
 
-  const {
-    data: coinData,
-    isLoading: isBalanceLoading,
-  } = useCoinData(
+  const { data: coinData, isLoading: isBalanceLoading } = useCoinData(
     address,
-    tokenType === 0 ? coinConfig?.underlyingCoinType : coinType,
+    tokenType === 0 ? coinConfig?.underlyingCoinType : coinType
   )
 
   const coinName = useMemo(
-    () => tokenType === 0 ? coinConfig?.underlyingCoinName : coinConfig?.coinName,
-    [tokenType, coinConfig],
+    () =>
+      tokenType === 0 ? coinConfig?.underlyingCoinName : coinConfig?.coinName,
+    [tokenType, coinConfig]
   )
 
   const coinLogo = useMemo(
-    () => tokenType === 0 ? coinConfig?.underlyingCoinLogo : coinConfig?.coinLogo,
-    [tokenType, coinConfig],
+    () =>
+      tokenType === 0 ? coinConfig?.underlyingCoinLogo : coinConfig?.coinLogo,
+    [tokenType, coinConfig]
   )
 
   const price = useMemo(
-    () => (tokenType === 0 ? coinConfig?.underlyingPrice : coinConfig?.coinPrice)?.toString(),
-    [tokenType, coinConfig],
+    () =>
+      (tokenType === 0
+        ? coinConfig?.underlyingPrice
+        : coinConfig?.coinPrice
+      )?.toString(),
+    [tokenType, coinConfig]
   )
 
   const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
@@ -115,15 +124,20 @@ export default function YTMarketDetail({ coinConfig }: Props) {
 
   const insufficientBalance = useMemo(
     () => new Decimal(coinBalance).lt(new Decimal(addValue || 0)),
-    [coinBalance, addValue],
+    [coinBalance, addValue]
   )
 
   const { data: ptYtData } = useCalculatePtYt(coinConfig, marketStateData)
   const [ptRatio, syRatio] = useMemo(() => {
-    if (ptYtData?.ptTvl && ptYtData?.syTvl && 
-        !new Decimal(ptYtData.ptTvl).isZero() && 
-        !new Decimal(ptYtData.syTvl).isZero()) {
-      const totalTvl = new Decimal(ptYtData.ptTvl).add(new Decimal(ptYtData.syTvl))
+    if (
+      ptYtData?.ptTvl &&
+      ptYtData?.syTvl &&
+      !new Decimal(ptYtData.ptTvl).isZero() &&
+      !new Decimal(ptYtData.syTvl).isZero()
+    ) {
+      const totalTvl = new Decimal(ptYtData.ptTvl).add(
+        new Decimal(ptYtData.syTvl)
+      )
       return [
         new Decimal(ptYtData.ptTvl).div(totalTvl).mul(100).toFixed(2),
         new Decimal(ptYtData.syTvl).div(totalTvl).mul(100).toFixed(2),
@@ -137,7 +151,12 @@ export default function YTMarketDetail({ coinConfig }: Props) {
   const { isLoading: isRatioLoading } = useRatioLoadingState(isCalculating)
 
   const btnDisabled = useMemo(() => {
-    return !isValidAmount(addValue) || insufficientBalance || isCalculating || !!error
+    return (
+      !isValidAmount(addValue) ||
+      insufficientBalance ||
+      isCalculating ||
+      !!error
+    )
   }, [addValue, error, insufficientBalance, isCalculating])
 
   const btnText = useMemo(() => {
@@ -150,15 +169,24 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     return "Add"
   }, [insufficientBalance, addValue, coinName])
 
-  const { mutateAsync: calculateRatio } = useAddLiquidityRatio(coinConfig, marketStateData)
+  const { mutateAsync: calculateRatio } = useAddLiquidityRatio(
+    coinConfig,
+    marketStateData
+  )
 
-  const { mutate: calculateLpAmount } = useCalculateLpAmount(coinConfig, marketStateData)
+  const { mutate: calculateLpAmount } = useCalculateLpAmount(
+    coinConfig,
+    marketStateData
+  )
 
   const vaultId = useMemo(
-    () => coinConfig?.underlyingProtocol === "Cetus"
-      ? CETUS_VAULT_ID_LIST.find(item => item.coinType === coinConfig?.coinType)?.vaultId
-      : "",
-    [coinConfig],
+    () =>
+      coinConfig?.underlyingProtocol === "Cetus"
+        ? CETUS_VAULT_ID_LIST.find(
+            (item) => item.coinType === coinConfig?.coinType
+          )?.vaultId
+        : "",
+    [coinConfig]
   )
 
   async function handleSeedLiquidity(
@@ -170,19 +198,22 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     coinType: string,
     pyPosition: any,
     address: string,
-    minLpAmount: string,
+    minLpAmount: string
   ): Promise<void> {
-    const [splitCoin] = tokenType === 0
-      ? [await mintSCoin({
-          tx,
-          vaultId,
-          address,
-          slippage,
-          coinData,
-          coinConfig,
-          amount: addAmount,
-        })]
-      : splitCoinHelper(tx, coinData, [addAmount], coinType)
+    const [splitCoin] =
+      tokenType === 0
+        ? [
+            await mintSCoin({
+              tx,
+              vaultId,
+              address,
+              slippage,
+              coinData,
+              coinConfig,
+              amount: addAmount,
+            }),
+          ]
+        : splitCoinHelper(tx, coinData, [addAmount], coinType)
 
     const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinType)
     const [priceVoucher] = getPriceVoucher(tx, coinConfig)
@@ -222,9 +253,19 @@ export default function YTMarketDetail({ coinConfig }: Props) {
   }
 
   async function add() {
-    if (decimal && addType && address && coinType && slippage && lpAmount && 
-        coinConfig && conversionRate && marketStateData && coinData?.length && 
-        !insufficientBalance) {
+    if (
+      decimal &&
+      addType &&
+      address &&
+      coinType &&
+      slippage &&
+      lpAmount &&
+      coinConfig &&
+      conversionRate &&
+      marketStateData &&
+      coinData?.length &&
+      !insufficientBalance
+    ) {
       try {
         setIsAdding(true)
         const addAmount = new Decimal(addValue).mul(10 ** decimal).toFixed(0)
@@ -254,10 +295,12 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             coinType,
             pyPosition,
             address,
-            minLpAmount,
+            minLpAmount
           )
-        } else if (addType === "mint" || 
-                  new Decimal(marketStateData.totalSy).mul(0.4).lt(addAmount)) {
+        } else if (
+          addType === "mint" ||
+          new Decimal(marketStateData.totalSy).mul(0.4).lt(addAmount)
+        ) {
           await handleMintLp({
             tx,
             vaultId,
@@ -306,7 +349,9 @@ export default function YTMarketDetail({ coinConfig }: Props) {
 
         setAddValue("")
       } catch (errorMsg) {
-        const { error: msg, detail } = parseErrorMessage((errorMsg as Error)?.message ?? "")
+        const { error: msg, detail } = parseErrorMessage(
+          (errorMsg as Error)?.message ?? ""
+        )
         setErrorDetail(detail)
         showTransactionDialog({
           status: "Failed",
@@ -389,7 +434,9 @@ export default function YTMarketDetail({ coinConfig }: Props) {
                 ) : !decimal ? (
                   "--"
                 ) : (
-                  `≈ ${formatDecimalValue(lpAmount, decimal)} LP ${coinConfig?.coinName}`
+                  `≈ ${formatDecimalValue(lpAmount, decimal)} LP ${
+                    coinConfig?.coinName
+                  }`
                 )}
               </p>
             </div>
@@ -406,13 +453,17 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             <p className="flex justify-between">
               <span>Yield APY Change</span>
               <span className="text-white">
-                {ptYtData?.poolApy ? `${Number(ptYtData.poolApy).toFixed(6)}%` : "--"}
+                {ptYtData?.poolApy
+                  ? `${Number(ptYtData.poolApy).toFixed(6)}%`
+                  : "--"}
               </span>
             </p>
             <p className="flex justify-between">
               <span>Price</span>
               <span className="text-white">
-                {ratio ? `1 ${coinName} = ${ratio} LP ${coinConfig?.coinName}` : "--"}
+                {ratio
+                  ? `1 ${coinName} = ${ratio} LP ${coinConfig?.coinName}`
+                  : "--"}
               </span>
             </p>
             <p className="flex justify-between">

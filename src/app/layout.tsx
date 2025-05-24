@@ -13,6 +13,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { AnimatePresence } from "framer-motion"
 import { SuiMainnetChain, WalletProvider } from "@nemoprotocol/wallet-kit"
 import "@nemoprotocol/wallet-kit/style.css"
+import { useRouter, usePathname } from "next/navigation"
+import { useEffect } from "react"
 
 const queryClient = new QueryClient()
 
@@ -24,6 +26,8 @@ const { networkConfig } = createNetworkConfig({
     url: getFullnodeUrl("testnet"),
   },
 })
+
+console.log("SuiMainnetChain", SuiMainnetChain)
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +44,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    if (pathname === "/") {
+      router.push("/market")
+    }
+  }, [pathname, router])
+
   return (
     <html lang="en">
       <body
@@ -54,9 +67,9 @@ export default function RootLayout({
             <WalletProvider autoConnect={true} chains={[SuiMainnetChain]}>
               <ToastProvider>
                 <AnimatePresence>
-                  <Header />
+                  <Header key="header" />
                   {children}
-                  <Footer />
+                  <Footer key="footer" />
                 </AnimatePresence>
               </ToastProvider>
             </WalletProvider>

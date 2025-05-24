@@ -6,9 +6,9 @@ import { DEFAULT_Address } from "@/lib/constants"
 import { useMutation } from "@tanstack/react-query"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { Transaction } from "@mysten/sui/transactions"
-import { useSuiClient } from "@nemoprotocol/wallet-kit"
 import type { BaseCoinInfo } from "@/types"
 import { formatDecimalValue } from "@/lib/utils"
+import { defaultClient } from "@/config/sui"
 
 type DryRunResult<T extends boolean> = T extends true
   ? [string, DebugInfo]
@@ -17,8 +17,6 @@ type DryRunResult<T extends boolean> = T extends true
 export default function useGetConversionRateDryRun<T extends boolean = false>(
   debug: T = false as T
 ) {
-  const client = useSuiClient()
-
   const address = DEFAULT_Address
 
   return useMutation({
@@ -34,7 +32,7 @@ export default function useGetConversionRateDryRun<T extends boolean = false>(
 
       const [priceVoucher, priceVoucherMoveCallInfo] = getPriceVoucher(
         tx,
-        coinConfig,
+        coinConfig
       )
 
       const moveCallInfo = {
@@ -54,11 +52,13 @@ export default function useGetConversionRateDryRun<T extends boolean = false>(
         rawResult: {},
       }
 
+      console.log("useGetConversionRateDryRun tx", tx)
+
       try {
-        const result = await client.devInspectTransactionBlock({
+        const result = await defaultClient.devInspectTransactionBlock({
           sender: address,
           transactionBlock: await tx.build({
-            client: client,
+            client: defaultClient,
             onlyTransactionKind: true,
           }),
         })
