@@ -4,10 +4,10 @@ import dayjs from "dayjs"
 import Image from "next/image"
 
 interface AmountOutputProps {
+  name: string
   value?: string
   loading?: boolean
   maturity: string
-  name: string
   coinConfig?: {
     coinLogo?: string
     coinName?: string
@@ -15,10 +15,10 @@ interface AmountOutputProps {
 }
 
 export const AmountOutput = ({
+  name,
   value,
   loading = false,
   maturity,
-  name,
   coinConfig,
 }: AmountOutputProps) => {
   return (
@@ -29,15 +29,13 @@ export const AmountOutput = ({
         <span className="mt-2 text-2xl sm:text-3xl font-bold text-white flex items-center gap-x-2">
           {loading ? (
             <Skeleton className="h-7 sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
-          ) : value ? (
-            value
           ) : (
-            "--"
+            value ?? "--"
           )}
         </span>
       </div>
 
-      {/* 右侧：代币名称、图标和剩余天数 */}
+      {/* 右侧：LP xSUI、图标和剩余天数 */}
       <div className="flex flex-col items-end justify-center gap-y-1">
         <div className="flex items-center gap-x-2">
           <span className="text-xl font-[650] text-white">{name}</span>
@@ -47,6 +45,7 @@ export const AmountOutput = ({
               alt={coinConfig.coinName || ""}
               width={20}
               height={20}
+              className="rounded-full"
             />
           )}
         </div>
