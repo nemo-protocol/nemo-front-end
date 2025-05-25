@@ -494,6 +494,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             maturity={maturity}
             loading={isCalculating}
             coinConfig={coinConfig}
+            name={`LP ${coinConfig.coinName}`}
             value={
               !addValue || !decimal
                 ? "--"
