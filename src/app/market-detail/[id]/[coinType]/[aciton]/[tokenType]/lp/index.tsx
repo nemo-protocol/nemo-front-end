@@ -8,15 +8,9 @@ import { CoinConfig } from "@/queries/types/market"
 import Tabs from "../components/Tabs"
 import AmountInput from "../components/AmountInput"
 import { ChevronsDown } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
 import ActionButton from "../components/ActionButton"
 import { useWallet } from "@nemoprotocol/wallet-kit"
-import {
-  debounce,
-  formatDecimalValue,
-  isValidAmount,
-  formatTimeDiff,
-} from "@/lib/utils"
+import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 import useMarketStateData from "@/hooks/useMarketStateData"
 import { useCalculateLpAmount } from "@/hooks/dryRun/lp/useCalculateLpDryRun"
 import { useAddLiquiditySingleSy } from "@/hooks/actions/useAddLiquiditySingleSy"
@@ -46,8 +40,8 @@ import {
   SelectContent,
 } from "@/components/ui/select"
 import SlippageSetting from "../components/SlippageSetting"
-import dayjs from "dayjs"
 import { CoinData } from "@/types"
+import { AmountOutput } from "../components/AmountOutput"
 
 interface Props {
   coinConfig: CoinConfig
@@ -491,56 +485,21 @@ export default function YTMarketDetail({ coinConfig }: Props) {
           />
 
           {/* swap icon */}
-          <div className="self-center bg-[#192130] rounded-full p-3">
+          <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
             <ChevronsDown className="w-5 h-5" />
           </div>
 
           {/* 输出框 */}
-          <div className="bg-[#FCFCFC]/[0.03] rounded-2xl shadow-lg px-6 py-6 w-full flex items-center justify-between min-h-[80px]">
-            {/* 左侧：LP POSITION 和数值 */}
-            <div className="flex flex-col justify-center">
-              <span className="text-xs text-[#FCFCFC]/40 font-medium">
-                Receive
-              </span>
-              <span className="mt-2 text-2xl sm:text-3xl font-bold text-white flex items-center gap-x-2">
-                {!addValue ? (
-                  "--"
-                ) : isCalculating ? (
-                  <Skeleton className="h-7 sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
-                ) : !decimal ? (
-                  "--"
-                ) : (
-                  <>{formatDecimalValue(lpAmount, decimal)}</>
-                )}
-              </span>
-            </div>
-
-            {/* 右侧：LP xSUI、图标和剩余天数 */}
-            <div className="flex flex-col items-end justify-center gap-y-1">
-              <div className="flex items-center gap-x-2">
-                <span className="text-xl font-[650] text-white">LP xSUI</span>
-                {coinConfig?.coinLogo && (
-                  <img
-                    src={coinConfig.coinLogo}
-                    alt={coinConfig.coinName}
-                    className="size-5 rounded-full"
-                  />
-                )}
-              </div>
-              <span className="text-xs text-[#FCFCFC]/40 mt-1.5 flex items-center gap-x-1">
-                <span>
-                  {`${formatTimeDiff(parseInt(maturity))} LEFT・ ${dayjs(
-                    parseInt(maturity)
-                  ).format("DD MMM YYYY")}`}
-                </span>
-                <img
-                  src="/assets/images/date.svg"
-                  alt="date"
-                  className="size-3"
-                />
-              </span>
-            </div>
-          </div>
+          <AmountOutput
+            maturity={maturity}
+            loading={isCalculating}
+            coinConfig={coinConfig}
+            value={
+              !addValue || !decimal
+                ? "--"
+                : formatDecimalValue(lpAmount, decimal)
+            }
+          />
 
           <div className="divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
             <p className="flex justify-between text-sm pb-2">

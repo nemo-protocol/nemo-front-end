@@ -60,7 +60,7 @@ export default function AmountInput({
     <div className="w-full">
       <div
         className={cn(
-          "rounded-lg border border-[#2D2D48] px-2 sm:px-3 py-3 sm:py-4 bg-[rgba(252,252,252,0.03)]",
+          "rounded-lg px-2 sm:px-3 py-3 sm:py-4 bg-[rgba(252,252,252,0.03)]",
           className,
         )}
       >
