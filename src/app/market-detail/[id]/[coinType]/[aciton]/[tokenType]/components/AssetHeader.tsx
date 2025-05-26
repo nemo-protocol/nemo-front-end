@@ -33,7 +33,7 @@ export default function AssetHeader({ coinConfig }: Props) {
       />
       <h1 className="fallback #FCFCFC 
         text-[color:var(--typo-primary,#FCFCFC)]
-        [text-shadow:0_0_32px_rgba(239,244,252,0.56)] font-season text-[32px]">{coinConfig.coinName}ss</h1>
+        font-normal font-serif text-[32px]">{coinConfig.coinName}</h1>
 
       <div className="relative" ref={popRef}>
         <button
