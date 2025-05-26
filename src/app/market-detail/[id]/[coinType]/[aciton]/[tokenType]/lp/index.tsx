@@ -47,7 +47,7 @@ interface Props {
   coinConfig: CoinConfig
 }
 
-export default function YTMarketDetail({ coinConfig }: Props) {
+export default function LPMarketDetail({ coinConfig }: Props) {
   const [warning, setWarning] = useState("")
   const [error, setError] = useState<string>()
   const [errorDetail, setErrorDetail] = useState<string>()

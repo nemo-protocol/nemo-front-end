@@ -1,44 +1,62 @@
 "use client"
 
-import AssetHeader from '../components/AssetHeader'
-import StatCard from '../components/StatCard'
-import YieldChart from '../components/YieldChart'
-import { CoinConfig } from '@/queries/types/market'
-import ActionButton from '../components/ActionButton'
-import SlippageSetting from '../components/SlippageSetting'
-import Tabs from '../components/Tabs'
-import AmountInput from '../components/AmountInput'
-import { AmountOutput } from '../components/AmountOutput'
-import { ChevronsDown } from 'lucide-react'
+import dayjs from "dayjs"
+import Decimal from "decimal.js"
+import { network } from "@/config"
 import { useMemo, useState, useEffect, useCallback } from "react"
-import { useParams } from "react-router-dom"
+import useCoinData from "@/hooks/query/useCoinData"
+import AmountInput from "../components/AmountInput"
+import ActionButton from "../components/ActionButton"
 import { useWallet } from "@nemoprotocol/wallet-kit"
-import { parseErrorMessage } from "@/lib/errorMapping"
+import { Transaction } from "@mysten/sui/transactions"
+import { parseErrorMessage, parseGasErrorMessage } from "@/lib/errorMapping"
+import usePyPositionData from "@/hooks/usePyPositionData"
+import {  ChevronsDown } from "lucide-react"
 import { formatDecimalValue, isValidAmount, debounce } from "@/lib/utils"
+import { showTransactionDialog } from "@/lib/dialog"
 import useInputLoadingState from "@/hooks/useInputLoadingState"
-import { useRatioLoadingState } from "@/hooks/useRatioLoadingState"
 import useQueryPtOutBySyInWithVoucher from "@/hooks/dryRun/pt/useQueryPtOutBySyIn"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 import useCustomSignAndExecuteTransaction from "@/hooks/useCustomSignAndExecuteTransaction"
+import Tabs from "../components/Tabs"
+import {
+  initPyPosition,
+  splitCoinHelper,
+  depositSyCoin,
+  swapExactSyForPt,
+} from "@/lib/txHelper"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useMarketStateData from "@/hooks/useMarketStateData"
 import useInvestRatio from "@/hooks/actions/useInvestRatio"
+import { CoinConfig } from "@/queries/types/market"
 import useGetApproxPtOutDryRun from "@/hooks/dryRun/useGetApproxPtOutDryRun"
 import useSwapExactSyForPtDryRun from "@/hooks/dryRun/useSwapExactSyForPtDryRun"
 import useGetConversionRateDryRun from "@/hooks/dryRun/useGetConversionRateDryRun"
 import useQueryPtRatio from "@/hooks/useQueryPtRatio"
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
-import dayjs from "dayjs"
-import Decimal from "decimal.js"
-import useCoinData from "@/hooks/query/useCoinData"
+import { getPriceVoucher } from "@/lib/txHelper/price"
+import { mintSCoin } from "@/lib/txHelper/coin"
+import { redeemPt } from "@/lib/txHelper/pt"
+import AssetHeader from "../components/AssetHeader"
+import StatCard from "../components/StatCard"
+import YieldChart from "../components/YieldChart"
+import { AmountOutput } from "../components/AmountOutput"
+import SlippageSetting from "../components/SlippageSetting"
 
 interface Props {
   coinConfig: CoinConfig
 }
 
-export default function YTMarketDetail({ coinConfig }: Props) {
+export default function PTMarketDetail({ coinConfig }: Props) {
   const [txId, setTxId] = useState("")
   const [warning, setWarning] = useState("")
-  const { coinType, maturity } = useParams()
   const [error, setError] = useState<string>()
   const [swapValue, setSwapValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
@@ -54,29 +72,38 @@ export default function YTMarketDetail({ coinConfig }: Props) {
   const [syValue, setSyValue] = useState("")
   const [minValue, setMinValue] = useState(0)
 
-  const { mutateAsync: signAndExecuteTransaction } = useCustomSignAndExecuteTransaction()
+  const coinType = coinConfig.coinType
+
   const { address } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
 
-  const { data: marketStateData } = useMarketStateData(coinConfig?.marketStateId)
+  const { data: marketStateData } = useMarketStateData(
+    coinConfig?.marketStateId
+  )
 
   const { isLoading } = useInputLoadingState(swapValue, false)
-  const { isLoading: isRatioLoading } = useRatioLoadingState(false || isCalcPtLoading || isInitRatioLoading)
 
   const { mutateAsync: queryPtOut } = useQueryPtOutBySyInWithVoucher({
     outerCoinConfig: coinConfig,
   })
-  const { mutateAsync: swapExactSyForPtDryRun } = useSwapExactSyForPtDryRun(coinConfig)
-  const { data: ptYtData, refresh: refreshPtYt } = useCalculatePtYt(coinConfig, marketStateData)
+  const { mutateAsync: swapExactSyForPtDryRun } =
+    useSwapExactSyForPtDryRun(coinConfig)
+  const { data: ptYtData, refresh: refreshPtYt } = useCalculatePtYt(
+    coinConfig,
+    marketStateData
+  )
   const { mutateAsync: calculateRatio } = useInvestRatio(coinConfig)
   const { mutateAsync: getApproxPtOut } = useGetApproxPtOutDryRun(coinConfig)
   const { mutateAsync: getConversionRate } = useGetConversionRateDryRun()
   const { data: initPtRatio } = useQueryPtRatio(coinConfig, "1000")
 
-  const { data: coinData } = useCoinData(
+  const { data: coinData, refetch: refetchCoinData } = useCoinData(
     address,
-    tokenType === 0 ? coinConfig?.underlyingCoinType : coinType
+    tokenType === 0 ? coinConfig?.underlyingCoinType : coinConfig.coinType
   )
+
+  const { mutateAsync: signAndExecuteTransaction } =
+    useCustomSignAndExecuteTransaction()
 
   const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
 
@@ -100,7 +127,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
       const minValue = NEED_MIN_VALUE_LIST.find(
         (item) =>
           item.provider === coinConfig.provider ||
-          item.coinType === coinConfig.coinType,
+          item.coinType === coinConfig.coinType
       )?.minValue
       if (minValue) {
         setMinValue(minValue)
@@ -112,18 +139,30 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType,
+            (item) => item.coinType === coinConfig?.coinType
           )?.vaultId
         : "",
-    [coinConfig],
+    [coinConfig]
   )
+
+  const { data: pyPositionData, refetch: refetchPyPosition } =
+    usePyPositionData(
+      address,
+      coinConfig?.pyStateId,
+      coinConfig?.maturity,
+      coinConfig?.pyPositionTypeList
+    )
+
+  const refreshData = useCallback(async () => {
+    await Promise.all([refetchPyPosition(), refetchCoinData()])
+  }, [refetchPyPosition, refetchCoinData])
 
   const debouncedGetPtOut = useCallback(
     (value: string, decimal: number, config?: CoinConfig) => {
       const getPtOut = debounce(async () => {
         if (tokenType === 0 && value && new Decimal(value).lt(minValue)) {
           setError(
-            `Please enter at least ${minValue} ${coinConfig?.underlyingCoinName}`,
+            `Please enter at least ${minValue} ${coinConfig?.underlyingCoinName}`
           )
           return
         }
@@ -133,7 +172,8 @@ export default function YTMarketDetail({ coinConfig }: Props) {
           decimal &&
           config &&
           coinType &&
-          coinConfig
+          coinConfig &&
+          coinData?.length
         ) {
           setIsCalcPtLoading(true)
           try {
@@ -172,7 +212,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             try {
               const newPtValue = await swapExactSyForPtDryRun({
                 vaultId,
-                coinData: [],
+                coinData,
                 slippage,
                 coinType,
                 minPtOut,
@@ -185,18 +225,21 @@ export default function YTMarketDetail({ coinConfig }: Props) {
               setPtRatio(ptRatio)
               setPtValue(newPtValue)
             } catch (dryRunError) {
+              console.log("dryRunError", dryRunError)
               const { error } = parseErrorMessage(
-                (dryRunError as Error).message ?? dryRunError,
+                (dryRunError as Error).message ?? dryRunError
               )
+              console.log("error", error)
               setPtRatio(new Decimal(ptValue).div(value).toFixed(4))
               setPtValue(ptValue)
               setError(error)
             }
           } catch (errorMsg) {
             const { error, detail } = parseErrorMessage(
-              (errorMsg as Error)?.message ?? errorMsg,
+              (errorMsg as Error)?.message ?? errorMsg
             )
-            setError(error)
+            console.log("errorMsg error", errorMsg, error)
+            // setError(error)
             setErrorDetail(detail)
             setPtValue(undefined)
             setPtFeeValue(undefined)
@@ -223,7 +266,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
       getApproxPtOut,
       getConversionRate,
       swapExactSyForPtDryRun,
-    ],
+    ]
   )
 
   useEffect(() => {
@@ -255,11 +298,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
   }, [marketStateData])
 
   const btnDisabled = useMemo(() => {
-    return (
-      !hasLiquidity ||
-      !isValidAmount(swapValue) ||
-      !!error
-    )
+    return !hasLiquidity || !isValidAmount(swapValue) || !!error
   }, [swapValue, hasLiquidity, error])
 
   const btnText = useMemo(() => {
@@ -299,6 +338,141 @@ export default function YTMarketDetail({ coinConfig }: Props) {
     ptYtData?.ptPrice,
   ])
 
+  async function swap() {
+    if (
+      address &&
+      coinType &&
+      swapValue &&
+      coinConfig &&
+      coinData?.length &&
+      !insufficientBalance
+    ) {
+      try {
+        setIsSwapping(true)
+        const tx = new Transaction()
+        const rate = await getConversionRate(coinConfig)
+        setConversionRate(rate)
+        const swapAmount = new Decimal(swapValue).mul(10 ** decimal).toFixed(0)
+        const syAmount = new Decimal(swapAmount)
+          .div(tokenType === 0 ? rate : 1)
+          .toFixed(0)
+
+        let pyPosition
+        let created = false
+        if (!pyPositionData?.length) {
+          created = true
+          pyPosition = initPyPosition(tx, coinConfig)
+        } else {
+          pyPosition = tx.object(pyPositionData[0].id)
+        }
+
+        const { ptAmount, syAmount: newSyAmount } = await queryPtOut({
+          syAmount,
+        })
+
+        const minPtOut = new Decimal(ptAmount)
+          .mul(1 - new Decimal(slippage).div(100).toNumber())
+          .toFixed(0)
+
+        const approxPtOut = await getApproxPtOut({
+          netSyIn: newSyAmount,
+          minPtOut,
+        })
+
+        const [priceVoucher] = getPriceVoucher(tx, coinConfig)
+
+        const actualSwapAmount = new Decimal(newSyAmount)
+          .mul(tokenType === 0 ? rate : 1)
+          .toFixed(0)
+
+        const [splitCoin] =
+          tokenType === 0
+            ? [
+                await mintSCoin({
+                  tx,
+                  vaultId,
+                  slippage,
+                  address,
+                  coinData,
+                  coinConfig,
+                  amount: actualSwapAmount,
+                }),
+              ]
+            : splitCoinHelper(tx, coinData, [actualSwapAmount], coinType)
+
+        const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinType)
+
+        swapExactSyForPt(
+          tx,
+          coinConfig,
+          syCoin,
+          priceVoucher,
+          pyPosition,
+          minPtOut,
+          approxPtOut
+        )
+
+        if (coinConfig?.ptTokenType) {
+          const ptCoin = redeemPt({
+            tx,
+            coinConfig,
+            pyPosition,
+          })
+          tx.transferObjects([ptCoin], address)
+        }
+
+        if (created) {
+          tx.transferObjects([pyPosition], address)
+        }
+
+        const res = await signAndExecuteTransaction({
+          transaction: tx,
+        })
+
+        setTxId(res.digest)
+        showTransactionDialog({
+          status: "Success",
+          network,
+          txId: res.digest,
+          onClose: () => {
+            setTxId("")
+          },
+        })
+        setSwapValue("")
+
+        await refreshData()
+        await refreshPtYt()
+      } catch (errorMsg) {
+        let msg = (errorMsg as Error)?.message ?? errorMsg
+        const gasMsg = parseGasErrorMessage(msg)
+        if (gasMsg) {
+          msg = gasMsg
+        } else if (
+          msg.includes(
+            "Transaction failed with the following error. Dry run failed, could not automatically determine a budget: InsufficientGas in command 5"
+          )
+        ) {
+          msg = "Insufficient PT in the pool."
+        } else {
+          const { error } = parseErrorMessage(msg)
+          msg = error
+        }
+
+        showTransactionDialog({
+          status: "Failed",
+          network,
+          txId,
+          message: msg,
+          onClose: () => {
+            setTxId("")
+          },
+        })
+      } finally {
+        setIsSwapping(false)
+      }
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* token 标题 */}
@@ -310,7 +484,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* 概览指标 */}
           <StatCard coinConfig={coinConfig} />
-          
+
           <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
             {/* Chart */}
             <YieldChart coinConfig={coinConfig} />
@@ -338,14 +512,51 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             decimal={decimal}
             warning={warning}
             amount={swapValue}
-            coinName={tokenType === 0 ? coinConfig?.underlyingCoinName : coinConfig?.coinName}
-            coinLogo={tokenType === 0 ? coinConfig?.underlyingCoinLogo : coinConfig?.coinLogo}
+            coinName={
+              tokenType === 0
+                ? coinConfig?.underlyingCoinName
+                : coinConfig?.coinName
+            }
+            coinLogo={
+              tokenType === 0
+                ? coinConfig?.underlyingCoinLogo
+                : coinConfig?.coinLogo
+            }
             isLoading={isLoading}
             setWarning={setWarning}
             coinBalance={coinBalance}
             isConnected={isConnected}
             errorDetail={errorDetail}
             onChange={(value) => setSwapValue(value)}
+            coinNameComponent={
+              <Select
+                value={tokenType.toString()}
+                onValueChange={(value) => {
+                  setSwapValue("")
+                  setTokenType(Number(value))
+                }}
+              >
+                <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
+                  <SelectValue placeholder="Select token type" />
+                </SelectTrigger>
+                <SelectContent className="border-none outline-none bg-[#0E0F16]">
+                  <SelectGroup>
+                    <SelectItem
+                      value={"0"}
+                      className="cursor-pointer text-white"
+                    >
+                      {coinConfig?.underlyingCoinName}
+                    </SelectItem>
+                    <SelectItem
+                      value={"1"}
+                      className="cursor-pointer text-white"
+                    >
+                      {coinConfig?.coinName}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            }
           />
 
           {/* 切换按钮 */}
@@ -355,10 +566,13 @@ export default function YTMarketDetail({ coinConfig }: Props) {
 
           {/* RECEIVE 输出区 用AmountOutput组件 */}
           <AmountOutput
-            maturity={coinConfig?.maturity}
             loading={isCalcPtLoading}
-            coinConfig={{ coinLogo: coinConfig?.coinLogo, coinName: `PT ${coinConfig?.coinName}` }}
-            name={`PT ${coinConfig?.coinName}`}
+            maturity={coinConfig.maturity}
+            coinConfig={{
+              coinLogo: coinConfig.coinLogo,
+              coinName: `PT ${coinConfig.coinName}`,
+            }}
+            name={`PT ${coinConfig.coinName}`}
             value={ptValue}
           />
 
@@ -367,7 +581,9 @@ export default function YTMarketDetail({ coinConfig }: Props) {
             <div className="flex justify-between py-1">
               <span>Fixed APY Change</span>
               <span className="text-white">
-                {ptYtData?.ptApy ? `${new Decimal(ptYtData.ptApy).toFixed(6)} %` : "--"}
+                {ptYtData?.ptApy
+                  ? `${new Decimal(ptYtData.ptApy).toFixed(6)} %`
+                  : "--"}
               </span>
             </div>
             <div className="flex justify-between py-1">
@@ -376,45 +592,57 @@ export default function YTMarketDetail({ coinConfig }: Props) {
                 {isValidAmount(ptValue) && ptValue && decimal && conversionRate
                   ? `+${formatDecimalValue(
                       new Decimal(ptValue).minus(
-                        new Decimal(syValue).mul(conversionRate),
+                        new Decimal(syValue).mul(conversionRate)
                       ),
-                      decimal,
+                      decimal
                     )} ${coinConfig?.underlyingCoinName}`
                   : "--"}
               </span>
             </div>
             <div className="flex justify-between py-1">
-              <span>After {dayjs(parseInt(coinConfig?.maturity || Date.now().toString())).diff(dayjs(), "day")} days</span>
+              <span>
+                After{" "}
+                {dayjs(
+                  parseInt(coinConfig?.maturity || Date.now().toString())
+                ).diff(dayjs(), "day")}{" "}
+                days
+              </span>
               <span className="text-white">
-                {!swapValue ? (
-                  "--"
-                ) : isCalcPtLoading ? (
-                  "--"
-                ) : decimal && conversionRate && coinConfig?.underlyingPrice ? (
-                  `≈ $${
-                    ptValue && decimal && ptValue && conversionRate
-                      ? formatDecimalValue(
-                          new Decimal(ptValue)
-                            .minus(new Decimal(syValue).mul(conversionRate))
-                            .mul(coinConfig.underlyingPrice),
-                          decimal,
-                        )
-                      : "--"
-                  }`
-                ) : (
-                  "--"
-                )}
+                {!swapValue
+                  ? "--"
+                  : isCalcPtLoading
+                  ? "--"
+                  : decimal && conversionRate && coinConfig?.underlyingPrice
+                  ? `≈ $${
+                      ptValue && decimal && ptValue && conversionRate
+                        ? formatDecimalValue(
+                            new Decimal(ptValue)
+                              .minus(new Decimal(syValue).mul(conversionRate))
+                              .mul(coinConfig.underlyingPrice),
+                            decimal
+                          )
+                        : "--"
+                    }`
+                  : "--"}
               </span>
             </div>
             <div className="flex justify-between py-1">
               <span>Price</span>
               <span className="text-white">
-                {ptRatio ? `1 ${coinConfig?.coinName} = ${ptRatio} PT ${coinConfig?.coinName}` : "--"}
+                {ptRatio
+                  ? `1 ${coinConfig?.coinName} = ${ptRatio} PT ${coinConfig?.coinName}`
+                  : "--"}
               </span>
             </div>
             <div className="flex justify-between py-1">
               <span>Trading Fees</span>
-              <span className="text-white">{ptFeeValue || "--"}</span>
+              <span className="text-white">
+                {ptFeeValue
+                  ? `${formatDecimalValue(ptFeeValue, 2)} ${
+                      coinConfig?.coinName
+                    }`
+                  : "--"}
+              </span>
             </div>
             <div className="flex justify-between py-1">
               <span>Slippage</span>
@@ -424,7 +652,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
 
           {/* 蓝色大按钮 */}
           <ActionButton
-            onClick={() => {}}
+            onClick={swap}
             btnText={btnText}
             disabled={btnDisabled}
             loading={isSwapping}
@@ -433,4 +661,4 @@ export default function YTMarketDetail({ coinConfig }: Props) {
       </div>
     </div>
   )
-} 
+}
