@@ -3,8 +3,10 @@
 import { useState } from 'react';
 
 import TradeTabs from './TradeTabs';
-
-export default function TradeYTCard() {
+type Props = {
+  onOpenCalculator: () => void;
+};
+export default function TradeYTCard({ onOpenCalculator }: Props) {
   const [tradeSize, setTradeSize] = useState(234);
   const [tabs, setTabs] = useState<'yt' | 'pt' | 'mint'>('yt');
 
@@ -85,6 +87,7 @@ export default function TradeYTCard() {
         </button>
         <button
           className="flex-1 bg-[#1b2738] hover:bg-[#243448] text-white py-3 rounded-full flex items-center justify-center gap-2"
+          onClick={onOpenCalculator}
         >
           🧮 Calculate
         </button>

@@ -5,6 +5,7 @@ import { useCoinConfig } from "@/queries"
 import { ArrowLeft } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Action, CoinConfig, TokenType } from "@/queries/types/market"
+import Calculator from "./components/Calculator"
 
 export default function MarketDetailPage() {
   const params = useParams()

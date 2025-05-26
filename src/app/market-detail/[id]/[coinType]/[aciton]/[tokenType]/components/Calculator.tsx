@@ -1,171 +1,144 @@
-'use client';
-
 import { useMemo, useState } from 'react';
+import { X } from 'lucide-react';
+import Image from 'next/image';
+import Slider from '@/components/Slider';
 
 type Props = {
-  /** 市场的平均 APY，用来与目标 APY 做比较 */
-  averageFutureAPY?: number; // 默认 20%
+  averageFutureAPY?: number;
+  open: boolean;
+  onClose: () => void;
+  inputYT: number;
+  underlyingPrice: number;
+  maturity: number;
 };
 
-export default function Calculator({ averageFutureAPY = 20 }: Props) {
-  /* =============== 输入状态 =============== */
-  const [tradeSize, setTradeSize] = useState<number>(234); // 假设 234 美元
-  const [token] = useState('xSUI');                       // 只有一个币可选
-  const [targetAPY, setTargetAPY] = useState<number>(20); // 目标 APY (%)
+export default function Calculator({
+  open,
+  averageFutureAPY = 20,
+  onClose,
+  inputYT,
+  underlyingPrice,
+  maturity
+}: Props) {
+  const [tradeSize, setTradeSize] = useState<number>(234);
+  const [targetAPY, setTargetAPY] = useState<number>(20);
+  const [calculatedResults, setCalculatedResults] = useState<any>(null); // State to hold calculation results
+  const [showResults, setShowResults] = useState(false); // State to manage result visibility
 
-  /* =============== 计算逻辑 =============== */
-  const result = useMemo(() => {
-    // 假设买 YT 的收益 = (目标 APY – 市场平均 APY)
-    const netProfitYT         = tradeSize * (targetAPY - averageFutureAPY) / 100;
-    const netProfitUnderlying = tradeSize * averageFutureAPY / 100;
+  if (!open) return null;
 
-    return {
+  // Function to handle calculations
+  const handleCalculate = () => {
+    const netProfitYT = (tradeSize * underlyingPrice * targetAPY) / (36500) - (tradeSize * underlyingPrice * averageFutureAPY) / 365;
+    const netProfitUnderlying = (tradeSize * underlyingPrice * averageFutureAPY) / 365;
+
+    const effectiveApyYT = ((netProfitYT / (tradeSize * underlyingPrice)) + 1) ** (365 / maturity) * 100 - 100;
+    const effectiveApyUA = ((netProfitUnderlying / (tradeSize * underlyingPrice)) + 1) ** (365 / maturity) * 100 - 100;
+
+    setCalculatedResults({
       netProfitYT,
       netProfitUnderlying,
-      effectiveApyYT: (netProfitYT         / tradeSize) * 100,
-      effectiveApyUA: (netProfitUnderlying / tradeSize) * 100,
-    };
-  }, [tradeSize, targetAPY, averageFutureAPY]);
+      effectiveApyYT,
+      effectiveApyUA,
+    });
+    setShowResults(true); // Show results after calculating
+  };
 
-  /* =============== UI =============== */
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 text-slate-100">
-      {/* ------------------- 标题 ------------------- */}
-      <h2 className="text-3xl md:text-4xl font-light mb-8 flex items-center gap-1">
-        Yield calculator
-        <span className="text-[10px] border rounded-full px-1.5">i</span>
-      </h2>
-
-      {/* ------------------- 输入卡片 ------------------- */}
-      <div className="bg-[#0f1624] rounded-xl p-6 grid md:grid-cols-2 gap-8">
-        {/* 左侧：交易大小 */}
-        <div>
-          <label className="text-xs tracking-widest text-slate-400 uppercase">
-            Trade
-          </label>
-
-          <div className="flex items-baseline gap-2 mt-2">
-            <input
-              type="number"
-              className="bg-transparent text-2xl outline-none w-28"
-              value={tradeSize}
-              min={0}
-              onChange={(e) => setTradeSize(+e.target.value)}
-            />
-            <span className="text-lg">{token}</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#080d16]" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-3xl max-h-[100vh] overflow-y-auto rounded-xl text-slate-100">
+        <button className="absolute top-4 right-4 text-white/60 hover:text-white" onClick={onClose}>
+          <X size={20} />
+        </button>
+        <div className="px-0 py-0">
+          <div className="flex gap-1">
+            <h1 className="fallback #FCFCFC 
+              text-[color:var(--typo-primary,#FCFCFC)]
+              [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-light">{"Yield calculator"}</h1>
           </div>
-
-          <p className="text-sm text-slate-500 mt-1">
-            ≈ $
-            {tradeSize.toLocaleString(undefined, {
-              maximumFractionDigits: 2,
-            })}
+          <div className="mt-6 grid md:grid-cols-2 gap-8 ">
+            <div className="bg-[rgba(252,252,252,0.03)] flex justify-between rounded-xl py-6 px-4 ">
+              <div>
+                <label className="text-[12px] font-[650] text-[#FCFCFC66] uppercase">Trade</label>
+                <div className="flex items-baseline gap-1.5 mt-0">
+                  <span className="text-[20px] text-[#FCFCFC]">{inputYT}</span>
+                  <span className="text-[12px] text-[#FCFCFC66]">~ ${tradeSize.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+              <div className="text-lg">xSUI</div>
+            </div>
+            <div className="bg-[rgba(252,252,252,0.03)] rounded-xl py-4 ">
+              <div className='px-4 '>
+                <label className="text-[12px] font-[650] text-[#FCFCFC66] uppercase">Target average future APY</label>
+                <div className="flex items-baseline gap-2 mt-0 mb-1">
+                  <input type="number" className="bg-transparent text-[20px] appearance-none text-[#FCFCFC] outline-none w-40" value={targetAPY} min={0} max={100} onChange={(e) => setTargetAPY(+e.target.value)} />
+                  <span className="text-xl text-[#FCFCFC66]">%</span>
+                </div>
+              </div>
+              <Slider value={targetAPY} min={0} max={100} step={0.5} onChange={setTargetAPY} />
+            </div>
+          </div>
+          <p className="mt-6 text-sm text-[#FCFCFC66] font-[550]">
+            Average Future APY&nbsp;
+            <span className="text-[#FCFCFC] ml-2.5 font-[550]">{averageFutureAPY}%</span>
           </p>
-        </div>
-
-        {/* 右侧：目标 APY */}
-        <div>
-          <label className="text-xs tracking-widest text-slate-400 uppercase">
-            Target average future APY
-          </label>
-
-          <div className="flex items-baseline gap-2 mt-2">
-            <input
-              type="number"
-              className="bg-transparent text-2xl outline-none w-20"
-              value={targetAPY}
-              min={0}
-              max={100}
-              onChange={(e) => setTargetAPY(+e.target.value)}
-            />
-            <span className="text-xl">%</span>
-          </div>
-
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={0.5}
-            value={targetAPY}
-            onChange={(e) => setTargetAPY(+e.target.value)}
-            className="w-full mt-6 accent-blue-500"
-          />
+          <button 
+            className="w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550]"
+            onClick={handleCalculate}  // Call handleCalculate on button click
+          >
+            <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
+            Calculate
+          </button>
+          {showResults && calculatedResults && (  // Display results if calculatedResults is available
+            <section className="mt-12">
+              <div className="flex gap-1">
+                <h1 className="fallback #FCFCFC 
+                  text-[color:var(--typo-primary,#FCFCFC)]
+                  [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-light">{"Calculation result"}</h1>
+              </div>
+              <div className="text-sm text-[#FCFCFC66] mt-4 font-[550]">All calculations are approximate</div>
+              <div className="grid md:grid-cols-2 gap-2 mt-6">
+                {/* Net Profit */}
+                <div className="bg-[#FCFCFC08] rounded-xl p-6">
+                  <div className="flex gap-1">
+                    <h1 className="fallback #FCFCFC 
+                      text-[color:var(--typo-primary,#FCFCFC)]
+                      [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-light">{"Net profit"}</h1>
+                  </div>
+                  <div className="flex mt-10 justify-between text-lg">
+                    <div>
+                      <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitYT.toFixed(2)}</div>
+                      <div className="text-[12px] font-[650] text-[#FCFCFC66] mt-0">Buy YT</div>
+                    </div>
+                    <div>
+                      <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitUnderlying.toFixed(2)}</div>
+                      <div className="text-[12px] font-[650] text-[#FCFCFC66] mt-0">Hold underlying asset</div>
+                    </div>
+                  </div>
+                </div>
+                {/* Effective APY */}
+                <div className="bg-[#FCFCFC08] rounded-xl p-6">
+                  <div className="flex gap-1">
+                    <h1 className="fallback #FCFCFC 
+                      text-[color:var(--typo-primary,#FCFCFC)]
+                      [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-light">{"Effective APY"}</h1>
+                  </div>
+                  <div className="flex mt-10 justify-between">
+                    <div>
+                      <div className="text-[20px] font-[550] text-[#FCFCFC]">{calculatedResults.effectiveApyYT.toFixed(2)}%</div>
+                      <div className="text-[12px] font-[650] text-[#FCFCFC66] mt-0">Buy YT</div>
+                    </div>
+                    <div>
+                      <div className="text-[20px] font-[550] text-[#FCFCFC]">{calculatedResults.effectiveApyUA.toFixed(2)}%</div>
+                      <div className="text-[12px] font-[650] text-[#FCFCFC66] mt-0">Hold underlying asset</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </div>
-
-      {/* 平均 APY 说明 */}
-      <p className="mt-4 text-sm text-slate-400">
-        Average Future APY&nbsp;
-        <span className="text-white font-semibold">
-          {averageFutureAPY}%
-        </span>
-      </p>
-
-      {/* 计算按钮（这里只是装饰，实际计算已实时完成） */}
-      <button
-        className="w-full mt-8 py-3 rounded-full bg-blue-600 hover:bg-blue-500 transition flex items-center justify-center gap-2 select-none"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="currentColor"
-          className="w-4 h-4"
-          viewBox="0 0 16 16"
-        >
-          <path d="M10.854 3.646a.5.5 0 0 0-.708 0L4.793 9H7.5a.5.5 0 0 1 0 1H3.5a.5.5 0 0 1-.5-.5V5.5a.5.5 0 0 1 1 0v2.707l5.354-5.353a.5.5 0 0 0 0-.708z" />
-        </svg>
-        Calculate
-      </button>
-
-      {/* ------------------- 结果 ------------------- */}
-      <section className="mt-14">
-        <h3 className="text-3xl font-light mb-2 flex items-center gap-1">
-          Calculation result
-          <span className="text-[10px] border rounded-full px-1.5">i</span>
-        </h3>
-        <p className="text-sm text-slate-500">
-          All calculations are approximate
-        </p>
-
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
-          {/* Net Profit */}
-          <div className="bg-[#0f1624] rounded-xl p-6">
-            <h4 className="text-2xl font-light mb-6 flex items-center gap-1">
-              Net profit
-              <span className="text-[10px] border rounded-full px-1.5">i</span>
-            </h4>
-
-            <div className="flex justify-between text-lg">
-              <div>
-                <p className="text-sm text-slate-400">Buy YT</p>
-                <p>${result.netProfitYT.toFixed(2)}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-slate-400">Hold underlying asset</p>
-                <p>${result.netProfitUnderlying.toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Effective APY */}
-          <div className="bg-[#0f1624] rounded-xl p-6">
-            <h4 className="text-2xl font-light mb-6 flex items-center gap-1">
-              Effective APY
-              <span className="text-[10px] border rounded-full px-1.5">i</span>
-            </h4>
-
-            <div className="flex justify-between text-lg">
-              <div>
-                <p className="text-sm text-slate-400">Buy YT</p>
-                <p>{result.effectiveApyYT.toFixed(2)}%</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-slate-400">Hold underlying asset</p>
-                <p>{result.effectiveApyUA.toFixed(2)}%</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
-} 
+}

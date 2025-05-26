@@ -5,16 +5,20 @@ import StatCard from '../components/StatCard'
 import YieldChart from '../components/YieldChart'
 import TradeYTCard from '../components/TradeYTCard'
 import { CoinConfig } from '@/queries/types/market'
+import Calculator from '../components/Calculator'
+import { useState } from 'react'
 
 interface Props {
   coinConfig: CoinConfig
 }
 
 export default function YTMarketDetail({ coinConfig }: Props) {
+  const [open, setOpen] = useState(false)
   return (
     <div className="flex flex-col gap-6">
       {/* token 标题 */}
       <AssetHeader coinConfig={coinConfig} />
+      <Calculator open={open} inputYT={236} maturity={111} underlyingPrice={0.1} onClose={()=>setOpen(false)}/>
 
       {/* 主布局 */}
       <div className="mt-6 grid lg:grid-cols-4 gap-6">
@@ -30,7 +34,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
         </div>
 
         {/* 右侧 Trade 面板 */}
-        <TradeYTCard />
+        <TradeYTCard onOpenCalculator={()=> setOpen(true)}/>
       </div>
     </div>
   )
