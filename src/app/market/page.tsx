@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { Info, ChevronDown, Plus, Sparkles, Gift } from "lucide-react"
+import { Info, ChevronDown, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   Table,
@@ -19,17 +19,7 @@ import type {
 } from "@/queries/types/market"
 import dayjs from "dayjs"
 import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
-
-function ProgressBar({ percent }: { percent: number }) {
-  return (
-    <div className="w-36 h-2 bg-[#23242A] rounded-full flex items-center overflow-hidden mx-2">
-      <div
-        className="h-full bg-gradient-to-r from-white to-white/60 rounded-full"
-        style={{ width: `${percent}%` }}
-      />
-    </div>
-  )
-}
+import StripedBar from "./components/StripedBar"
 
 export default function MarketPage() {
   const router = useRouter()
@@ -112,7 +102,7 @@ export default function MarketPage() {
             style={{ background: "rgba(252, 252, 252, 0.03)" }}
           >
             <button
-              className="w-full flex items-center justify-between px-8 py-6 focus:outline-none select-none group"
+              className="w-full flex items-center gap-x-16 px-8 py-6 focus:outline-none select-none group"
               onClick={() =>
                 setOpen((o) => ({ ...o, [coinType]: !o[coinType] }))
               }
@@ -131,13 +121,9 @@ export default function MarketPage() {
                   size={28}
                 />
               </div>
-              <div className="flex items-center gap-8">
-                <div className="text-lg font-bold">
-                  Total TVL{" "}
-                  <span className="text-[#FFD700]">
-                    ${totalTvl.toLocaleString()}
-                  </span>
-                </div>
+              <div className="text-lg font-[550] flex items-center gap-x-2">
+                <span className="text-[#FCFCFC]/40">Total TVL</span>
+                <span className="text-white">${totalTvl.toLocaleString()}</span>
               </div>
             </button>
             {open[coinType] && (
@@ -146,23 +132,21 @@ export default function MarketPage() {
                   <Table>
                     <TableHeader>
                       <TableRow className="text-white/60 text-xs">
-                        <TableHead className="w-[16%] pl-2 font-normal">
+                        <TableHead className="pl-2 font-normal">
                           MARKET
                         </TableHead>
-                        <TableHead className="w-[16%] font-normal">
-                          MATURITY
-                        </TableHead>
-                        <TableHead className="w-[12%] font-normal">
-                          TVL
-                        </TableHead>
-                        <TableHead className="w-[18%] font-normal text-[#5D94FF]">
-                          YEILD APY / YT PRICE
-                        </TableHead>
-                        <TableHead className="w-[18%] font-normal text-[#3FE0C5]">
-                          FIXED APY / PT PRICE
-                        </TableHead>
-                        <TableHead className="w-[14%] font-normal text-[#B09FFF]">
+                        <TableHead className="font-normal">MATURITY</TableHead>
+                        <TableHead className="font-normal">TVL</TableHead>
+                        <TableHead className="font-normal text-[#956EFF]">
                           POOL APY
+                        </TableHead>
+                        <TableHead className="font-normal text-[#5D94FF] space-x-4">
+                          <span className="text-[#1785B7]">YEILD APY</span>
+                          <span className="text-[#FCFCFC]/40">YT PRICE</span>
+                        </TableHead>
+                        <TableHead className="font-normal text-[#3FE0C5] space-x-4">
+                          <span className="text-[#17B69B]">YEILD APY</span>
+                          <span className="text-[#FCFCFC]/40">PT PRICE</span>
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -187,98 +171,26 @@ export default function MarketPage() {
                               {formatTimeDiff(parseInt(row.maturity))}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                              <ProgressBar percent={80} />
-                              <span className="text-xs text-white/40">
+                              {/* <ProgressBar percent={80} /> */}
+                              <StripedBar
+                                count={24}
+                                barWidth={8}
+                                gap={4}
+                                rounded
+                              />
+                              <span className="shrink-0 text-xs text-white/40">
                                 {dayjs(parseInt(row.maturity)).format(
                                   "DD MMM YYYY"
                                 )}
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="w-[12%]">
-                            <div className="text-white text-base font-bold">
-                              ${formatLargeNumber(row.tvl, 2)}
-                            </div>
-                            <div className="text-xs text-white/40">10%</div>
-                          </TableCell>
-                          <TableCell className="w-[18%]">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() =>
-                                  handleTokenClick(
-                                    row.id,
-                                    row.coinType,
-                                    "trade",
-                                    "yt"
-                                  )
-                                }
-                                className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#23243A] text-white font-bold cursor-pointer hover:bg-[#2a2b32] transition-colors"
-                              >
-                                {formatLargeNumber(row.ytApy, 2)}%
-                              </button>
-                              <div
-                                onClick={() =>
-                                  handleTokenClick(
-                                    row.id,
-                                    row.coinType,
-                                    "trade",
-                                    "yt"
-                                  )
-                                }
-                                className="flex items-center justify-center rounded-full px-4 py-2 font-bold text-white cursor-pointer hover:opacity-90 transition-opacity"
-                                style={{
-                                  background:
-                                    "linear-gradient(90deg, #fff 0%, #5D94FF 100%)",
-                                  minWidth: 120,
-                                }}
-                              >
-                                <span className="text-[#fff] mr-2">
-                                  ${formatLargeNumber(row.ytPrice, 2)}
-                                </span>
-                                <button className="text-[#5D94FF] font-bold ml-1">
-                                  <Plus size={16} />
-                                </button>
+                          <TableCell className="!px-6">
+                            <div className="flex items-center gap-x-2">
+                              <div className="text-white text-base font-bold">
+                                ${formatLargeNumber(row.tvl, 2)}
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="w-[18%]">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() =>
-                                  handleTokenClick(
-                                    row.id,
-                                    row.coinType,
-                                    "trade",
-                                    "pt"
-                                  )
-                                }
-                                className="flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-[#3FE0C5]/30 to-[#23243A] text-[#3FE0C5] font-bold cursor-pointer hover:from-[#3FE0C5]/40 hover:to-[#2a2b32] transition-colors"
-                              >
-                                {formatLargeNumber(row.ptApy, 2)}%
-                              </button>
-                              <div
-                                onClick={() =>
-                                  handleTokenClick(
-                                    row.id,
-                                    row.coinType,
-                                    "trade",
-                                    "pt"
-                                  )
-                                }
-                                className="flex items-center justify-center rounded-full px-4 py-2 font-bold text-white cursor-pointer hover:opacity-90 transition-opacity"
-                                style={{
-                                  background:
-                                    "linear-gradient(90deg, #fff 0%, #3FE0C5 100%)",
-                                  minWidth: 120,
-                                }}
-                              >
-                                <span className="text-[#fff] mr-2">
-                                  ${formatLargeNumber(row.ptPrice, 2)}
-                                </span>
-                                <button className="text-[#3FE0C5] font-bold ml-1">
-                                  <Plus size={16} />
-                                </button>
-                              </div>
+                              <div className="text-xs text-white/40">10%</div>
                             </div>
                           </TableCell>
                           <TableCell className="w-[14%]">
@@ -291,12 +203,55 @@ export default function MarketPage() {
                                   "lp" as TokenType
                                 )
                               }
-                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-gradient-to-r from-[#B09FFF]/30 to-[#23243A] text-[#FFF7B2] font-bold shadow-lg w-full justify-center cursor-pointer hover:from-[#B09FFF]/40 hover:to-[#2a2b32] transition-colors"
+                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer"
                             >
-                              {formatLargeNumber(row.poolApy, 2)}%{" "}
-                              <Sparkles size={16} className="inline ml-1" />{" "}
-                              <Gift size={16} className="inline ml-1" />{" "}
-                              <Plus size={18} className="ml-2" />
+                              <span className="text-white">
+                                {formatLargeNumber(row.poolApy, 2)}%
+                              </span>
+                              <img src="/assets/images/star.svg" />
+                              <img src="/assets/images/gift.svg" />
+                            </button>
+                          </TableCell>
+                          <TableCell className="w-[14%]">
+                            <button
+                              onClick={() =>
+                                handleTokenClick(
+                                  row.id,
+                                  row.coinType,
+                                  "trade",
+                                  "yt"
+                                )
+                              }
+                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#FCFCFC]/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
+                            >
+                              <span className="text-white">
+                                {formatLargeNumber(row.ytApy, 2)}%
+                              </span>
+                              <span className="text-[#FCFCFC]/40">
+                                {formatLargeNumber(row.ytPrice, 2)}
+                              </span>
+                              <Plus size={18} className="text-[#1785B7]" />
+                            </button>
+                          </TableCell>
+                          <TableCell className="w-[14%]">
+                            <button
+                              onClick={() =>
+                                handleTokenClick(
+                                  row.id,
+                                  row.coinType,
+                                  "trade",
+                                  "pt"
+                                )
+                              }
+                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#FCFCFC]/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
+                            >
+                              <span className="text-white">
+                                {formatLargeNumber(row.ptApy, 2)}%
+                              </span>
+                              <span className="text-[#FCFCFC]/40">
+                                {formatLargeNumber(row.ptPrice, 2)}
+                              </span>
+                              <Plus size={18} className="text-[#17B69B]" />
                             </button>
                           </TableCell>
                         </TableRow>

@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import AssetHeader from "../components/AssetHeader"
-import StatCard from "../components/StatCard"
 import YieldChart from "../components/YieldChart"
 import { CoinConfig } from "@/queries/types/market"
 import Tabs from "../components/Tabs"
@@ -28,10 +26,6 @@ import usePyPositionData from "@/hooks/usePyPositionData"
 import useInputLoadingState from "@/hooks/useInputLoadingState"
 import Decimal from "decimal.js"
 import {
-  initPyPosition,
-  useQueryConversionRate,
-} from "@nemoprotocol/contract-sdk"
-import {
   Select,
   SelectItem,
   SelectValue,
@@ -42,6 +36,8 @@ import {
 import SlippageSetting from "../components/SlippageSetting"
 import { CoinData } from "@/types"
 import { AmountOutput } from "../components/AmountOutput"
+import useQueryConversionRate from "@/hooks/query/useQueryConversionRate"
+import { initPyPosition } from "@/lib/txHelper/position"
 
 interface Props {
   coinConfig: CoinConfig
@@ -405,16 +401,10 @@ export default function LPMarketDetail({ coinConfig }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* token 标题 */}
-      <AssetHeader coinConfig={coinConfig} />
-
       {/* 主布局 */}
       <div className="mt-6 grid lg:grid-cols-4 gap-6">
         {/* 左侧  (span 2) */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* 概览指标 */}
-          <StatCard coinConfig={coinConfig} />
-
           <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
             {/* Chart */}
             <YieldChart coinConfig={coinConfig} />
@@ -523,13 +513,13 @@ export default function LPMarketDetail({ coinConfig }: Props) {
                 <span>Trading Fees</span>
                 <span className="text-white">{lpFeeAmount || "-"}</span>
               </p>
-              <p className="flex justify-between">
+              <div className="flex justify-between">
                 <span>Slippage</span>
                 <SlippageSetting
                   slippage={slippage}
                   setSlippage={setSlippage}
                 />
-              </p>
+              </div>
             </div>
           </div>
 

@@ -4,8 +4,8 @@ import { MarketState } from "../types"
 import { splitSyAmount } from "@/lib/utils"
 import { useMutation } from "@tanstack/react-query"
 import { CoinConfig } from "@/queries/types/market"
-import useFetchObject from "@/hooks/useFetchObject.ts"
-import { useQueryPriceVoucher } from "@/hooks/index.tsx"
+import useFetchObject from "../useFetchObject"
+import { useQueryPriceVoucher } from "../index"
 import useQueryLpOutFromMintLp from "../useQueryLpOutFromMintLp"
 
 interface PyStateResponse {

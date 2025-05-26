@@ -3,7 +3,7 @@
 import AssetHeader from '../components/AssetHeader'
 import StatCard from '../components/StatCard'
 import YieldChart from '../components/YieldChart'
-import TradeYTCard from '../components/TradeYTCard'
+// import TradeYTCard from '../components/TradeYTCard'
 import { CoinConfig } from '@/queries/types/market'
 
 interface Props {
@@ -30,7 +30,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
         </div>
 
         {/* 右侧 Trade 面板 */}
-        <TradeYTCard />
+        {/* <TradeYTCard /> */}
       </div>
     </div>
   )

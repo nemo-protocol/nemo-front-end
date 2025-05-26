@@ -45,7 +45,6 @@ export const AmountOutput = ({
               alt={coinConfig.coinName || ""}
               width={20}
               height={20}
-              className="rounded-full"
             />
           )}
         </div>

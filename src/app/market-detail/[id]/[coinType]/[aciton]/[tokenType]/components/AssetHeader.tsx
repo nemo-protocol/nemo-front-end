@@ -104,7 +104,7 @@ export default function AssetHeader({ coinConfig }: Props) {
                 <div className="mt-4 h-px w-full " />
                 <Item label="AUDIT  BY">
                   <a
-                    href={coinConfig.builtOn}
+                    href={coinConfig.builtOn?.[0]?.url}
                     target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-2 underline"
