@@ -12,8 +12,9 @@ import {
 import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CoinConfig, Granularity } from '@/queries/types/market';
-import { useApyHistory } from '@/queries';
+
 import Image from 'next/image';
+import { useApyHistory } from '@/hooks/useApyHistory';
 
 /* 时间范围 Tab 配置 -------------------------------------------------- */
 const TABS: { label: string; granularity: Granularity, seconds: number }[] = [
@@ -77,7 +78,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     }
   }, [tokenType, coinConfig]);
   useEffect(() => {
-    console.log(coinConfig, 'sixu')
+
     function handleClick(e: MouseEvent) {
       if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
         setOpen(false);

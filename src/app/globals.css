@@ -45,3 +45,18 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+@font-face {
+  font-family: 'Season Sans TRIAL';
+  src: url('/fonts/Season_Sans/SeasonSansTRIAL-Regular.ttf') format('truetype'),
+       url('/fonts/Season_Sans/SeasonSansTRIAL-Bold.ttf') format('truetype');
+  font-weight: 400; /* Regular */
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Season Sans TRIAL';
+  src: url('/fonts/Season_Sans/SeasonSansTRIAL-Bold.ttf') format('truetype');
+  font-weight: 700; /* Bold */
+  font-style: normal;
+}
+

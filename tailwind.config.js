@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Numans", "sans-serif"],
+        season: ['"Season Sans TRIAL"', 'sans-serif'], 
       },
       screens: {
         xs: "30rem",
