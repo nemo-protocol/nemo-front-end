@@ -141,7 +141,9 @@ export default function MarketPage() {
                     <TableHeader>
                       <TableRow className="text-light-gray/40 text-xs">
                         <TableHead className="font-semibold">MARKET</TableHead>
-                        <TableHead className="font-semibold">MATURITY</TableHead>
+                        <TableHead className="font-semibold">
+                          MATURITY
+                        </TableHead>
                         <TableHead className="font-semibold">TVL</TableHead>
                         <TableHead className="font-semibold text-[#956EFF]">
                           POOL APY
@@ -188,7 +190,7 @@ export default function MarketPage() {
                                 gap={4}
                                 rounded
                               />
-                              <span className="shrink-0 text-xs text-white/40">
+                              <span className="shrink-0 text-sm text-white/40 font-medium">
                                 {dayjs(parseInt(row.maturity)).format(
                                   "DD MMM YYYY"
                                 )}
@@ -203,7 +205,7 @@ export default function MarketPage() {
                               <div className="text-xs text-white/40">10%</div>
                             </div>
                           </TableCell>
-                          <TableCell className="w-[14%]">
+                          <TableCell>
                             <button
                               onClick={() =>
                                 handleTokenClick(
@@ -218,11 +220,22 @@ export default function MarketPage() {
                               <span className="text-white">
                                 {formatLargeNumber(row.poolApy, 2)}%
                               </span>
-                              <img src="/assets/images/star.svg" />
-                              <img src="/assets/images/gift.svg" />
+                              <Image
+                                src="/assets/images/star.svg"
+                                alt="star"
+                                width={16}
+                                height={16}
+                              />
+                              <Image
+                                src="/assets/images/gift.svg"
+                                alt="gift"
+                                width={16}
+                                height={16}
+                              />
+                              <Plus size={18} className="text-[#956EFF]" />
                             </button>
                           </TableCell>
-                          <TableCell className="w-[14%]">
+                          <TableCell>
                             <button
                               onClick={() =>
                                 handleTokenClick(
@@ -232,7 +245,7 @@ export default function MarketPage() {
                                   "yt"
                                 )
                               }
-                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#FCFCFC]/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
+                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
                             >
                               <span className="text-white">
                                 {formatLargeNumber(row.ytApy, 2)}%
@@ -243,7 +256,7 @@ export default function MarketPage() {
                               <Plus size={18} className="text-[#1785B7]" />
                             </button>
                           </TableCell>
-                          <TableCell className="w-[14%]">
+                          <TableCell>
                             <button
                               onClick={() =>
                                 handleTokenClick(
@@ -253,7 +266,7 @@ export default function MarketPage() {
                                   "pt"
                                 )
                               }
-                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#FCFCFC]/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
+                              className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
                             >
                               <span className="text-white">
                                 {formatLargeNumber(row.ptApy, 2)}%
