@@ -1,7 +1,16 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: var(--gradient-highligh, radial-gradient(115.81% 150.28% at 0% -1.61%, var(--white--white-20, rgba(252, 252, 252, 0.04)) 0%, var(--white--white-0, rgba(252, 252, 252, 0.00)) 100%));
+  --background: var(
+    --gradient-highligh,
+    radial-gradient(
+      115.81% 150.28% at 0% -1.61%,
+      var(--white--white-20, rgba(252, 252, 252, 0.04)) 0%,
+      var(--white--white-0, rgba(252, 252, 252, 0)) 100%
+    )
+  );
   --foreground: #171717;
 }
 @theme inline {
@@ -17,24 +26,32 @@
     --foreground: #ededed;
   }
 }
-input[type='number']::-webkit-inner-spin-button,
-input[type='number']::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
-  margin: 0;      
+  margin: 0;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "SeasonSerifTRIAL", Arial, Helvetica, sans-serif;
 }
 
 /* 若想要淡入动画，可在 global.css 添加 */
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-fade-in { animation: fade-in .15s ease-out both; }
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out both;
+}
 
 /* 隐藏 input[type=number] 的上下箭头 */
 input[type="number"]::-webkit-inner-spin-button,
@@ -45,18 +62,27 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
 @font-face {
-  font-family: 'Season Sans TRIAL';
-  src: url('/fonts/Season_Sans/SeasonSansTRIAL-Regular.ttf') format('truetype'),
-       url('/fonts/Season_Sans/SeasonSansTRIAL-Bold.ttf') format('truetype');
-  font-weight: 400; /* Regular */
+  font-family: "SeasonSerifTRIAL";
+  src: url("/assets/fonts/SeasonSerifTRIAL/SeasonSerifTRIAL-Medium.ttf")
+    format("truetype");
+  font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Season Sans TRIAL';
-  src: url('/fonts/Season_Sans/SeasonSansTRIAL-Bold.ttf') format('truetype');
-  font-weight: 700; /* Bold */
+  font-family: "SeasonSansTRIAL";
+  src: url("/assets/fonts/SeasonSansTRIAL/SeasonSansTRIAL-SemiBold.ttf")
+    format("truetype");
+  font-weight: 600;
   font-style: normal;
 }
 
+@font-face {
+  font-family: "SeasonSerifTRIAL";
+  src: url("/assets/fonts/SeasonSerifTRIAL/SeasonSerifTRIAL-Bold.ttf")
+    format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}

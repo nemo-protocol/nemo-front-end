@@ -1,13 +1,14 @@
-import animate from 'tailwindcss-animate'
-import containerQueries from '@tailwindcss/container-queries'
+import animate from "tailwindcss-animate"
+import containerQueries from "@tailwindcss/container-queries"
 
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: ["./src/**/*.{html,ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
-        season: ['"Season Sans TRIAL"', 'sans-serif'], 
+        season: ['"Season Sans TRIAL"', "sans-serif"],
+        serif: ['"SeasonSerifTRIAL"', "serif"],
       },
       screens: {
         xs: "30rem",
@@ -19,6 +20,7 @@ export default {
       colors: {
         "blue-primary": "#1954FF",
         "green-primary": "#44E0C3",
+        "light-gray": "#FCFCFC",
       },
     },
   },

@@ -66,7 +66,7 @@ export default function RootLayout({
               <ToastProvider>
                 <AnimatePresence>
                   <Header key="header" />
-                  {children}
+                  <section className="font-serif">{children}</section>
                   <Footer key="footer" />
                 </AnimatePresence>
               </ToastProvider>

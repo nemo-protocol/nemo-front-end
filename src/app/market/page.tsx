@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { Info, ChevronDown, Plus } from "lucide-react"
+import { ChevronDown, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   Table,
@@ -20,11 +20,14 @@ import type {
 import dayjs from "dayjs"
 import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
 import StripedBar from "./components/StripedBar"
+import InfoTooltip from "@/components/InfoTooltip"
+import Image from "next/image"
 
 export default function MarketPage() {
   const router = useRouter()
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const { data: coinList = [] } = useCoinInfoList()
+  const [tab, setTab] = useState<"all" | "search">("all")
 
   // 动态分组并排序
   const grouped = useMemo(() => {
@@ -59,57 +62,62 @@ export default function MarketPage() {
     <div className="bg-[#080E16] min-h-screen text-white p-8">
       <div className="flex items-center gap-8 mb-2">
         <div className="flex items-center gap-2 relative">
-          <span
-            className="text-[48px] font-serif font-semibold text-white drop-shadow-[0_0_16px_rgba(255,255,255,0.5)]"
-            style={{ letterSpacing: 0 }}
+          <InfoTooltip>
+            <button
+              className={`text-[32px] font-medium ${
+                tab === "all" ? "text-white" : "text-light-gray/40"
+              }`}
+              onClick={() => setTab("all")}
+            >
+              Markets
+            </button>
+          </InfoTooltip>
+        </div>
+        <div className="relative">
+          <button
+            className={`text-[32px] font-medium ${
+              tab === "search" ? "text-white" : "text-light-gray/40"
+            }`}
+            onClick={() => setTab("search")}
           >
-            Markets
-          </span>
-          <Info
-            size={22}
-            className="ml-2 text-white/90 bg-white/10 rounded-full p-0.5"
+            Search Markets
+          </button>
+          <Image
+            src={
+              tab === "search"
+                ? "/assets/images/search.svg"
+                : "/assets/images/search-no-selected.svg"
+            }
+            alt="search"
+            width={16}
+            height={16}
+            className="absolute top-0 -right-4"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[40px] font-serif text-white/30 font-normal">
-            Search Markets
-          </span>
-          <svg
-            width="28"
-            height="28"
-            fill="none"
-            viewBox="0 0 24 24"
-            className="text-white/30"
-          >
-            <path
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-4.35-4.35m1.35-4.65a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-        </div>
       </div>
-      <p className="text-white/60 mb-8">
-        Dive into the yield trading market and maximize your profit potential.
-      </p>
+      {tab === "all" ? (
+        <p className="text-light-gray/40 mb-8 py-2">
+          Dive into the yield trading market and maximize your profit potential.
+        </p>
+      ) : (
+        <input
+          type="text"
+          placeholder="Search"
+          className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none mb-8"
+        />
+      )}
       <div className="space-y-6">
         {grouped.map(({ coinName, coinLogo, coinType, arr, totalTvl }) => (
-          <div
-            key={coinType}
-            className="rounded-3xl"
-            style={{ background: "rgba(252, 252, 252, 0.03)" }}
-          >
+          <div key={coinType} className="rounded-3xl bg-light-gray/[0.03]">
             <button
-              className="w-full flex items-center gap-x-16 px-8 py-6 focus:outline-none select-none group"
+              className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
               onClick={() =>
                 setOpen((o) => ({ ...o, [coinType]: !o[coinType] }))
               }
               style={{ borderRadius: "24px 24px 0 0" }}
             >
-              <div className="flex items-center gap-3 text-2xl font-bold">
-                <img src={coinLogo} alt={coinName} className="w-8 h-8" />
+              <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
+                <Image width={32} height={32} src={coinLogo} alt={coinName} />
                 <span>{coinName}</span>
                 <span className="text-white/60 text-lg font-normal ml-1">
                   {arr.length}
@@ -121,7 +129,7 @@ export default function MarketPage() {
                   size={28}
                 />
               </div>
-              <div className="text-lg font-[550] flex items-center gap-x-2">
+              <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
                 <span className="text-[#FCFCFC]/40">Total TVL</span>
                 <span className="text-white">${totalTvl.toLocaleString()}</span>
               </div>
@@ -131,20 +139,18 @@ export default function MarketPage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="text-white/60 text-xs">
-                        <TableHead className="pl-2 font-normal">
-                          MARKET
-                        </TableHead>
-                        <TableHead className="font-normal">MATURITY</TableHead>
-                        <TableHead className="font-normal">TVL</TableHead>
-                        <TableHead className="font-normal text-[#956EFF]">
+                      <TableRow className="text-light-gray/40 text-xs">
+                        <TableHead className="font-semibold">MARKET</TableHead>
+                        <TableHead className="font-semibold">MATURITY</TableHead>
+                        <TableHead className="font-semibold">TVL</TableHead>
+                        <TableHead className="font-semibold text-[#956EFF]">
                           POOL APY
                         </TableHead>
-                        <TableHead className="font-normal text-[#5D94FF] space-x-4">
+                        <TableHead className="font-semibold text-[#5D94FF] space-x-2">
                           <span className="text-[#1785B7]">YEILD APY</span>
                           <span className="text-[#FCFCFC]/40">YT PRICE</span>
                         </TableHead>
-                        <TableHead className="font-normal text-[#3FE0C5] space-x-4">
+                        <TableHead className="font-semibold text-[#3FE0C5] space-x-2">
                           <span className="text-[#17B69B]">YEILD APY</span>
                           <span className="text-[#FCFCFC]/40">PT PRICE</span>
                         </TableHead>
@@ -153,9 +159,14 @@ export default function MarketPage() {
                     <TableBody>
                       {arr.map((row) => (
                         <TableRow className="align-middle" key={row.id}>
-                          <TableCell className="w-[16%] pl-2">
+                          <TableCell>
                             <div className="flex items-center gap-2">
-                              <img src={row.coinLogo} className="w-5 h-5" />
+                              <Image
+                                src={row.coinLogo}
+                                alt={row.coinName}
+                                width={20}
+                                height={20}
+                              />
                               <span className="font-semibold text-base">
                                 {row.coinName}
                               </span>
@@ -166,12 +177,11 @@ export default function MarketPage() {
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="w-[16%]">
-                            <div className="text-white text-sm">
-                              {formatTimeDiff(parseInt(row.maturity))}
-                            </div>
+                          <TableCell>
                             <div className="flex items-center gap-2 mt-1">
-                              {/* <ProgressBar percent={80} /> */}
+                              <span className="text-white text-sm">
+                                {formatTimeDiff(parseInt(row.maturity))}
+                              </span>
                               <StripedBar
                                 count={24}
                                 barWidth={8}
