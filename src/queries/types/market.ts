@@ -190,4 +190,4 @@ export interface ApyHistoryResponse {
 
 export type Action = "mint" | "trade" | "provide" | "redeem"
 
-export type TokenType = "yt" | "pt" | "lp" | "py"
+export type TokenType = "FIXED" | "YIELD" | "POOL" | "TVL"

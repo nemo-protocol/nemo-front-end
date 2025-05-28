@@ -85,9 +85,8 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
   const { granularity } = TABS[activeTab]
 
   const { data, error } = useApyHistory({
-    marketStateId:
-      "0x92eaf1588c0acb7d5150be61ef329da4f97ad18ca8ed1ce2e2853ecc81aa397d",
-    tokenType: "pt",
+    marketStateId:coinConfig.marketStateId,
+    tokenType: tokenType,
     granularity,
   })
 
