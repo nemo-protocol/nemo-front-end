@@ -107,7 +107,7 @@ export function useApyHistory({
         if (autoFetch) {
             fetchData();
         }
-    }, [fetchData, autoFetch]);
+    }, [tokenType,fetchData, autoFetch]);
 
     return {
         data,

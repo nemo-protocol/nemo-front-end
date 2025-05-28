@@ -88,7 +88,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     marketStateId:coinConfig.marketStateId,
     tokenType: tokenType,
     granularity,
-  })
+  },[tokenType])
 
   const { chartData, yDomain, yTicks, xInterval } = useMemo(() => {
     if (!data?.data?.length)
