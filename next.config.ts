@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     config.plugins.push(codeInspectorPlugin({ bundler: "webpack" }))
     return config
   },
+  images: {
+    domains: ['app.nemoprotocol.com'],
+  },
 }
 
 export default nextConfig

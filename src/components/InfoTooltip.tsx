@@ -9,15 +9,14 @@ import Image from "next/image"
 
 interface InfoTooltipProps {
   children: React.ReactNode
+  content?: React.ReactNode
   side?: "top" | "right" | "bottom" | "left"
-  className?: string
-  description?: string
 }
 
 export const InfoTooltip: React.FC<InfoTooltipProps> = ({
+  content,
   children,
   side = "top",
-  description,
 }) => {
   return (
     <div className="relative">
@@ -36,8 +35,10 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
               src="/assets/images/info.svg"
             />
           </TooltipTrigger>
-          {description && (
-            <TooltipContent side={side}>{description}</TooltipContent>
+          {content && (
+            <TooltipContent side={side} className="border-none p-0">
+              {content}
+            </TooltipContent>
           )}
         </Tooltip>
       </TooltipProvider>
