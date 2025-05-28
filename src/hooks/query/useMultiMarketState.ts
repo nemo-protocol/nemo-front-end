@@ -72,7 +72,7 @@ const calculateRewardMetrics = (
   }
 }
 
-type MarketStateMap = { [key: string]: MarketState }
+export type MarketStateMap = { [key: string]: MarketState }
 
 const useMultiMarketState = (marketStateIds?: string[]) => {
   const suiClient = useSuiClient()

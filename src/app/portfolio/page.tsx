@@ -3,83 +3,125 @@
 import { X } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+import { useMemo, useState } from 'react';
+import { X } from 'lucide-react';
+import Image from 'next/image';
+import Assets from './Assets';
+import Transactions from './Transactions';
+import { usePortfolioList } from '@/queries';
+import useAllPyPositions from '@/hooks/fetch/useAllPyPositions';
+import useAllLpPositions from '@/hooks/fetch/useAllLpPositions';
+import useMultiMarketState from "@/hooks/query/useMultiMarketState"
+
+import { isValidAmount } from '@/lib/utils';
+import { useParams } from 'next/navigation';
+import useCoinData from '@/hooks/query/useCoinData';
+import { useWallet } from '@nemoprotocol/wallet-kit';
+import useQueryClaimAllLpReward from '@/hooks/useQueryClaimAllLpReward';
+import useQueryClaimAllYtReward from '@/hooks/dryRun/useQueryClaimAllYtReward';
+
+
 export default function PortfolioPage() {
-  const router = useRouter()
 
-  const onClose = () => {
-    router.back()
-  }
+    const { data: list, isLoading } = usePortfolioList()
+    const { type } = useParams()
+    const { address } = useWallet()
 
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#080d16]"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-3xl max-h-[100vh] overflow-y-auto rounded-xl text-slate-100"
-      >
-        <button
-          className="absolute top-4 right-4 text-white/60 hover:text-white cursor-pointer"
-          onClick={onClose}
-        >
-          <X size={20} />
-        </button>
-        <div className="px-6 py-6">
-          <h1 className="text-2xl font-semibold text-[#FCFCFC]">
-            My Portfolio
-          </h1>
-          <div className="mt-4">
-            <div className="grid grid-cols-2">
-              <div className="flex flex-col items-center">
-                <h2 className="text-lg text-[#FCFCFC]">Balance</h2>
-                <p className="text-xl">${(100200.12).toFixed(2)}</p>
-                <p className="text-sm text-green-500">+ $41.58 in 24h</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <h2 className="text-lg text-[#FCFCFC]">
-                  Total Claimable Yield
-                </h2>
-                <p className="text-xl">${(400.22).toFixed(2)}</p>
-                <p className="text-sm text-green-500">+ $0 in 24h</p>
-              </div>
-            </div>
-          </div>
+    const selectType = useMemo(() => {
+        if (type && ["pt", "yt", "lp"].includes(type)) {
+            return type as "pt" | "yt" | "lp"
+        }
+        return "pt"
+    }, [type])
 
-          <h2 className="mt-6 text-xl font-semibold text-[#FCFCFC]">Assets</h2>
-          <div className="bg-[#1E1E2F] rounded-xl p-4 mt-2">
-            <p className="text-[#FCFCFC]">PT sSUI</p>
-            <p className="text-[#FCFCFC66]">Type: Principal Token</p>
-            <p className="text-[#FCFCFC66]">Maturity: 2026-02-19</p>
-            <p className="text-[#FCFCFC66]">Price: $0.38</p>
-            <p className="text-[#FCFCFC]">Amount: 45.3333</p>
-          </div>
+    const { data: pyPositionsMap = {}, isLoading: isPositionsLoading } =
+        useAllPyPositions(list)
 
-          <h2 className="mt-6 text-xl font-semibold text-[#FCFCFC]">
-            Latest Transactions
-          </h2>
-          <div className="mt-4">
-            {[
-              { date: "2025-03-09", asset: "YT sSUI", type: "Buy" },
-              { date: "2025-03-09", asset: "YT sSUI", type: "Sell" },
-              { date: "2025-03-09", asset: "LP sSUI", type: "Add" },
-            ].map((transaction, index) => (
-              <div
-                key={index}
-                className="bg-[#1E1E2F] rounded-xl p-3 mb-2 flex justify-between items-center"
-              >
-                <div>
-                  <p className="text-[#FCFCFC]">{transaction.date}</p>
-                  <p className="text-[#FCFCFC66]">
-                    {transaction.asset}: {transaction.type}
-                  </p>
+    const { data: lpPositionsMap = {}, isLoading: isLpPositionsLoading } =
+        useAllLpPositions(list)
+
+    const marketStateIds = useMemo(
+        () => list?.map((item) => item.marketStateId).filter(Boolean) || [],
+        [list],
+    )
+    const { data: marketStates = {}, isLoading: isMarketStatesLoading } =
+        useMultiMarketState(marketStateIds)
+
+    const filteredLists = useMemo(() => {
+        if (!list?.length) return { pt: [], yt: [], lp: [] }
+
+        return {
+            pt: list.filter((item) => {
+                // FIXME: get multi pt coin info
+                return (
+                    !!item.ptTokenType ||
+                    isValidAmount(pyPositionsMap[item.id]?.ptBalance)
+                )
+            }),
+            yt: list.filter((item) =>
+                isValidAmount(pyPositionsMap[item.id]?.ytBalance),
+            ),
+            lp: list.filter((item) =>
+                isValidAmount(lpPositionsMap[item.id]?.lpBalance),
+            ),
+        }
+    }, [list, pyPositionsMap, lpPositionsMap])
+    const filteredList = useMemo(() => {
+        return filteredLists[selectType] || []
+    }, [filteredLists, selectType])
+
+    // const { data: marketStates = {}, isLoading: isMarketStatesLoading } =
+    //     useMultiMarketState(marketStateIds)
+
+
+    const {
+        data: ytReward,
+        isLoading: isClaimLoading,
+        refetch: refetchYtReward,
+    } = useQueryClaimAllYtReward({
+        filteredYTLists: filteredLists.yt,
+        pyPositionsMap,
+    })
+    // if (ytReward)
+    //     for (const key in pyPositionsMap) {
+    //         if (ytReward[key]) {
+    //             pyPositionsMap[key].ytBalance = ytReward[key];
+    //         }
+    //     }
+    console.log(pyPositionsMap, 'sixu')
+    const {
+        data: lpReward,
+        refetch: refetchLpReward,
+        isLoading: isLpRewardLoading,
+    } = useQueryClaimAllLpReward({
+        filteredLPLists: filteredLists.lp,
+        lpPositionsMap,
+        marketStates,
+    })
+
+    // console.log(pyPositionsMap, filteredLists.yt, 'sixu')
+
+    return (
+        <>
+            <div className="py-4 bg-[#080d16]">
+                <h1 className="text-[32px] w-full flex justify-center font-normal font-serif font-[470] text-[#FCFCFC]">My Portfolio</h1>
+                <div className="mt-12">
+                    <div className="grid grid-cols-2">
+                        <div className="flex flex-col h-[182px] justify-center items-center">
+                            <div className="text-[12px] font-[650] text-[#FCFCFC66]">Balance</div>
+                            <div className="text-[56px] font-serif font-normal font-[470] text-[#FCFCFC]">${100200.12.toFixed(2)}</div>
+                        </div>
+                        <div className="flex flex-col h-[182px] justify-center items-center">
+                            <div className="text-[12px] font-[650] text-[#FCFCFC66]">Total Claimable Yield</div>
+                            <div className="text-[56px] font-serif font-normal font-[470] text-[#FCFCFC]">${400.22.toFixed(2)}</div>
+                        </div>
+                    </div>
                 </div>
-                <div className="text-[#FCFCFC]">Amount: xxxxx</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+                <Assets pyPositionsMap={pyPositionsMap} marketStates={marketStates} lpPositionsMap={lpPositionsMap} filteredLists={filteredLists}/>
+                <Transactions />
+
+            </div>
+
+        </>
+    );
 }

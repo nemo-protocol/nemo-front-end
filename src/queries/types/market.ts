@@ -131,6 +131,7 @@ export interface CoinConfig extends BaseCoinInfo {
 }
 
 export interface PortfolioItem extends CoinConfig {
+  ytReward: string
   underlyingProtocol: string
   yieldFactoryConfigId: string
   pyPositionTypeList: string[]
