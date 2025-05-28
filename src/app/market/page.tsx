@@ -62,7 +62,7 @@ export default function MarketPage() {
     <div className="bg-[#080E16] min-h-screen text-white p-8">
       <div className="flex items-center gap-8 mb-2">
         <div className="flex items-center gap-2 relative">
-          <InfoTooltip>
+          <InfoTooltip active={tab === "all"}>
             <button
               className={`text-[32px] font-medium ${
                 tab === "all" ? "text-white" : "text-light-gray/40"
@@ -86,7 +86,7 @@ export default function MarketPage() {
             src={
               tab === "search"
                 ? "/assets/images/search.svg"
-                : "/assets/images/search-no-selected.svg"
+                : "/assets/images/search-inactive.svg"
             }
             alt="search"
             width={16}

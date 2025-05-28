@@ -3,8 +3,7 @@
 import { X } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-import { useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { useMemo, useState } from 'react';;
 import Image from 'next/image';
 import Assets from './Assets';
 import Transactions from './Transactions';
@@ -28,7 +27,7 @@ export default function PortfolioPage() {
     const { address } = useWallet()
 
     const selectType = useMemo(() => {
-        if (type && ["pt", "yt", "lp"].includes(type)) {
+        if (type && ["pt", "yt", "lp"].includes(type as string)) {
             return type as "pt" | "yt" | "lp"
         }
         return "pt"

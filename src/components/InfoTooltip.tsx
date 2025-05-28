@@ -8,6 +8,7 @@ import {
 import Image from "next/image"
 
 interface InfoTooltipProps {
+  active?: boolean
   children: React.ReactNode
   content?: React.ReactNode
   side?: "top" | "right" | "bottom" | "left"
@@ -17,6 +18,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
   content,
   children,
   side = "top",
+  active = true,
 }) => {
   return (
     <div className="relative">
@@ -32,7 +34,11 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
               width={16}
               height={16}
               style={{ color: "#fff" }}
-              src="/assets/images/info.svg"
+              src={
+                active
+                  ? "/assets/images/info.svg"
+                  : "/assets/images/info-inactive.svg"
+              }
             />
           </TooltipTrigger>
           {content && (
