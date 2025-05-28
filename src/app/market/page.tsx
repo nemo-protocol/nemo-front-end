@@ -25,10 +25,26 @@ import Image from "next/image"
 
 export default function MarketPage() {
   const router = useRouter()
-  const [open, setOpen] = useState<Record<string, boolean>>({})
+  const [open, setOpen] = useState<Record<string, boolean>>(() => {
+    // 从 localStorage 中获取保存的展开状态
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem('marketExpandedState')
+      return savedState ? JSON.parse(savedState) : {}
+    }
+    return {}
+  })
   const { data: coinList = [] } = useCoinInfoList()
   const [tab, setTab] = useState<"all" | "search">("all")
   const [searchQuery, setSearchQuery] = useState("")
+
+  // 更新展开状态并保存到 localStorage
+  const updateOpenState = (coinType: string, isOpen: boolean) => {
+    const newState = { ...open, [coinType]: isOpen }
+    setOpen(newState)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('marketExpandedState', JSON.stringify(newState))
+    }
+  }
 
   // 动态分组并排序
   const grouped = useMemo(() => {
@@ -124,7 +140,7 @@ export default function MarketPage() {
             <button
               className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
               onClick={() =>
-                setOpen((o) => ({ ...o, [coinType]: !o[coinType] }))
+                updateOpenState(coinType, !open[coinType])
               }
               style={{ borderRadius: "24px 24px 0 0" }}
             >
