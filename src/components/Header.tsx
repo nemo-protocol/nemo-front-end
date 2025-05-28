@@ -52,7 +52,7 @@ export default function Header({ className }: { className?: string }) {
     <header className={cn("h-24.5 shrink-0", className)}>
       <div className=" w-full h-full mx-auto flex bg-[#080E16] justify-between text-xs"
 
-        style={{ padding: '0 30px' }}>
+        style={{ padding: '32px 30px' }}>
         <div className="flex items-center gap-x-14"><Link href="/" className="flex gap-x-2 items-center">
           <img src="/logo-nemo.svg" alt="logo" className="w-26 h-auto" />
 
@@ -138,7 +138,7 @@ export default function Header({ className }: { className?: string }) {
             >
               <button
                 disabled={!!currentAccount}
-                
+
                 className="bg-gradient-to-r from-white/10 to-white/5 text-white flex gap-x-2 items-center justify-center cursor-pointer text-white outline-none py-2 px-2.5 rounded-2xl"
               >
                 <img src={"/header/wallet.svg"} alt="icon" className="size-4 ml-1" /> <span className="hidden md:inline-block">  Connect Wallet</span>

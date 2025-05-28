@@ -140,7 +140,7 @@ export default function Assets({
                                     </div>
                                 </td>
                                 <td className="py-3 text-[14px] text-[#FCFCFC]">{item.ptPrice}</td>
-                                <td className="py-3 text-[14px] text-[#FCFCFC]">{pyPositionsMap?.[item.id].ptBalance}</td>
+                                <td className="py-3 text-[14px] text-[#FCFCFC]">{pyPositionsMap?.[item.id]?.ptBalance|| 0}</td>
                                 <td className="py-3 text-[14px] text-[#FCFCFC]">{"-"}</td>
                                 <td className="py-3 text-[14px] text-[#FCFCFC]">{"-"}</td>
                                 <td className="py-3 text-[14px] text-[#FCFCFC]">{"Trade"}</td>
