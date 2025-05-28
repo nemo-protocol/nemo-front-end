@@ -98,7 +98,7 @@ export interface CoinConfig extends BaseCoinInfo {
   marketIntro: string
 
   PtAddress: string | null | undefined
-  PoolApyRateChange: string
+  poolApyRateChange: string
   poolApy: string
   yieldApyRateChange: string
   yieldApy: string

@@ -7,7 +7,8 @@
     "dd": "NODE_ENV=development next dev -p 6368",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dp": "vercel --prod"
   },
   "dependencies": {
     "@cetusprotocol/terminal": "^0.1.7",

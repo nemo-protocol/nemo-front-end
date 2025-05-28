@@ -1,37 +1,29 @@
 "use client"
 
 import {
-  ResponsiveContainer,
-  LineChart,
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
+  LineChart,
+  CartesianGrid,
+  ResponsiveContainer,
 } from "recharts"
 import dayjs from "dayjs"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { CoinConfig, Granularity } from "@/queries/types/market"
+import { useMemo, useRef, useState } from "react"
+import { CoinConfig, Granularity, TokenType } from "@/queries/types/market"
 
 import Image from "next/image"
 import { useApyHistory } from "@/hooks/useApyHistory"
+import { useParams } from "next/navigation"
 
-/* 时间范围 Tab 配置 -------------------------------------------------- */
 const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
-  { label: "1M", granularity: "MINUTELY", seconds: 60 * 60 },
-  { label: "1H", granularity: "HOURLY", seconds: 60 * 60 * 60 },
+  { label: "1m", granularity: "MINUTELY", seconds: 60 * 60 },
+  { label: "1h", granularity: "HOURLY", seconds: 60 * 60 * 60 },
   { label: "1D", granularity: "DAILY", seconds: 60 * 60 * 24 * 60 },
   { label: "1M", granularity: "MONTHLY", seconds: 60 * 60 * 24 * 120 },
 ]
 
-/* tokenType 下拉配置 -------------------------------------------------- */
-export type TokenType = "FIXED" | "YIELD" | "POOL"
-const TOKEN_TYPES: { label: string; value: TokenType }[] = [
-  { label: "FIXED APY", value: "FIXED" },
-  { label: "YIELD APY", value: "YIELD" },
-  { label: "POOL  APY", value: "POOL" },
-]
-/* ------------------ 辅助函数 ------------------ */
 function formatPercent(num?: string | number, digits = 2) {
   if (num == null) return "—"
   const n = +num
@@ -40,10 +32,15 @@ function formatPercent(num?: string | number, digits = 2) {
 }
 
 export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
+  const params = useParams()
   const [activeTab, setActiveTab] = useState(0)
-  const [tokenType, setTokenType] = useState<TokenType>("FIXED")
+  const { tokenType: _tokenType } = params as {
+    tokenType: Lowercase<TokenType>
+  }
 
-  const [open, setOpen] = useState(false)
+  const tokenType = _tokenType.toUpperCase() as TokenType
+
+  // const [open, setOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
   const mainMetric = useMemo(() => {
     switch (tokenType) {
@@ -65,27 +62,18 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
         return {
           label: "POOL APY",
           value: formatPercent(coinConfig.poolApy),
-          delta: formatPercent(coinConfig.PoolApyRateChange),
-          positive: +coinConfig.PoolApyRateChange >= 0,
+          delta: formatPercent(coinConfig.poolApyRateChange),
+          positive: +coinConfig.poolApyRateChange >= 0,
         }
       default:
         return { label: "", value: "—", delta: "", positive: true }
     }
   }, [tokenType, coinConfig])
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
-  }, [])
 
   const { granularity } = TABS[activeTab]
 
   const { data, error } = useApyHistory({
-    marketStateId:coinConfig.marketStateId,
+    marketStateId: coinConfig.marketStateId,
     tokenType: tokenType,
     granularity,
   })
@@ -133,7 +121,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     <>
       <div className="mb-4 flex items-center justify-between">
         <div className="relative" ref={dropRef}>
-          <button
+          {/* <button
             className="flex text-[#FCFCFC66] cursor-pointer items-center gap-1 text-[12px] font-medium uppercase "
             onClick={() => setOpen((o) => !o)}
           >
@@ -146,7 +134,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
                 fill="none"
               />
             </svg>
-          </button>
+          </button> */}
 
           <div className="flex items-center mt-2 gap-2">
             <p className="text-[20px] font-[550]">{mainMetric.value}</p>
@@ -177,7 +165,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
             )}
           </div>
 
-          {open && (
+          {/* {open && (
             <ul className="absolute z-10 mt-0 top-[20px] w-32 rounded-md border border-[#3F3F3F] bg-[#0E1520] backdrop-blur text-[12px] text-[#FCFCFC66] shadow-lg">
               {TOKEN_TYPES.map((opt) => (
                 <li
@@ -192,7 +180,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
                 </li>
               ))}
             </ul>
-          )}
+          )} */}
         </div>
 
         <div className="flex gap-3 text-[12px]">
@@ -200,15 +188,12 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
             <div
               key={t.label + i}
               onClick={() => setActiveTab(i)}
-              className={`h-8 w-8 cursor-pointer select-none rounded-[12px]
-                          flex items-center justify-center
-
-                          ${
-                            activeTab === i
-                              ? "bg-gradient-to-r from-white/10 to-white/5 text-white"
-                              : "text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5"
-                          }
-                          `}
+              className={[
+                "py-1 px-2 cursor-pointer select-none rounded-md flex items-center justify-center",
+                activeTab === i
+                  ? "bg-gradient-to-r from-white/10 to-white/5 text-white"
+                  : "text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5",
+              ].join(" ")}
             >
               {t.label}
             </div>

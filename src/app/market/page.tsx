@@ -53,7 +53,7 @@ export default function MarketPage() {
     id: string,
     coinType: string,
     action: Action,
-    tokenType: TokenType
+    tokenType: Lowercase<TokenType>
   ) => {
     router.push(`/market-detail/${id}/${coinType}/${action}/${tokenType}`)
   }
@@ -153,7 +153,7 @@ export default function MarketPage() {
                           <span className="text-[#FCFCFC]/40">YT PRICE</span>
                         </TableHead>
                         <TableHead className="font-semibold text-[#3FE0C5] space-x-2">
-                          <span className="text-[#17B69B]">YEILD APY</span>
+                          <span className="text-[#17B69B]">FIXED APY</span>
                           <span className="text-[#FCFCFC]/40">PT PRICE</span>
                         </TableHead>
                       </TableRow>
@@ -212,7 +212,7 @@ export default function MarketPage() {
                                   row.id,
                                   row.coinType,
                                   "provide",
-                                  "lp" as TokenType
+                                  "pool"
                                 )
                               }
                               className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer"
@@ -242,7 +242,7 @@ export default function MarketPage() {
                                   row.id,
                                   row.coinType,
                                   "trade",
-                                  "yt"
+                                  "yield"
                                 )
                               }
                               className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
@@ -263,7 +263,7 @@ export default function MarketPage() {
                                   row.id,
                                   row.coinType,
                                   "trade",
-                                  "pt"
+                                  "fixed"
                                 )
                               }
                               className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"

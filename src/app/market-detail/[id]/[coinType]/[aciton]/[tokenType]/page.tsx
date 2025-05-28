@@ -12,7 +12,7 @@ export default function MarketDetailPage() {
   const { id, tokenType, action } = params as {
     id: string
     action: Action
-    tokenType: TokenType
+    tokenType: Lowercase<TokenType>
   }
 
   const { data: coinConfig, isLoading: isConfigLoading } = useCoinConfig(id)
@@ -24,12 +24,12 @@ export default function MarketDetailPage() {
         return import("./mint/index")
       }
       switch (tokenType) {
-        case "yt":
+        case "yield":
           return import("./yt/index")
-        case "pt":
+        case "fixed":
           return import("./pt/index")
 
-        case "lp":
+        case "pool":
           return import("./lp/index")
         default:
           return Promise.resolve(() => null)
