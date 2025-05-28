@@ -28,6 +28,7 @@ export default function MarketPage() {
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const { data: coinList = [] } = useCoinInfoList()
   const [tab, setTab] = useState<"all" | "search">("all")
+  const [searchQuery, setSearchQuery] = useState("")
 
   // 动态分组并排序
   const grouped = useMemo(() => {
@@ -48,6 +49,15 @@ export default function MarketPage() {
     groupArr.sort((a, b) => b.totalTvl - a.totalTvl)
     return groupArr
   }, [coinList])
+
+  // 过滤搜索结果
+  const filteredGroups = useMemo(() => {
+    if (!searchQuery) return grouped
+    const query = searchQuery.toLowerCase()
+    return grouped.filter(group => 
+      group.coinName.toLowerCase().includes(query)
+    )
+  }, [grouped, searchQuery])
 
   const handleTokenClick = (
     id: string,
@@ -103,11 +113,13 @@ export default function MarketPage() {
         <input
           type="text"
           placeholder="Search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none mb-8"
         />
       )}
       <div className="space-y-6">
-        {grouped.map(({ coinName, coinLogo, coinType, arr, totalTvl }) => (
+        {filteredGroups.map(({ coinName, coinLogo, coinType, arr, totalTvl }) => (
           <div key={coinType} className="rounded-3xl bg-light-gray/[0.03]">
             <button
               className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
