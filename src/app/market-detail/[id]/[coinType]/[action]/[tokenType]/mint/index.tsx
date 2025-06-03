@@ -5,8 +5,6 @@ import { CoinConfig } from "@/queries/types/market"
 import Mint from "./componets/Mint"
 import Redeem from "./componets/Redeem"
 import SimpleTabs from "../components/SimpleTabs"
-import AssetHeader from "../components/AssetHeader"
-import StatCard from "../components/StatCard"
 import YieldChart from "../components/YieldChart"
 
 interface Props {
@@ -23,14 +21,9 @@ export default function MintMarketDetail({ coinConfig }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* token 标题 */}
-      <AssetHeader coinConfig={coinConfig} />
-
       <div className="mt-6 grid lg:grid-cols-4 gap-6">
         {/* 左侧  (span 2) */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* 概览指标 */}
-          <StatCard coinConfig={coinConfig} />
           <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
             {/* Chart */}
             <YieldChart coinConfig={coinConfig} />
