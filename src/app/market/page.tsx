@@ -16,7 +16,7 @@ import StripedBar from "./components/StripedBar"
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tab, type TabItem } from "@/components/ui/tab"
-import { ColumnDef } from "@tanstack/react-table"
+import type { ExtendedColumnDef } from "@/components/ui/data-table"
 
 export default function MarketPage() {
   const router = useRouter()
@@ -31,6 +31,22 @@ export default function MarketPage() {
   const { data: coinList = [], isLoading } = useCoinInfoList()
   const [tab, setTab] = useState<"all" | "search">("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [listMode, setListMode] = useState<"list" | "grid">(() => {
+    // 从 localStorage 中获取保存的列表模式
+    if (typeof window !== "undefined") {
+      const savedMode = localStorage.getItem("marketListMode")
+      return (savedMode as "list" | "grid") || "list"
+    }
+    return "list"
+  })
+
+  // 更新列表模式并保存到 localStorage
+  const updateListMode = (mode: "list" | "grid") => {
+    setListMode(mode)
+    if (typeof window !== "undefined") {
+      localStorage.setItem("marketListMode", mode)
+    }
+  }
 
   const tabItems: TabItem[] = [
     {
@@ -38,7 +54,7 @@ export default function MarketPage() {
       label: "Markets",
       active: tab === "all",
       onChange: () => setTab("all"),
-      desc: "View all available markets"
+      desc: "View all available markets",
     },
     {
       id: "search",
@@ -57,6 +73,44 @@ export default function MarketPage() {
           height={16}
         />
       ),
+    },
+  ]
+
+  // List Mode 切换Tab配置
+  const listModeItems: TabItem[] = [
+    {
+      id: "list",
+      label: (
+        <Image
+          src={
+            listMode === "list"
+              ? "/assets/images/line-list-active.svg"
+              : "/assets/images/line-list.svg"
+          }
+          alt="List"
+          width={22}
+          height={22}
+        />
+      ),
+      active: listMode === "list",
+      onChange: () => updateListMode("list"),
+    },
+    {
+      id: "grid",
+      label: (
+        <Image
+          src={
+            listMode === "grid"
+              ? "/assets/images/grid-list-active.svg"
+              : "/assets/images/grid-list.svg"
+          }
+          alt="Grid"
+          width={22}
+          height={22}
+        />
+      ),
+      active: listMode === "grid",
+      onChange: () => updateListMode("grid"),
     },
   ]
 
@@ -107,7 +161,7 @@ export default function MarketPage() {
     router.push(`/market-detail/${id}/${coinType}/${action}/${tokenType}`)
   }
 
-  const columns: ColumnDef<CoinInfoWithMetrics>[] = [
+  const columns: ExtendedColumnDef<CoinInfoWithMetrics, string | number>[] = [
     {
       accessorKey: "coinName",
       header: "MARKET",
@@ -162,6 +216,7 @@ export default function MarketPage() {
     {
       accessorKey: "poolApy",
       header: "POOL APY",
+      headerColor: "#956EFF",
       cell: ({ row }) => (
         <button
           onClick={() =>
@@ -177,8 +232,18 @@ export default function MarketPage() {
           <span className="text-white">
             {formatLargeNumber(row.original.poolApy, 2)}%
           </span>
-          <Image src="/assets/images/star.svg" alt="star" width={16} height={16} />
-          <Image src="/assets/images/gift.svg" alt="gift" width={16} height={16} />
+          <Image
+            src="/assets/images/star.svg"
+            alt="star"
+            width={16}
+            height={16}
+          />
+          <Image
+            src="/assets/images/gift.svg"
+            alt="gift"
+            width={16}
+            height={16}
+          />
           <Plus size={18} className="text-[#956EFF]" />
         </button>
       ),
@@ -186,6 +251,8 @@ export default function MarketPage() {
     {
       accessorKey: "ytApy",
       header: "YEILD APY",
+      subHeader: "YT PRICE",
+      headerColor: "#1785B7",
       cell: ({ row }) => (
         <button
           onClick={() =>
@@ -211,6 +278,8 @@ export default function MarketPage() {
     {
       accessorKey: "ptApy",
       header: "FIXED APY",
+      subHeader: "PT PRICE",
+      headerColor: "#17B69B",
       cell: ({ row }) => (
         <button
           onClick={() =>
@@ -239,9 +308,16 @@ export default function MarketPage() {
     <div className="bg-[#080E16] min-h-screen text-white p-8">
       <Tab items={tabItems} className="mb-2" />
       {tab === "all" ? (
-        <p className="text-light-gray/40 mb-8 py-2">
-          Dive into the yield trading market and maximize your profit potential.
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-light-gray/40 mb-8 py-2">
+            Dive into the yield trading market and maximize your profit
+            potential.
+          </p>
+          <div className="text-light-gray/40 flex items-center gap-8">
+            <span className="text-light-gray/40">LIST MODE:</span>
+            <Tab items={listModeItems} />
+          </div>
+        </div>
       ) : (
         <input
           type="text"
@@ -252,60 +328,74 @@ export default function MarketPage() {
         />
       )}
       <div className="space-y-6">
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
-            >
-              <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-              <div className="flex flex-col justify-center flex-1 gap-6">
-                <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
+              >
+                <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                <div className="flex flex-col justify-center flex-1 gap-6">
+                  <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                  <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                  <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                </div>
               </div>
-            </div>
-          ))
-        ) : (
-          filteredGroups.map(
-            ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
-              <div key={coinType} className="rounded-3xl bg-light-gray/[0.03]">
-                <button
-                  className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
-                  onClick={() => updateOpenState(coinType, !open[coinType])}
-                  style={{ borderRadius: "24px 24px 0 0" }}
-                >
-                  <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
-                    <Image width={32} height={32} src={coinLogo} alt={coinName} />
-                    <span>{coinName}</span>
-                    <span className="text-white/60 text-lg font-normal ml-1">
-                      {arr.length}
-                    </span>
-                    <ChevronDown
-                      className={`transition-transform duration-200 ml-2 ${
-                        open[coinType] ? "rotate-180" : ""
-                      } text-white/70`}
-                      size={28}
-                    />
-                  </div>
-                  <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
-                    <span className="text-[#FCFCFC]/40">Total TVL</span>
-                    <span className="text-white">
-                      ${totalTvl.toLocaleString()}
-                    </span>
-                  </div>
-                </button>
-                {open[coinType] && (
-                  <div className="px-8 pb-8 pt-2">
-                    <div className="overflow-x-auto">
-                      <DataTable columns={columns} data={arr} />
-                    </div>
-                  </div>
-                )}
+            ))
+          : listMode === "list" ? (
+              <div className="rounded-3xl bg-light-gray/[0.03] p-8">
+                <div className="overflow-x-auto">
+                  <DataTable columns={columns} data={coinList} />
+                </div>
               </div>
-            )
-          )
-        )}
+            ) : (
+              filteredGroups.map(
+                ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
+                  <div
+                    key={coinType}
+                    className="rounded-3xl bg-light-gray/[0.03]"
+                  >
+                    <button
+                      className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
+                      onClick={() => updateOpenState(coinType, !open[coinType])}
+                      style={{ borderRadius: "24px 24px 0 0" }}
+                    >
+                      <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
+                        <Image
+                          width={32}
+                          height={32}
+                          src={coinLogo}
+                          alt={coinName}
+                        />
+                        <span>{coinName}</span>
+                        <span className="text-white/60 text-lg font-normal ml-1">
+                          {arr.length}
+                        </span>
+                        <ChevronDown
+                          className={`transition-transform duration-200 ml-2 ${
+                            open[coinType] ? "rotate-180" : ""
+                          } text-white/70`}
+                          size={28}
+                        />
+                      </div>
+                      <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
+                        <span className="text-[#FCFCFC]/40">Total TVL</span>
+                        <span className="text-white">
+                          ${totalTvl.toLocaleString()}
+                        </span>
+                      </div>
+                    </button>
+                    {open[coinType] && (
+                      <div className="px-8 pb-8 pt-2">
+                        <div className="overflow-x-auto">
+                          <DataTable columns={columns} data={arr} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              )
+            )}
       </div>
     </div>
   )

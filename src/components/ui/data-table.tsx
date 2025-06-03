@@ -20,8 +20,13 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+export type ExtendedColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
+  subHeader?: string
+  headerColor?: string
+}
+
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+  columns: ExtendedColumnDef<TData, TValue>[]
   data: TData[]
 }
 
@@ -59,6 +64,9 @@ export function DataTable<TData, TValue>({
                             : ""
                         }
                         onClick={header.column.getToggleSortingHandler()}
+                        style={{
+                          color: (header.column.columnDef as ExtendedColumnDef<TData, TValue>).headerColor
+                        }}
                       >
                         {flexRender(
                           header.column.columnDef.header,
@@ -75,6 +83,11 @@ export function DataTable<TData, TValue>({
                         ) : (
                           <span className="inline-flex items-center justify-center rounded-full bg-light-gray/[0.04]">
                             <ChevronsUpDown className="h-4 w-4 text-[#C7CBD7]" />
+                          </span>
+                        )}
+                        {(header.column.columnDef as ExtendedColumnDef<TData, TValue>).subHeader && (
+                          <span className="text-sm text-gray-400 ml-2">
+                            {(header.column.columnDef as ExtendedColumnDef<TData, TValue>).subHeader}
                           </span>
                         )}
                       </div>
