@@ -128,7 +128,6 @@ export default function PortfolioPage() {
             filteredLists.pt.forEach((item) => {
                 _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ptBalance).mul(item.ptPrice) || 0)
 
-                console.log(new Decimal(pyPositionsMap[item.id].ptBalance).mul(item.ptPrice).toNumber(), 'sixu3')
             })
             filteredLists.yt.forEach((item) => {
                 _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ytBalance).mul(item.ytPrice) || 0)

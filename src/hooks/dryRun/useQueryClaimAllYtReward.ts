@@ -151,7 +151,6 @@ export default function useQueryClaimAllYtReward(
         // params.pyPositionsMap?.[item.id]?.pyPositions.Ytreward = 
       })
 
-      // console.log(result,params.pyPositionsMap,'sixu1')
       // const debugInfo: DebugInfo = {
       //   moveCall: [priceVoucherMoveCall, redeemDueInterestMoveCall],
       //   rawResult: {
