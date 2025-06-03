@@ -1,11 +1,12 @@
 "use client"
 
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useCoinConfig } from "@/queries"
 import { ArrowLeft, ArrowUpRight, ArrowDownRight } from "lucide-react"
 import dynamic from "next/dynamic"
 import { Action, CoinConfig, TokenType } from "@/queries/types/market"
 import AssetHeader from "./components/AssetHeader"
+import { Tab, type TabItem } from "@/components/ui/tab"
 
 export default function MarketDetailPage() {
   const params = useParams()
@@ -47,6 +48,72 @@ export default function MarketDetailPage() {
 
   if (!coinConfig) {
     return <div className="text-white p-8">Market not found</div>
+  }
+
+  // 详情Tab切换组件
+  function DetailTabs() {
+    const router = useRouter()
+    // mint tab由action控制，其他tab由tokenType控制
+    let activeTab: string | undefined = undefined
+    if (action === "mint") {
+      activeTab = "mint"
+    } else {
+      switch (tokenType) {
+        case "yield":
+          activeTab = "yield"
+          break
+        case "fixed":
+          activeTab = "principal"
+          break
+        case "pool":
+          activeTab = "liquidity"
+          break
+        default:
+          activeTab = undefined
+      }
+    }
+    // tab点击跳转逻辑
+    const handleTabChange = (
+      action: Action,
+      tokenType: Lowercase<TokenType>
+    ) => {
+      if (!coinConfig) return
+
+      router.push(
+        `/market-detail/${coinConfig.id}/${coinConfig.coinType}/${action}/${tokenType}`
+      )
+    }
+    const tabItems: TabItem[] = [
+      {
+        id: "yield",
+        label: "Yield Token",
+        active: activeTab === "yield",
+        onChange: () => handleTabChange("trade", "yield"),
+        desc: "Earn variable yield by holding this token.",
+      },
+      {
+        id: "principal",
+        label: "Principal Token",
+        active: activeTab === "principal",
+        onChange: () => handleTabChange("trade", "fixed"),
+        desc: "Holds the principal value, redeemable at maturity.",
+      },
+      {
+        id: "liquidity",
+        label: "Provide Liquidity",
+        active: activeTab === "liquidity",
+        onChange: () => handleTabChange("provide", "pool"),
+        desc: "Provide liquidity to earn fees and rewards.",
+      },
+      {
+        id: "mint",
+        label: "Mint",
+        active: activeTab === "mint",
+        onChange: () => handleTabChange("mint", "pool"),
+        desc: "Mint new tokens by depositing assets.",
+      },
+    ]
+    return <Tab items={tabItems} className="mb-8" />
   }
 
   return (
@@ -165,6 +232,8 @@ export default function MarketDetailPage() {
           </div>
         </div>
       </div>
+
+      <DetailTabs />
 
       {/* 动态加载对应类型的市场详情组件 */}
       <MarketDetailComponent coinConfig={coinConfig} />

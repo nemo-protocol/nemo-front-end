@@ -20,9 +20,9 @@ import type {
 import dayjs from "dayjs"
 import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
 import StripedBar from "./components/StripedBar"
-import InfoTooltip from "@/components/InfoTooltip"
 import Image from "next/image"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tab, type TabItem } from "@/components/ui/tab"
 
 export default function MarketPage() {
   const router = useRouter()
@@ -37,6 +37,34 @@ export default function MarketPage() {
   const { data: coinList = [], isLoading } = useCoinInfoList()
   const [tab, setTab] = useState<"all" | "search">("all")
   const [searchQuery, setSearchQuery] = useState("")
+
+  const tabItems: TabItem[] = [
+    {
+      id: "all",
+      label: "Markets",
+      active: tab === "all",
+      onChange: () => setTab("all"),
+      desc: "View all available markets"
+    },
+    {
+      id: "search",
+      label: "Search Markets",
+      active: tab === "search",
+      onChange: () => setTab("search"),
+      icon: (
+        <Image
+          src={
+            tab === "search"
+              ? "/assets/images/search.svg"
+              : "/assets/images/search-inactive.svg"
+          }
+          alt="search"
+          width={16}
+          height={16}
+        />
+      ),
+    },
+  ]
 
   // 更新展开状态并保存到 localStorage
   const updateOpenState = (coinType: string, isOpen: boolean) => {
@@ -87,41 +115,7 @@ export default function MarketPage() {
 
   return (
     <div className="bg-[#080E16] min-h-screen text-white p-8">
-      <div className="flex items-center gap-8 mb-2">
-        <div className="flex items-center gap-2 relative">
-          <InfoTooltip active={tab === "all"}>
-            <button
-              className={`text-[32px] font-medium ${
-                tab === "all" ? "text-white" : "text-light-gray/40"
-              }`}
-              onClick={() => setTab("all")}
-            >
-              Markets
-            </button>
-          </InfoTooltip>
-        </div>
-        <div className="relative">
-          <button
-            className={`text-[32px] font-medium ${
-              tab === "search" ? "text-white" : "text-light-gray/40"
-            }`}
-            onClick={() => setTab("search")}
-          >
-            Search Markets
-          </button>
-          <Image
-            src={
-              tab === "search"
-                ? "/assets/images/search.svg"
-                : "/assets/images/search-inactive.svg"
-            }
-            alt="search"
-            width={16}
-            height={16}
-            className="absolute top-0 -right-4"
-          />
-        </div>
-      </div>
+      <Tab items={tabItems} className="mb-2" />
       {tab === "all" ? (
         <p className="text-light-gray/40 mb-8 py-2">
           Dive into the yield trading market and maximize your profit potential.
@@ -132,7 +126,7 @@ export default function MarketPage() {
           placeholder="Search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none mb-8"
+          className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none mb-8 h-10"
         />
       )}
       <div className="space-y-6">
