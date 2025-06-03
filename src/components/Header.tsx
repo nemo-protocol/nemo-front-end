@@ -27,7 +27,7 @@ const MENU: {
     { label: 'Markets', href: '/market', icon: '/header/markets.svg' },
     { label: 'My Portfolio', href: '/portfolio', icon: '/header/portfolio.svg' },
     { label: 'Swap', href: '/swap', icon: '/header/swap.svg' },
-    { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
+    // { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
     { label: 'Leaderboard', href: '/leaderboard', icon: '/header/leaderboard.svg' },
     { label: 'Airdrop', href: '/airdrop', icon: '/header/airdrop.svg' },
 
