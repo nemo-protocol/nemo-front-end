@@ -89,6 +89,7 @@ export default function Assets({
         })
         setList(ranklist)
         setLoading(false)
+        console.log(filteredLists,'sixu')
     }, [filteredLists, lpPositionsMap, pyPositionsMap])
 
 

@@ -61,8 +61,8 @@ export default function PortfolioPage() {
             pt: list.filter((item) => {
                 // FIXME: get multi pt coin info
                 return (
-                    !!item.ptTokenType ||
-                    isValidAmount(pyPositionsMap[item.id]?.ptBalance)
+                    (!!item.ptTokenType ||
+                        isValidAmount(pyPositionsMap[item.id]?.ptBalance)) && address
                 )
             }),
             yt: list.filter((item) =>
@@ -120,7 +120,6 @@ export default function PortfolioPage() {
     }
 
     useEffect(() => {
-        console.log(address, marketStates, pyPositionsMap, filteredLists, ytReward,lpReward,'sixu')
         if (address && marketStates && pyPositionsMap && filteredLists && ytReward && lpReward) {
 
             let _balance = new Decimal(0)
@@ -142,6 +141,9 @@ export default function PortfolioPage() {
             })
             setBalance(_balance.toString())
             setTotalClaim(_totalClaim.toString())
+            setLoading(false)
+        }
+        else if (!address) {
             setLoading(false)
         }
     }, [lpReward, ytReward])

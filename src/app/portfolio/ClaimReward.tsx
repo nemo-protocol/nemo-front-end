@@ -180,13 +180,9 @@ const UnclaimedRewardModal: React.FC<Props> = ({
 
                                     </td>
                                     <td className="py-3 font-[550] text-[14px] text-[#FCFCFC]">
-
-
                                         ~{new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice).lt(0.01) && "<"}
                                         ${formatPortfolioNumber(new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice))}
-
                                     </td>
-
                                 </tr>
                             )
                             )
