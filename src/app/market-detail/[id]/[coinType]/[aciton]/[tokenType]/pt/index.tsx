@@ -18,7 +18,7 @@ import useInputLoadingState from "@/hooks/useInputLoadingState"
 import useQueryPtOutBySyInWithVoucher from "@/hooks/dryRun/pt/useQueryPtOutBySyIn"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 import useCustomSignAndExecuteTransaction from "@/hooks/useCustomSignAndExecuteTransaction"
-import Tabs from "../components/Tabs"
+import SimpleTabs from "../components/SimpleTabs"
 import {
   initPyPosition,
   splitCoinHelper,
@@ -69,6 +69,7 @@ export default function PTMarketDetail({ coinConfig }: Props) {
   const [ptRatio, setPtRatio] = useState<string>()
   const [syValue, setSyValue] = useState("")
   const [minValue, setMinValue] = useState(0)
+  const [currentTab, setCurrentTab] = useState<"buy" | "sell">("buy")
 
   const coinType = coinConfig.coinType
 
@@ -485,16 +486,14 @@ export default function PTMarketDetail({ coinConfig }: Props) {
 
         {/* 右侧 Trade 面板 */}
         <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
-          {/* Tab栏 用Tabs组件 */}
-          <Tabs
-            title="PRINCIPLE TOKEN"
+          {/* Tab栏 用SimpleTabs组件 */}
+          <SimpleTabs
             tabs={[
-              { key: "yt", label: "YIELD TOKEN" },
-              { key: "pt", label: "PRINCIPLE TOKEN" },
-              { key: "mint", label: "MINT" },
+              { key: "buy", label: "BUY" },
+              { key: "sell", label: "SELL" },
             ]}
-            defaultTab="pt"
-            onChange={() => {}}
+            current={currentTab}
+            onChange={key => setCurrentTab(key as "buy" | "sell")}
           />
 
           {/* TRADE 输入区 用AmountInput组件 */}

@@ -42,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import SimpleTabs from "../components/SimpleTabs"
 
 interface Props {
   coinConfig: CoinConfig
@@ -63,6 +64,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
   const [isInitRatioLoading, setIsInitRatioLoading] = useState(false)
   const [slippage, setSlippage] = useState("0.5")
   const [minValue, setMinValue] = useState(0)
+  const [currentTab, setCurrentTab] = useState<"buy" | "sell">("buy")
 
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
@@ -488,15 +490,13 @@ export default function YTMarketDetail({ coinConfig }: Props) {
         {/* 右侧 Trade 面板 */}
         <div className="bg-[#101823] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
           {/* Tab栏 用Tabs组件 */}
-          <Tabs
-            title="YIELD TOKEN"
+          <SimpleTabs
             tabs={[
-              { key: "yt", label: "YIELD TOKEN" },
-              { key: "pt", label: "PRINCIPLE TOKEN" },
-              { key: "mint", label: "MINT" },
+              { key: "buy", label: "BUY" },
+              { key: "sell", label: "SELL" },
             ]}
-            defaultTab="yt"
-            onChange={() => {}}
+            current={currentTab}
+            onChange={key => setCurrentTab(key as "buy" | "sell")}
           />
           {/* 输入区 */}
           <AmountInput

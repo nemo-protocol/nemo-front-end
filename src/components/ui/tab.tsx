@@ -25,7 +25,7 @@ export function Tab({ items, className }: TabProps) {
             <InfoTooltip active={item.active} content={item.desc}>
               <button
                 className={cn(
-                  "text-[32px] font-medium",
+                  "text-[32px] font-medium font-serif",
                   item.active ? "text-white" : "text-light-gray/40"
                 )}
                 onClick={item.onChange}
@@ -36,7 +36,7 @@ export function Tab({ items, className }: TabProps) {
           ) : (
             <button
               className={cn(
-                "text-[32px] font-medium",
+                "text-[32px] font-medium font-serif",
                 item.active ? "text-white" : "text-light-gray/40"
               )}
               onClick={item.onChange}
@@ -51,4 +51,4 @@ export function Tab({ items, className }: TabProps) {
       ))}
     </div>
   )
-} 
+}

@@ -7,7 +7,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        season: ['"Season Sans TRIAL"', "sans-serif"],
+        sans: ['"SeasonSansTRIAL"', "sans-serif"],
         serif: ['"SeasonSerifTRIAL"', "serif"],
       },
       screens: {

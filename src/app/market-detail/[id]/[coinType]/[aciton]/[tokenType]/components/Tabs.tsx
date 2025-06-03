@@ -1,5 +1,11 @@
 import React, { useState } from "react"
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "@/components/ui/tooltip"
+import Image from "next/image"
 
 // TODO： add Season Sans TRIAL front config
 
@@ -18,12 +24,12 @@ interface TradeTabsProps {
 }
 
 // TODO： disabled & active cursor style
-export default function TradeTabs({ 
-  title, 
-  tabs, 
+export default function TradeTabs({
+  title,
+  tabs,
   defaultTab = tabs[0]?.key,
   onChange,
-  desc
+  desc,
 }: TradeTabsProps) {
   const [current, setCurrent] = useState<string>(defaultTab)
 
@@ -55,10 +61,12 @@ export default function TradeTabs({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <img
-                    src="/assets/images/info.svg"
+                  <Image
+                    width={20}
+                    height={20}
                     alt="info"
-                    className="absolute -top-1 -right-6 cursor-pointer w-5 h-5"
+                    src="/assets/images/info.svg"
+                    className="absolute -top-1 -right-6 cursor-pointer"
                   />
                 </TooltipTrigger>
                 <TooltipContent>{desc}</TooltipContent>
@@ -82,9 +90,10 @@ export default function TradeTabs({
               uppercase
               transition
               cursor-pointer
-              ${current === tab.key 
-                ? "bg-[rgba(252,252,252,0.03)] text-[var(--typo-primary,#FCFCFC)]" 
-                : "text-[var(--typo-secondary,rgba(252,252,252,0.40))]"
+              ${
+                current === tab.key
+                  ? "bg-[rgba(252,252,252,0.03)] text-[var(--typo-primary,#FCFCFC)]"
+                  : "text-[var(--typo-secondary,rgba(252,252,252,0.40))]"
               }
               ${tab.disabled ? "opacity-50 cursor-not-allowed" : ""}
             `}

@@ -35,7 +35,7 @@ input[type="number"]::-webkit-outer-spin-button {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "SeasonSerifTRIAL", Arial, Helvetica, sans-serif;
+  font-family: "SeasonSansTRIAL", Arial, Helvetica, sans-serif;
 }
 
 /* 若想要淡入动画，可在 global.css 添加 */
@@ -72,8 +72,8 @@ input[type="number"] {
 }
 
 @font-face {
-  font-family: "SeasonSansTRIAL";
-  src: url("/assets/fonts/SeasonSansTRIAL/SeasonSansTRIAL-SemiBold.ttf")
+  font-family: "SeasonSerifTRIAL";
+  src: url("/assets/fonts/SeasonSerifTRIAL/SeasonSerifTRIAL-SemiBold.ttf")
     format("truetype");
   font-weight: 600;
   font-style: normal;
@@ -82,6 +82,30 @@ input[type="number"] {
 @font-face {
   font-family: "SeasonSerifTRIAL";
   src: url("/assets/fonts/SeasonSerifTRIAL/SeasonSerifTRIAL-Bold.ttf")
+    format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SeasonSansTRIAL";
+  src: url("/assets/fonts/SeasonSansTRIAL/SeasonSansTRIAL-Medium.ttf")
+    format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SeasonSansTRIAL";
+  src: url("/assets/fonts/SeasonSansTRIAL/SeasonSansTRIAL-SemiBold.ttf")
+    format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SeasonSansTRIAL";
+  src: url("/assets/fonts/SeasonSansTRIAL/SeasonSansTRIAL-Bold.ttf")
     format("truetype");
   font-weight: 700;
   font-style: normal;

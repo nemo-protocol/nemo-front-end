@@ -121,19 +121,10 @@ export default function MarketDetailPage() {
       {/* 返回按钮 */}
       <div
         onClick={() => history.back()}
-        className="text-white bg-gradient-to-r from-white/10 to-white/5 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/5"
-        style={{
-          cursor: "pointer",
-          display: "inline-flex",
-          padding: "8px 10px",
-          borderRadius: "16px",
-          gap: "8px",
-          fontSize: "14px",
-          alignItems: "center",
-        }}
+        className="text-light-gray bg-gradient-to-r from-white/10 to-white/5 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/5 cursor-pointer inline-flex p-2 px-2.5 rounded-2xl gap-2 text-sm items-center"
       >
         <ArrowLeft width={16} />
-        Back
+        <span className="text-sm">Back</span>
       </div>
 
       <AssetHeader coinConfig={coinConfig} />
