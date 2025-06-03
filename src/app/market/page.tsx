@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { ChevronDown, Plus, Inbox, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { DataTable } from "@/components/ui/data-table"
@@ -31,14 +31,17 @@ export default function MarketPage() {
   const { data: coinList = [], isLoading } = useCoinInfoList()
   const [tab, setTab] = useState<"all" | "search">("all")
   const [searchQuery, setSearchQuery] = useState("")
-  const [listMode, setListMode] = useState<"list" | "grid">(() => {
-    // 从 localStorage 中获取保存的列表模式
+  const [listMode, setListMode] = useState<"list" | "grid" | undefined>(
+    undefined
+  )
+
+  // 页面挂载后读取缓存
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const savedMode = localStorage.getItem("marketListMode")
-      return (savedMode as "list" | "grid") || "list"
+      setListMode((savedMode as "list" | "grid") || "list")
     }
-    return "list"
-  })
+  }, [])
 
   // 更新列表模式并保存到 localStorage
   const updateListMode = (mode: "list" | "grid") => {
@@ -317,119 +320,136 @@ export default function MarketPage() {
   ]
 
   return (
-    <div className="bg-[#080E16] min-h-screen text-white p-8">
-      <Tab items={tabItems} className="mb-2" />
-      {tab === "all" ? (
-        <div className="flex items-center justify-between">
-          <p className="text-light-gray/40 mb-8 py-2">
-            Dive into the yield trading market and maximize your profit
-            potential.
-          </p>
-          <div className="text-light-gray/40 flex items-center gap-8">
-            <span className="text-light-gray/40">LIST MODE:</span>
-            <Tab items={listModeItems} />
-          </div>
-        </div>
-      ) : (
-        <div className="relative w-full mb-8">
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none h-10 pr-10"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition"
-              onClick={() => setSearchQuery("")}
-              tabIndex={-1}
-            >
-              <X size={18} />
-            </button>
-          )}
-        </div>
-      )}
-      <div className="space-y-6">
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
-            >
-              <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-              <div className="flex flex-col justify-center flex-1 gap-6">
-                <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-              </div>
+    // listMode 未准备好时不渲染主内容
+    listMode === undefined ? (
+      <div className="min-h-screen bg-[#080E16]"></div>
+    ) : (
+      <div className="bg-[#080E16] min-h-screen text-white p-8">
+        <Tab items={tabItems} className="mb-2" />
+        {tab === "all" ? (
+          <div className="flex items-center justify-between">
+            <p className="text-light-gray/40 mb-8 py-2">
+              Dive into the yield trading market and maximize your profit
+              potential.
+            </p>
+            <div className="text-light-gray/40 flex items-center gap-8">
+              <span className="text-light-gray/40">LIST MODE:</span>
+              <Tab items={listModeItems} />
             </div>
-          ))
-        ) : listMode === "list" ? (
-          filteredList.length === 0 ? (
+          </div>
+        ) : (
+          <div className="relative w-full mb-8">
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none h-10 pr-10"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition"
+                onClick={() => setSearchQuery("")}
+                tabIndex={-1}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
+        )}
+        <div className="space-y-6">
+          {isLoading ? (
+            listMode === "list" ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)] mb-4"
+                />
+              ))
+            ) : (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
+                >
+                  <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                  <div className="flex flex-col justify-center flex-1 gap-6">
+                    <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                    <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                    <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                  </div>
+                </div>
+              ))
+            )
+          ) : listMode === "list" ? (
+            filteredList.length === 0 ? (
+              <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
+                <Inbox size={48} className="text-white/40" />
+                <p className="text-white/40 text-lg">No data available</p>
+              </div>
+            ) : (
+              <div className="rounded-3xl bg-light-gray/[0.03] p-8">
+                <div className="overflow-x-auto">
+                  <DataTable columns={columns} data={filteredList} />
+                </div>
+              </div>
+            )
+          ) : filteredGroups.length === 0 ? (
             <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
               <Inbox size={48} className="text-white/40" />
               <p className="text-white/40 text-lg">No data available</p>
             </div>
           ) : (
-            <div className="rounded-3xl bg-light-gray/[0.03] p-8">
-              <div className="overflow-x-auto">
-                <DataTable columns={columns} data={filteredList} />
-              </div>
-            </div>
-          )
-        ) : filteredGroups.length === 0 ? (
-          <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
-            <Inbox size={48} className="text-white/40" />
-            <p className="text-white/40 text-lg">No data available</p>
-          </div>
-        ) : (
-          filteredGroups.map(
-            ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
-              <div key={coinType} className="rounded-3xl bg-light-gray/[0.03]">
-                <button
-                  className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
-                  onClick={() => updateOpenState(coinType, !open[coinType])}
-                  style={{ borderRadius: "24px 24px 0 0" }}
+            filteredGroups.map(
+              ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
+                <div
+                  key={coinType}
+                  className="rounded-3xl bg-light-gray/[0.03]"
                 >
-                  <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
-                    <Image
-                      width={32}
-                      height={32}
-                      src={coinLogo}
-                      alt={coinName}
-                    />
-                    <span>{coinName}</span>
-                    <span className="text-white/60 text-lg font-normal ml-1">
-                      {arr.length}
-                    </span>
-                    <ChevronDown
-                      className={`transition-transform duration-200 ml-2 ${
-                        open[coinType] ? "rotate-180" : ""
-                      } text-white/70`}
-                      size={28}
-                    />
-                  </div>
-                  <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
-                    <span className="text-[#FCFCFC]/40">Total TVL</span>
-                    <span className="text-white">
-                      ${totalTvl.toLocaleString()}
-                    </span>
-                  </div>
-                </button>
-                {open[coinType] && (
-                  <div className="px-8 pb-8 pt-2">
-                    <div className="overflow-x-auto">
-                      <DataTable columns={columns} data={arr} />
+                  <button
+                    className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
+                    onClick={() => updateOpenState(coinType, !open[coinType])}
+                    style={{ borderRadius: "24px 24px 0 0" }}
+                  >
+                    <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
+                      <Image
+                        width={32}
+                        height={32}
+                        src={coinLogo}
+                        alt={coinName}
+                      />
+                      <span>{coinName}</span>
+                      <span className="text-white/60 text-lg font-normal ml-1">
+                        {arr.length}
+                      </span>
+                      <ChevronDown
+                        className={`transition-transform duration-200 ml-2 ${
+                          open[coinType] ? "rotate-180" : ""
+                        } text-white/70`}
+                        size={28}
+                      />
                     </div>
-                  </div>
-                )}
-              </div>
+                    <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
+                      <span className="text-[#FCFCFC]/40">Total TVL</span>
+                      <span className="text-white">
+                        ${totalTvl.toLocaleString()}
+                      </span>
+                    </div>
+                  </button>
+                  {open[coinType] && (
+                    <div className="px-8 pb-8 pt-2">
+                      <div className="overflow-x-auto">
+                        <DataTable columns={columns} data={arr} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
             )
-          )
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    )
   )
 }
