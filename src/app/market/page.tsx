@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { ChevronDown, Plus } from "lucide-react"
+import { ChevronDown, Plus, Inbox, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { DataTable } from "@/components/ui/data-table"
 import { useCoinInfoList } from "@/queries"
@@ -151,6 +151,15 @@ export default function MarketPage() {
       group.coinName.toLowerCase().includes(query)
     )
   }, [grouped, searchQuery])
+
+  // 过滤列表数据
+  const filteredList = useMemo(() => {
+    if (!searchQuery) return coinList
+    const query = searchQuery.toLowerCase()
+    return coinList.filter((item) =>
+      item.coinName.toLowerCase().includes(query)
+    )
+  }, [coinList, searchQuery])
 
   const handleTokenClick = (
     id: string,
@@ -322,13 +331,25 @@ export default function MarketPage() {
           </div>
         </div>
       ) : (
-        <input
-          type="text"
-          placeholder="Search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none mb-8 h-10"
-        />
+        <div className="relative w-full mb-8">
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none h-10 pr-10"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition"
+              onClick={() => setSearchQuery("")}
+              tabIndex={-1}
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       )}
       <div className="space-y-6">
         {isLoading ? (
@@ -346,10 +367,22 @@ export default function MarketPage() {
             </div>
           ))
         ) : listMode === "list" ? (
-          <div className="rounded-3xl bg-light-gray/[0.03] p-8">
-            <div className="overflow-x-auto">
-              <DataTable columns={columns} data={coinList} />
+          filteredList.length === 0 ? (
+            <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
+              <Inbox size={48} className="text-white/40" />
+              <p className="text-white/40 text-lg">No data available</p>
             </div>
+          ) : (
+            <div className="rounded-3xl bg-light-gray/[0.03] p-8">
+              <div className="overflow-x-auto">
+                <DataTable columns={columns} data={filteredList} />
+              </div>
+            </div>
+          )
+        ) : filteredGroups.length === 0 ? (
+          <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
+            <Inbox size={48} className="text-white/40" />
+            <p className="text-white/40 text-lg">No data available</p>
           </div>
         ) : (
           filteredGroups.map(
