@@ -187,10 +187,13 @@ export default function MarketPage() {
     {
       accessorKey: "maturity",
       header: "MATURITY",
+      width: 400,
       cell: ({ row }) => (
         <div className="grid grid-cols-8">
           <span className="text-white text-sm col-span-2">
-            {formatTimeDiff(parseInt(row.original.maturity))}
+            {`${formatTimeDiff(
+              parseInt(row.original.maturity)
+            ).toLocaleLowerCase()} left`}
           </span>
           <span className="col-span-4">
             <StripedBar gap={4} rounded count={24} barWidth={8} />
@@ -328,74 +331,71 @@ export default function MarketPage() {
         />
       )}
       <div className="space-y-6">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, idx) => (
-              <div
-                key={idx}
-                className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
-              >
-                <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                <div className="flex flex-col justify-center flex-1 gap-6">
-                  <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                  <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                  <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
-                </div>
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <div
+              key={idx}
+              className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
+            >
+              <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+              <div className="flex flex-col justify-center flex-1 gap-6">
+                <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
               </div>
-            ))
-          : listMode === "list" ? (
-              <div className="rounded-3xl bg-light-gray/[0.03] p-8">
-                <div className="overflow-x-auto">
-                  <DataTable columns={columns} data={coinList} />
-                </div>
-              </div>
-            ) : (
-              filteredGroups.map(
-                ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
-                  <div
-                    key={coinType}
-                    className="rounded-3xl bg-light-gray/[0.03]"
-                  >
-                    <button
-                      className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
-                      onClick={() => updateOpenState(coinType, !open[coinType])}
-                      style={{ borderRadius: "24px 24px 0 0" }}
-                    >
-                      <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
-                        <Image
-                          width={32}
-                          height={32}
-                          src={coinLogo}
-                          alt={coinName}
-                        />
-                        <span>{coinName}</span>
-                        <span className="text-white/60 text-lg font-normal ml-1">
-                          {arr.length}
-                        </span>
-                        <ChevronDown
-                          className={`transition-transform duration-200 ml-2 ${
-                            open[coinType] ? "rotate-180" : ""
-                          } text-white/70`}
-                          size={28}
-                        />
-                      </div>
-                      <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
-                        <span className="text-[#FCFCFC]/40">Total TVL</span>
-                        <span className="text-white">
-                          ${totalTvl.toLocaleString()}
-                        </span>
-                      </div>
-                    </button>
-                    {open[coinType] && (
-                      <div className="px-8 pb-8 pt-2">
-                        <div className="overflow-x-auto">
-                          <DataTable columns={columns} data={arr} />
-                        </div>
-                      </div>
-                    )}
+            </div>
+          ))
+        ) : listMode === "list" ? (
+          <div className="rounded-3xl bg-light-gray/[0.03] p-8">
+            <div className="overflow-x-auto">
+              <DataTable columns={columns} data={coinList} />
+            </div>
+          </div>
+        ) : (
+          filteredGroups.map(
+            ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
+              <div key={coinType} className="rounded-3xl bg-light-gray/[0.03]">
+                <button
+                  className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
+                  onClick={() => updateOpenState(coinType, !open[coinType])}
+                  style={{ borderRadius: "24px 24px 0 0" }}
+                >
+                  <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
+                    <Image
+                      width={32}
+                      height={32}
+                      src={coinLogo}
+                      alt={coinName}
+                    />
+                    <span>{coinName}</span>
+                    <span className="text-white/60 text-lg font-normal ml-1">
+                      {arr.length}
+                    </span>
+                    <ChevronDown
+                      className={`transition-transform duration-200 ml-2 ${
+                        open[coinType] ? "rotate-180" : ""
+                      } text-white/70`}
+                      size={28}
+                    />
                   </div>
-                )
-              )
-            )}
+                  <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
+                    <span className="text-[#FCFCFC]/40">Total TVL</span>
+                    <span className="text-white">
+                      ${totalTvl.toLocaleString()}
+                    </span>
+                  </div>
+                </button>
+                {open[coinType] && (
+                  <div className="px-8 pb-8 pt-2">
+                    <div className="overflow-x-auto">
+                      <DataTable columns={columns} data={arr} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          )
+        )}
       </div>
     </div>
   )

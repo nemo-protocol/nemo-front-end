@@ -23,6 +23,7 @@ import {
 export type ExtendedColumnDef<TData, TValue> = ColumnDef<TData, TValue> & {
   subHeader?: string
   headerColor?: string
+  width?: number | string
 }
 
 interface DataTableProps<TData, TValue> {
@@ -55,7 +56,12 @@ export function DataTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead 
+                    key={header.id}
+                    style={{
+                      width: (header.column.columnDef as ExtendedColumnDef<TData, TValue>).width
+                    }}
+                  >
                     {header.isPlaceholder ? null : (
                       <div
                         className={
@@ -106,7 +112,12 @@ export function DataTable<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell 
+                    key={cell.id}
+                    style={{
+                      width: (cell.column.columnDef as ExtendedColumnDef<TData, TValue>).width
+                    }}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
