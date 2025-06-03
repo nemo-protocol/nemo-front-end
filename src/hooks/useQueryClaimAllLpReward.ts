@@ -65,10 +65,9 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
         const marketState = params.marketStates[item.marketStateId]
         marketState.rewardMetrics.map((rewardMetric) => {
 
-          const balance = params.lpPositionsMap?.[item.id]?.lpBalance
           const lpPositions = params.lpPositionsMap?.[item.id]?.lpPositions
           const coinConfig = item
-          mergeAllCoins(tx, address, suiCoins, coinConfig.coinType)
+          // mergeAllCoins(tx, address, suiCoins, coinConfig.coinType)
 
           const moveCallInfo = {
             target: `${coinConfig?.nemoContractId}::market::claim_reward`,
@@ -108,7 +107,7 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
         }),
       })
       const lpReward: Record<string, string> = {}
-
+      console.log(result,tx.blockData,'sixu3')
       params.filteredLPLists.map((item, index1) => {
         const marketState = params.marketStates[item.marketStateId]
         marketState.rewardMetrics.map((rewardMetric, index2) => {
