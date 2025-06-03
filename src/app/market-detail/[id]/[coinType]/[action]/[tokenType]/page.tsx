@@ -29,7 +29,6 @@ export default function MarketDetailPage() {
           return import("./yt/index")
         case "fixed":
           return import("./pt/index")
-
         case "pool":
           return import("./lp/index")
         default:
@@ -109,7 +108,7 @@ export default function MarketDetailPage() {
         id: "mint",
         label: "Mint",
         active: activeTab === "mint",
-        onChange: () => handleTabChange("mint", "pool"),
+        onChange: () => handleTabChange("mint", "fixed"),
         desc: "Mint new tokens by depositing assets.",
       },
     ]

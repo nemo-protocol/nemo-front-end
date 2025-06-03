@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import YieldChart from "../components/YieldChart"
 import { CoinConfig } from "@/queries/types/market"
-import Tabs from "../components/Tabs"
+import SimpleTabs from "../components/SimpleTabs"
 import AmountInput from "../components/AmountInput"
 import { ChevronsDown } from "lucide-react"
 import ActionButton from "../components/ActionButton"
@@ -53,6 +53,7 @@ export default function LPMarketDetail({ coinConfig }: Props) {
   const [lpAmount, setLpAmount] = useState<string>()
   const [lpFeeAmount, setLpFeeAmount] = useState<string>()
   const [isAdding, setIsAdding] = useState(false)
+  const [currentTab, setCurrentTab] = useState("mint")
   const { account: currentAccount, signAndExecuteTransaction } = useWallet()
   const [isCalculating, setIsCalculating] = useState(false)
   const [ratio, setRatio] = useState<string>()
@@ -414,16 +415,13 @@ export default function LPMarketDetail({ coinConfig }: Props) {
         {/* 右侧 Trade 面板 */}
         <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
           {/* Tab 切换 */}
-          <Tabs
-            title="Provide liquidity"
-            desc="Provide liquidity to the market to earn fees and rewards."
+          <SimpleTabs
+            current={currentTab}
+            onChange={setCurrentTab}
             tabs={[
               { key: "mint", label: "SWAP & SUPPLY" },
               { key: "swap", label: "MINT & SUPPLY", disabled: true },
             ]}
-            onChange={(key) => {
-              console.log("Selected tab:", key)
-            }}
           />
 
           {/* 输入框 */}
