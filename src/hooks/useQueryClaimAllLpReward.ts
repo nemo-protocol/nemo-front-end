@@ -107,28 +107,32 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
           onlyTransactionKind: true,
         }),
       })
+      const lpReward: Record<string, string> = {}
 
-      // params.filteredYTLists.map((item, index) => {
-      //   const decimal = Number(item.decimal)
-      //   const syAmount = bcs.U64.parse(
-      //     new Uint8Array(
-      //       result.results[((index + 1) * 4) - 1].returnValues[0][0],
-      //     ),
-      //   )
+      params.filteredLPLists.map((item, index1) => {
+        const marketState = params.marketStates[item.marketStateId]
+        marketState.rewardMetrics.map((rewardMetric, index2) => {
 
-      //   pyReward[item.id] = formatDecimalValue(
-      //       new Decimal(syAmount).div(10 ** decimal).toString(),
-      //       decimal,
-      //     )
+          const [[balanceBytes]] = result.results[((index1 + 1) * (index2 + 1) * 2) - 1].returnValues
+          const rewardAmount = bcs.U64.parse(new Uint8Array(balanceBytes))
+
+          const decimal = Number(rewardMetric.decimal)
+          const rewardValue = formatDecimalValue(
+            new Decimal(rewardAmount).div(new Decimal(10).pow(decimal)),
+            decimal,
+          )
+         
+          lpReward[item.id + rewardMetric.tokenName] = rewardValue
 
 
-      //   // params.pyPositionsMap?.[item.id]?.pyPositions.Ytreward = 
-      // })
-      const [[balanceBytes]] =
-      result.results[result.results.length - 1].returnValues
-    const rewardAmount = bcs.U64.parse(new Uint8Array(balanceBytes))
+        }
+          // params.pyPositionsMap?.[item.id]?.pyPositions.Ytreward = 
 
-      console.log(result,rewardAmount,'sixu2')
+        )
+      })
+
+
+      console.log(result, lpReward, 'sixu2')
       // const debugInfo: DebugInfo = {
       //   moveCall: [moveCallInfo],
       //   rawResult: result,
@@ -152,7 +156,7 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
       //   throw new ContractError(message, debugInfo)
       // }
 
-   
+
       // debugInfo.parsedOutput = rewardAmount
 
       // if (!debug) {
@@ -165,7 +169,7 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
       //   decimal,
       // )
 
-      // return (debug ? [rewardValue, debugInfo] : rewardValue) as DryRunResult<T>
+      return lpReward
     },
   })
 }
