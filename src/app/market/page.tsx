@@ -1,22 +1,22 @@
 "use client"
 
+import dayjs from "dayjs"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useCoinInfoList } from "@/queries"
+import StripedBar from "./components/StripedBar"
+import { Skeleton } from "@/components/ui/skeleton"
+import { DataTable } from "@/components/ui/data-table"
+import { Tab, type TabItem } from "@/components/ui/tab"
 import React, { useState, useMemo, useEffect } from "react"
 import { ChevronDown, Plus, Inbox, X } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { DataTable } from "@/components/ui/data-table"
-import { useCoinInfoList } from "@/queries"
+import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
+import type { ExtendedColumnDef } from "@/components/ui/data-table"
 import type {
   Action,
-  CoinInfoWithMetrics,
   TokenType,
+  CoinInfoWithMetrics,
 } from "@/queries/types/market"
-import dayjs from "dayjs"
-import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
-import StripedBar from "./components/StripedBar"
-import Image from "next/image"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tab, type TabItem } from "@/components/ui/tab"
-import type { ExtendedColumnDef } from "@/components/ui/data-table"
 
 export default function MarketPage() {
   const router = useRouter()
@@ -180,16 +180,16 @@ export default function MarketPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Image
-            src={row.original.coinLogo}
-            alt={row.original.coinName}
             width={20}
             height={20}
+            src={row.original.coinLogo}
+            alt={row.original.coinName}
           />
           <span className="font-semibold text-base">
             {row.original.coinName}
           </span>
-          {row.original.version === "V2" && (
-            <span className="bg-[#23243A] text-xs px-2 py-0.5 rounded ml-1">
+          {row.original.ptTokenType && (
+            <span className="text-light-gray/40 bg-[#956EFF]/10 text-xs px-1.5 py-1 rounded-lg ml-1">
               V2 TOKEN
             </span>
           )}
@@ -200,21 +200,30 @@ export default function MarketPage() {
       accessorKey: "maturity",
       header: "MATURITY",
       width: 400,
-      cell: ({ row }) => (
-        <div className="grid grid-cols-8">
-          <span className="text-white text-sm col-span-2">
-            {`${formatTimeDiff(
-              parseInt(row.original.maturity)
-            ).toLocaleLowerCase()} left`}
-          </span>
-          <span className="col-span-4">
-            <StripedBar gap={4} rounded count={24} barWidth={8} />
-          </span>
-          <span className="col-span-2 shrink-0 text-sm text-white/40 font-medium">
-            {dayjs(parseInt(row.original.maturity)).format("DD MMM YYYY")}
-          </span>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const maturity = parseInt(row.original.maturity)
+        const startTime = parseInt(row.original.startTime)
+        const now = Date.now()
+        const total = maturity - startTime
+        const passed = Math.max(0, Math.min(now - startTime, total))
+        const count = 30
+        let activeCount = Math.round((passed / total) * count)
+        if (activeCount > count) activeCount = count
+        if (activeCount < 0) activeCount = 0
+        return (
+          <div className="grid grid-cols-8">
+            <span className="text-white text-sm col-span-2">
+              {`${formatTimeDiff(maturity).toLocaleLowerCase()} left`}
+            </span>
+            <span className="col-span-4">
+              <StripedBar gap={2} rounded count={count} barWidth={3} activeCount={activeCount} />
+            </span>
+            <span className="col-span-2 shrink-0 text-sm text-white/40 font-medium">
+              {dayjs(maturity).format("DD MMM YYYY")}
+            </span>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "tvl",

@@ -18,6 +18,7 @@ export interface BaseCoinInfo {
   id: string
   coinLogo: string
   maturity: string
+  startTime: string
   coinName: string
   coinType: string
   ptTokenType: string
