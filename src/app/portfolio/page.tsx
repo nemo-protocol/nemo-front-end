@@ -125,21 +125,21 @@ export default function PortfolioPage() {
 
             let _balance = new Decimal(0)
             let _totalClaim = new Decimal(0)
-            // filteredLists.pt.forEach((item) => {
-            //     _balance = _balance.add(new Decimal(pyPositionsMap?.[item?.id]?.ptBalance).mul(item.ptPrice) || 0)
+            filteredLists.pt.forEach((item) => {
+                _balance = _balance.add(new Decimal(pyPositionsMap?.[item?.id]?.ptBalance).mul(item.ptPrice) || 0)
 
-            // })
-            // filteredLists.yt.forEach((item) => {
-            //     _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ytBalance).mul(item.ytPrice) || 0)
-            //     _totalClaim = _totalClaim.add(new Decimal(ytReward[item.id]).mul(item.underlyingPrice))
-            // })
-            // filteredLists.lp.forEach((item) => {
-            //     _balance = _balance.add(new Decimal(lpPositionsMap[item.id]?.lpBalance).mul(item.lpPrice) || 0)
-            //     marketStates[item.marketStateId].rewardMetrics.forEach(rewardMetric => {
+            })
+            filteredLists.yt.forEach((item) => {
+                _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ytBalance).mul(item.ytPrice) || 0)
+                _totalClaim = _totalClaim.add(new Decimal(ytReward[item.id]).mul(item.underlyingPrice))
+            })
+            filteredLists.lp.forEach((item) => {
+                _balance = _balance.add(new Decimal(lpPositionsMap[item.id]?.lpBalance).mul(item.lpPrice) || 0)
+                marketStates[item.marketStateId].rewardMetrics.forEach(rewardMetric => {
 
-            //         _totalClaim = _totalClaim.add(new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice))
-            //     })
-            // })
+                    _totalClaim = _totalClaim.add(new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice))
+                })
+            })
             setBalance(_balance.toString())
             setTotalClaim(_totalClaim.toString())
             setLoading(false)

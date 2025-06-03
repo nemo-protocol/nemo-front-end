@@ -107,7 +107,6 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
         }),
       })
       const lpReward: Record<string, string> = {}
-      console.log(result,tx.blockData,'sixu3')
       params.filteredLPLists.map((item, index1) => {
         const marketState = params.marketStates[item.marketStateId]
         marketState.rewardMetrics.map((rewardMetric, index2) => {
