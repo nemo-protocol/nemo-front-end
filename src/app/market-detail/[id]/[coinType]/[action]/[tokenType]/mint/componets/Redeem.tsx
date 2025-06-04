@@ -3,7 +3,7 @@ import { network } from "@/config"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { Transaction } from "@mysten/sui/transactions"
 import usePyPositionData from "@/hooks/usePyPositionData"
-import { ChevronsDown, Plus } from "lucide-react"
+import { ChevronsDown } from "lucide-react"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import { initPyPosition, redeemPy, redeemSyCoin } from "@/lib/txHelper"
@@ -18,6 +18,14 @@ import { CoinConfig } from "@/queries/types/market"
 import AmountInput from "../../components/AmountInput"
 import { AmountOutput } from "../../components/AmountOutput"
 import ActionButton from "../../components/ActionButton"
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectGroup,
+  SelectTrigger,
+  SelectContent,
+} from "@/components/ui/select"
 
 interface Props {
   coinConfig: CoinConfig
@@ -28,6 +36,7 @@ export default function Redeem({ coinConfig }: Props) {
   const [isRedeeming, setIsRedeeming] = useState(false)
   const [isInputLoading, setIsInputLoading] = useState(false)
   const [syAmount, setSyAmount] = useState("")
+  const [tokenType, setTokenType] = useState<number>(0)
 
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
@@ -194,36 +203,50 @@ export default function Redeem({ coinConfig }: Props) {
     }
   }
 
+  const coinName = useMemo(
+    () =>
+      tokenType === 0 ? coinConfig?.underlyingCoinName : coinConfig?.coinName,
+    [tokenType, coinConfig]
+  )
+
   return (
-    <div className="flex flex-col items-center">
-      <AmountInput
-        amount={redeemValue}
-        onChange={setRedeemValue}
-        setWarning={() => {}}
-        coinName={`PT ${coinConfig.coinName}`}
-        coinLogo={coinConfig.coinLogo}
-        decimal={decimal}
-        coinBalance={ptBalance}
-        isConnected={isConnected}
-        price={ptYtData?.ptPrice}
-        disabled={!isConnected}
-      />
-      <Plus className="mx-auto my-2" />
-      <AmountInput
-        amount={redeemValue}
-        onChange={setRedeemValue}
-        setWarning={() => {}}
-        coinName={`YT ${coinConfig.coinName}`}
-        coinLogo={coinConfig.coinLogo}
-        decimal={decimal}
-        coinBalance={ytBalance}
-        isConnected={isConnected}
-        price={ptYtData?.ytPrice}
-        disabled={!isConnected}
-      />
-      <ChevronsDown className="mx-auto my-2" />
+    <div className="flex flex-col items-center gap-y-6">
+      <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
+        <AmountInput
+          className="bg-transparent rounded-none"
+          amount={redeemValue}
+          onChange={setRedeemValue}
+          setWarning={() => {}}
+          coinName={`PT ${coinConfig.coinName}`}
+          coinLogo={coinConfig.coinLogo}
+          decimal={decimal}
+          coinBalance={ptBalance}
+          isConnected={isConnected}
+          price={ptYtData?.ptPrice}
+          disabled={!isConnected}
+        />
+        <div className="px-4">
+          <div className="border-t border-light-gray/10" />
+        </div>
+        <AmountInput
+          className="bg-transparent rounded-none"
+          amount={redeemValue}
+          onChange={setRedeemValue}
+          setWarning={() => {}}
+          coinName={`YT ${coinConfig.coinName}`}
+          coinLogo={coinConfig.coinLogo}
+          decimal={decimal}
+          coinBalance={ytBalance}
+          isConnected={isConnected}
+          price={ptYtData?.ytPrice}
+          disabled={!isConnected}
+        />
+      </div>
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-4">
+        <ChevronsDown className="w-5 h-5" />
+      </div>
       <AmountOutput
-        name={coinConfig.coinName}
+        name={coinName}
         value={
           isInputLoading
             ? undefined
@@ -233,6 +256,29 @@ export default function Redeem({ coinConfig }: Props) {
         loading={isInputLoading}
         maturity={coinConfig.maturity}
         coinConfig={coinConfig}
+        coinNameComponent={
+          <Select
+            value={tokenType.toString()}
+            onValueChange={(value) => {
+              setRedeemValue("")
+              setTokenType(Number(value))
+            }}
+          >
+            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
+              <SelectValue placeholder="Select token type" />
+            </SelectTrigger>
+            <SelectContent className="border-none outline-none bg-[#0E0F16]">
+              <SelectGroup>
+                <SelectItem value={"0"} className="cursor-pointer text-white">
+                  {coinConfig?.underlyingCoinName}
+                </SelectItem>
+                <SelectItem value={"1"} className="cursor-pointer text-white">
+                  {coinConfig?.coinName}
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        }
       />
       <div className="mt-7.5 w-full">
         <ActionButton

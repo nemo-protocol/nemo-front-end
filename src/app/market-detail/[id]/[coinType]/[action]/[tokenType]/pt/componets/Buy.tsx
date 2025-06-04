@@ -540,8 +540,8 @@ export default function Buy({ coinConfig }: Props) {
       />
 
       {/* 信息区块 6行 */}
-      <div className="divide-y divide-white/10 space-y-2 text-sm text-white/40">
-        <div className="flex justify-between py-1">
+      <div className="space-y-2 text-sm text-light-gray/40">
+        <div className="flex justify-between">
           <span>Fixed APY Change</span>
           <span className="text-white">
             {ptYtData?.ptApy
@@ -549,7 +549,7 @@ export default function Buy({ coinConfig }: Props) {
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
+        <div className="flex justify-between">
           <span>Fixed Return</span>
           <span className="text-white">
             {isValidAmount(ptValue) && ptValue && decimal && conversionRate
@@ -562,13 +562,11 @@ export default function Buy({ coinConfig }: Props) {
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
+        <div className="flex justify-between">
           <span>
-            After{" "}
-            {dayjs(
+            {`After ${dayjs(
               parseInt(coinConfig?.maturity || Date.now().toString())
-            ).diff(dayjs(), "day")}{" "}
-            days
+            ).diff(dayjs(), "day")} days`}
           </span>
           <span className="text-white">
             {!swapValue
@@ -589,7 +587,8 @@ export default function Buy({ coinConfig }: Props) {
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
+        <div className="border-b border-light-gray/10"></div>
+        <div className="flex justify-between">
           <span>Price</span>
           <span className="text-white">
             {ptRatio
@@ -597,7 +596,7 @@ export default function Buy({ coinConfig }: Props) {
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
+        <div className="flex justify-between">
           <span>Trading Fees</span>
           <span className="text-white">
             {ptFeeValue
@@ -605,7 +604,7 @@ export default function Buy({ coinConfig }: Props) {
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
+        <div className="flex justify-between">
           <span>Slippage</span>
           <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
         </div>

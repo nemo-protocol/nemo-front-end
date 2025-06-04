@@ -4,7 +4,8 @@ import { useState, useMemo, useCallback, useEffect } from "react"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
-import { ChevronsDown, Info } from "lucide-react"
+import { ChevronsDown } from "lucide-react"
+import dayjs from "dayjs"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
@@ -13,6 +14,7 @@ import {
   isValidAmount,
   safeDivide,
   debounce,
+  formatTimeDiff,
 } from "@/lib/utils"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import { showTransactionDialog } from "@/lib/dialog"
@@ -40,13 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 
 import { redeemSyCoin, swapExactPtForSy, splitCoinHelper } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
@@ -392,9 +387,6 @@ export default function Sell({ coinConfig }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex justify-end">
-        <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
-      </div>
       <AmountInput
         error={error}
         price={price}
@@ -419,166 +411,150 @@ export default function Sell({ coinConfig }: Props) {
         <ChevronsDown className="w-5 h-5" />
       </div>
 
-      <div className="rounded-lg sm:rounded-xl border border-[#2D2D48] px-3 sm:px-4 py-4 sm:py-6 w-full text-xs sm:text-sm">
-        <div className="flex flex-col items-end gap-y-0.5 sm:gap-y-1">
-          <div className="flex items-center justify-between w-full h-[24px] sm:h-[28px]">
-            <span>Receiving</span>
-            <span>
+      <div className="bg-[#FCFCFC]/[0.03] rounded-2xl shadow-lg px-6 py-6 w-full flex items-center justify-between min-h-[80px]">
+        <div className="flex flex-col justify-center min-w-0">
+          <span className="text-xs text-[#FCFCFC]/40 font-medium">RECEIVE</span>
+          <div className="mt-2 flex items-baseline gap-x-3 min-w-0">
+            <span className="text-xl font-medium text-white truncate">
               {isLoading ? (
-                <Skeleton className="h-6 sm:h-7 w-36 sm:w-48 bg-[#2D2D48]" />
+                <div className="h-7 sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03] animate-pulse rounded" />
+              ) : isValidAmount(targetValue) ? (
+                formatDecimalValue(targetValue, decimal)
               ) : (
-                <div className="flex items-center gap-x-1 sm:gap-x-1.5">
-                  <span>
-                    {isValidAmount(targetValue)
-                      ? `≈ ${formatDecimalValue(targetValue, decimal)}`
-                      : "0"}
-                  </span>
-                  <Select
-                    value={receivingType}
-                    onValueChange={(value) => {
-                      const newTargetValue = convertReceivingValue(
-                        targetValue,
-                        receivingType,
-                        value
-                      )
-                      setReceivingType(value as "underlying" | "sy")
-                      setTargetValue(newTargetValue)
-                    }}
-                  >
-                    <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-                      <SelectValue>
-                        <div className="flex items-center gap-x-1">
-                          <span
-                            className="max-w-20 truncate"
-                            title={
-                              receivingType === "underlying"
-                                ? coinConfig?.underlyingCoinName
-                                : coinConfig?.coinName
-                            }
-                          >
-                            {receivingType === "underlying"
-                              ? coinConfig?.underlyingCoinName
-                              : coinConfig?.coinName}
-                          </span>
-                          {(receivingType === "underlying"
-                            ? coinConfig?.underlyingCoinLogo
-                            : coinConfig?.coinLogo) && (
-                            <Image
-                              src={
-                                receivingType === "underlying"
-                                  ? coinConfig?.underlyingCoinLogo
-                                  : coinConfig?.coinLogo
-                              }
-                              alt={
-                                receivingType === "underlying"
-                                  ? coinConfig?.underlyingCoinName
-                                  : coinConfig?.coinName
-                              }
-                              width={16}
-                              height={16}
-                              className="size-4 sm:size-5"
-                            />
-                          )}
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="border-none outline-none bg-[#0E0F16]">
-                      <SelectGroup>
-                        <SelectItem
-                          value="underlying"
-                          className="cursor-pointer text-white"
-                        >
-                          <div className="flex items-center gap-x-1">
-                            <span>{coinConfig?.underlyingCoinName}</span>
-                            {coinConfig?.underlyingCoinLogo && (
-                              <Image
-                                src={coinConfig.underlyingCoinLogo}
-                                alt={coinConfig.underlyingCoinName}
-                                width={16}
-                                height={16}
-                                className="size-4 sm:size-5"
-                              />
-                            )}
-                          </div>
-                        </SelectItem>
-                        <SelectItem
-                          value="sy"
-                          className="cursor-pointer text-white"
-                        >
-                          <div className="flex items-center gap-x-1">
-                            <span>{coinConfig?.coinName}</span>
-                            {coinConfig?.coinLogo && (
-                              <Image
-                                src={coinConfig.coinLogo}
-                                alt={coinConfig.coinName}
-                                width={16}
-                                height={16}
-                                className="size-4 sm:size-5"
-                              />
-                            )}
-                          </div>
-                        </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
+                "--"
               )}
             </span>
+            <span className="flex items-baseline gap-x-1 min-w-0">
+              {isLoading ? (
+                <div className="h-4 w-24 bg-light-gray/10 animate-pulse rounded" />
+              ) : priceImpact ? (
+                <>
+                  <span className="text-base text-light-gray/40 font-medium truncate">
+                    ~ ${formatDecimalValue(priceImpact.value, 2)}
+                  </span>
+                  <span className="text-base font-bold text-[#FF8800] truncate">
+                    ({formatDecimalValue(priceImpact.ratio, 2)}%)
+                  </span>
+                </>
+              ) : null}
+            </span>
           </div>
-          {isLoading ? (
-            <div className="text-[10px] sm:text-xs">
-              <Skeleton className="h-3 sm:h-4 w-24 sm:w-32 bg-[#2D2D48]" />
-            </div>
-          ) : priceImpact ? (
-            <div className="flex items-center gap-x-1 text-[10px] sm:text-xs">
-              {priceImpact.ratio.gt(5) && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info
-                        className={`size-2.5 sm:size-3 cursor-pointer ${
-                          priceImpact.ratio.gt(15)
-                            ? "text-red-500"
-                            : priceImpact.ratio.gt(5)
-                            ? "text-yellow-500"
-                            : "text-white/60"
-                        }`}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-[#12121B] max-w-[280px] sm:max-w-[500px] text-xs sm:text-sm">
-                      <p>
-                        Price Impact Alert: Price impact is too high. Please
-                        consider adjusting the transaction size.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              <span
-                className={`text-[10px] sm:text-xs ${
-                  priceImpact.ratio.gt(15)
-                    ? "text-red-500"
-                    : priceImpact.ratio.gt(5)
-                    ? "text-yellow-500"
-                    : "text-white/60"
-                }`}
-              >
-                ${formatDecimalValue(priceImpact.value, 4)}
-              </span>
-              <span
-                className={`text-[10px] sm:text-xs ${
-                  priceImpact.ratio.gt(15)
-                    ? "text-red-500"
-                    : priceImpact.ratio.gt(5)
-                    ? "text-yellow-500"
-                    : "text-white/60"
-                }`}
-              >
-                ({formatDecimalValue(priceImpact.ratio, 4)}%)
-              </span>
-            </div>
-          ) : null}
         </div>
+        <div className="flex flex-col items-end justify-between h-[60px] min-w-[120px]">
+          <div className="flex items-center gap-x-2">
+            <span className="text-xl font-[650] text-white truncate">
+              <Select
+                value={receivingType}
+                onValueChange={(value) => {
+                  const newTargetValue = convertReceivingValue(
+                    targetValue,
+                    receivingType,
+                    value
+                  )
+                  setReceivingType(value as "underlying" | "sy")
+                  setTargetValue(newTargetValue)
+                }}
+              >
+                <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-xl font-[650] text-white flex items-center gap-x-2 w-fit">
+                  <SelectValue>
+                    <div className="flex items-center gap-x-2">
+                      <span
+                        className="max-w-20 truncate"
+                        title={
+                          receivingType === "underlying"
+                            ? coinConfig?.underlyingCoinName
+                            : coinConfig?.coinName
+                        }
+                      >
+                        {receivingType === "underlying"
+                          ? coinConfig?.underlyingCoinName
+                          : coinConfig?.coinName}
+                      </span>
+                      {(receivingType === "underlying"
+                        ? coinConfig?.underlyingCoinLogo
+                        : coinConfig?.coinLogo) && (
+                        <Image
+                          width={20}
+                          height={20}
+                          src={
+                            receivingType === "underlying"
+                              ? coinConfig?.underlyingCoinLogo
+                              : coinConfig?.coinLogo
+                          }
+                          alt={
+                            receivingType === "underlying"
+                              ? coinConfig?.underlyingCoinName
+                              : coinConfig?.coinName
+                          }
+                        />
+                      )}
+                    </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="border-none outline-none bg-[#0E0F16]">
+                  <SelectGroup>
+                    <SelectItem
+                      value="underlying"
+                      className="cursor-pointer text-white"
+                    >
+                      <div className="flex items-center gap-x-1">
+                        <span>{coinConfig?.underlyingCoinName}</span>
+                        {coinConfig?.underlyingCoinLogo && (
+                          <Image
+                            width={20}
+                            height={20}
+                            src={coinConfig.underlyingCoinLogo}
+                            alt={coinConfig.underlyingCoinName}
+                          />
+                        )}
+                      </div>
+                    </SelectItem>
+                    <SelectItem
+                      value="sy"
+                      className="cursor-pointer text-white"
+                    >
+                      <div className="flex items-center gap-x-1">
+                        <span>{coinConfig?.coinName}</span>
+                        {coinConfig?.coinLogo && (
+                          <Image
+                            width={20}
+                            height={20}
+                            src={coinConfig.coinLogo}
+                            alt={coinConfig.coinName}
+                          />
+                        )}
+                      </div>
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </span>
+          </div>
+          <span className="text-xs text-[#FCFCFC]/40 mt-1.5 flex items-center gap-x-1">
+            {coinConfig?.maturity && (
+              <>
+                <span>
+                  {`${formatTimeDiff(
+                    parseInt(coinConfig.maturity)
+                  )} LEFT・ ${dayjs(parseInt(coinConfig.maturity)).format(
+                    "DD MMM YYYY"
+                  )}`}
+                </span>
+                <Image
+                  width={12}
+                  height={12}
+                  src="/assets/images/date.svg"
+                  alt="date"
+                />
+              </>
+            )}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-light-gray/40">Slippage</span>
+        <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
       </div>
 
       <ActionButton

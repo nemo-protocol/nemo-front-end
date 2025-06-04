@@ -1,11 +1,16 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect, SetStateAction, Dispatch } from "react"
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+} from "react"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
 import { ChevronsDown } from "lucide-react"
-import Image from 'next/image';
+import Image from "next/image"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
@@ -16,11 +21,9 @@ import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
 
 import useCoinData from "@/hooks/query/useCoinData"
 import usePyPositionData from "@/hooks/usePyPositionData"
-import useInputLoadingState from "@/hooks/useInputLoadingState"
 import useGetApproxYtOutDryRun from "@/hooks/dryRun/useGetApproxYtOutDryRun"
 import useGetConversionRateDryRun from "@/hooks/dryRun/useGetConversionRateDryRun"
 import useQueryYtOutBySyInWithVoucher from "@/hooks/useQueryYtOutBySyInWithVoucher"
-import useTradeRatio from "@/hooks/actions/useTradeRatio"
 import useMarketStateData from "@/hooks/useMarketStateData"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 
@@ -45,7 +48,6 @@ import Calculator from "../../components/Calculator"
 
 interface Props {
   coinConfig: CoinConfig
-
 }
 
 export default function Buy({ coinConfig }: Props) {
@@ -64,15 +66,18 @@ export default function Buy({ coinConfig }: Props) {
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
 
-  const { data: marketStateData } = useMarketStateData(coinConfig?.marketStateId)
+  const { data: marketStateData } = useMarketStateData(
+    coinConfig?.marketStateId
+  )
   const conversionRate = useMemo(() => coinConfig?.conversionRate, [coinConfig])
 
-  const { data: pyPositionData, refetch: refetchPyPosition } = usePyPositionData(
-    address,
-    coinConfig?.pyStateId,
-    coinConfig?.maturity,
-    coinConfig?.pyPositionTypeList,
-  )
+  const { data: pyPositionData, refetch: refetchPyPosition } =
+    usePyPositionData(
+      address,
+      coinConfig?.pyStateId,
+      coinConfig?.maturity,
+      coinConfig?.pyPositionTypeList
+    )
 
   const {
     data: coinData,
@@ -80,24 +85,23 @@ export default function Buy({ coinConfig }: Props) {
     isLoading: isBalanceLoading,
   } = useCoinData(
     address,
-    tokenType === 0 ? coinConfig?.underlyingCoinType : coinConfig?.coinType,
+    tokenType === 0 ? coinConfig?.underlyingCoinType : coinConfig?.coinType
   )
 
   const { mutateAsync: getConversionRate } = useGetConversionRateDryRun()
-  const { mutateAsync: calculateRatio } = useTradeRatio(coinConfig)
   const { mutateAsync: queryYtOut } = useQueryYtOutBySyInWithVoucher(coinConfig)
   const getApproxYtOutDryRun = useGetApproxYtOutDryRun(coinConfig)
 
   const coinName = useMemo(
     () =>
       tokenType === 0 ? coinConfig?.underlyingCoinName : coinConfig?.coinName,
-    [tokenType, coinConfig],
+    [tokenType, coinConfig]
   )
 
   const coinLogo = useMemo(
     () =>
       tokenType === 0 ? coinConfig?.underlyingCoinLogo : coinConfig?.coinLogo,
-    [tokenType, coinConfig],
+    [tokenType, coinConfig]
   )
 
   const price = useMemo(
@@ -106,7 +110,7 @@ export default function Buy({ coinConfig }: Props) {
         ? coinConfig?.underlyingPrice
         : coinConfig?.coinPrice
       )?.toString(),
-    [tokenType, coinConfig],
+    [tokenType, coinConfig]
   )
 
   const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
@@ -123,12 +127,12 @@ export default function Buy({ coinConfig }: Props) {
 
   const insufficientBalance = useMemo(
     () => new Decimal(coinBalance).lt(tradeValue || 0),
-    [coinBalance, tradeValue],
+    [coinBalance, tradeValue]
   )
 
   const { data: ptYtData, refetch: refetchPtYt } = useCalculatePtYt(
     coinConfig,
-    marketStateData,
+    marketStateData
   )
 
   const hasLiquidity = useMemo(() => {
@@ -167,7 +171,7 @@ export default function Buy({ coinConfig }: Props) {
       const minValue = NEED_MIN_VALUE_LIST.find(
         (item) =>
           item.provider === coinConfig.provider ||
-          item.coinType === coinConfig.coinType,
+          item.coinType === coinConfig.coinType
       )?.minValue
       if (minValue) {
         setMinValue(minValue)
@@ -180,7 +184,7 @@ export default function Buy({ coinConfig }: Props) {
       const getYtOut = debounce(async () => {
         if (tokenType === 0 && value && new Decimal(value).lt(minValue)) {
           setError(
-            `Please enter at least ${minValue} ${coinConfig?.underlyingCoinName}`,
+            `Please enter at least ${minValue} ${coinConfig?.underlyingCoinName}`
           )
           return
         }
@@ -198,7 +202,7 @@ export default function Buy({ coinConfig }: Props) {
             setYtFeeValue(feeValue)
           } catch (error) {
             const { error: msg, detail } = parseErrorMessage(
-              (error as Error)?.message ?? "",
+              (error as Error)?.message ?? ""
             )
             setError(msg)
             setErrorDetail(detail)
@@ -222,7 +226,7 @@ export default function Buy({ coinConfig }: Props) {
       conversionRate,
       coinConfig?.underlyingCoinName,
       queryYtOut,
-    ],
+    ]
   )
 
   useEffect(() => {
@@ -236,10 +240,10 @@ export default function Buy({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-          (item) => item.coinType === coinConfig?.coinType,
-        )?.vaultId
+            (item) => item.coinType === coinConfig?.coinType
+          )?.vaultId
         : "",
-    [coinConfig],
+    [coinConfig]
   )
 
   async function swap() {
@@ -274,23 +278,23 @@ export default function Buy({ coinConfig }: Props) {
         const [splitCoin] =
           tokenType === 0
             ? [
-              await mintSCoin({
-                tx,
-                vaultId,
-                address,
-                slippage,
-                coinData,
-                coinConfig,
-                amount: swapAmount,
-              }),
-            ]
+                await mintSCoin({
+                  tx,
+                  vaultId,
+                  address,
+                  slippage,
+                  coinData,
+                  coinConfig,
+                  amount: swapAmount,
+                }),
+              ]
             : splitCoinHelper(tx, coinData, [swapAmount], coinConfig.coinType)
 
         const syCoin = depositSyCoin(
           tx,
           coinConfig,
           splitCoin,
-          coinConfig.coinType,
+          coinConfig.coinType
         )
 
         let pyPosition
@@ -379,7 +383,7 @@ export default function Buy({ coinConfig }: Props) {
           })
         } else if (
           msg.includes(
-            "Transaction failed with the following error. Dry run failed, could not automatically determine a budget: InsufficientGas in command 5",
+            "Transaction failed with the following error. Dry run failed, could not automatically determine a budget: InsufficientGas in command 5"
           )
         ) {
           showTransactionDialog({
@@ -405,17 +409,11 @@ export default function Buy({ coinConfig }: Props) {
   }
   const [open, setOpen] = useState(false)
 
-  const { isLoading } = useInputLoadingState(tradeValue, false)
-
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex justify-end">
-        <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
-      </div>
       <Calculator
         open={open}
         inputYT={Number(tradeValue)}
-     
         coinConfig={coinConfig}
         onClose={() => setOpen(false)}
       />
@@ -444,21 +442,15 @@ export default function Buy({ coinConfig }: Props) {
               setTokenType(Number(value))
             }}
           >
-            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
+            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-xl font-medium w-fit">
               <SelectValue placeholder="Select token type" />
             </SelectTrigger>
             <SelectContent className="border-none outline-none bg-[#0E0F16]">
               <SelectGroup>
-                <SelectItem
-                  value={"0"}
-                  className="cursor-pointer text-white"
-                >
+                <SelectItem value={"0"} className="cursor-pointer text-white">
                   {coinConfig?.underlyingCoinName}
                 </SelectItem>
-                <SelectItem
-                  value={"1"}
-                  className="cursor-pointer text-white"
-                >
+                <SelectItem value={"1"} className="cursor-pointer text-white">
                   {coinConfig?.coinName}
                 </SelectItem>
               </SelectGroup>
@@ -481,34 +473,38 @@ export default function Buy({ coinConfig }: Props) {
         }}
       />
 
-      <div className="text-sm text-slate-400 flex flex-col gap-2 pt-4 border-t border-slate-800 divide-y divide-white/10">
-        <div className="flex justify-between py-1">
-          <span>Yield APY Change</span>
+      <div className="text-sm text-slate-400 flex flex-col gap-2">
+        <div className="flex justify-between">
+          <span className="text-light-gray/40">Yield APY Change</span>
           <span className="text-white">
             {ptYtData?.ytApy
               ? `${formatDecimalValue(ptYtData.ytApy, 6)} %`
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
-          <span>Price</span>
+        <div className="border-b border-light-gray/10"></div>
+        <div className="flex justify-between">
+          <span className="text-light-gray/40">Price</span>
           <span className="text-white">
             {ptYtData?.ytPrice && price
               ? `1 ${coinName} = ${formatDecimalValue(
-                new Decimal(1).div(ptYtData.ytPrice).mul(price),
-                6,
-              )} YT ${coinConfig?.coinName}`
+                  new Decimal(1).div(ptYtData.ytPrice).mul(price),
+                  6
+                )} YT ${coinConfig?.coinName}`
               : "--"}
           </span>
         </div>
-        <div className="flex justify-between py-1">
-          <span>Trading Fees</span>
+        <div className="flex justify-between">
+          <span className="text-light-gray/40">Trading Fees</span>
           <span className="text-white">
             {ytFeeValue
-              ? `${formatDecimalValue(ytFeeValue, 6)} ${coinConfig?.coinName
-              }`
+              ? `${formatDecimalValue(ytFeeValue, 6)} ${coinConfig?.coinName}`
               : "-"}
           </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-light-gray/40">Slippage</span>
+          <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
         </div>
       </div>
       <div className="flex gap-4">
@@ -518,13 +514,22 @@ export default function Buy({ coinConfig }: Props) {
           loading={isSwapping}
           onClick={swap}
         />
-        <div className="mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 bg-[rgba(252,252,252,0.03)] text-white rounded-full w-full h-10 sm:h-14 text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
-          onClick={() => { setOpen(true) }}
+        <div
+          className="mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 bg-[rgba(252,252,252,0.03)] text-white rounded-full w-full h-10 sm:h-14 text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
+          onClick={() => {
+            setOpen(true)
+          }}
         >
-          <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
+          <Image
+            src={"/calculator.svg"}
+            alt={""}
+            width={16}
+            height={16}
+            className="shrink-0"
+          />
           Calculate
         </div>
       </div>
     </div>
   )
-} 
+}

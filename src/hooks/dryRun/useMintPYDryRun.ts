@@ -2,19 +2,17 @@ import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
 import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo } from "../types"
+import type { DebugInfo, MoveCallInfo } from "../types"
 import { ContractError } from "../types"
 import Decimal from "decimal.js"
 import type { CoinData } from "@/types"
 import type { PyPosition } from "../types"
 import useFetchPyPosition from "../useFetchPyPosition"
-import {
-  depositSyCoin,
-  initPyPosition,
-  mintPY,
-  splitCoinHelper,
-} from "@/lib/txHelper"
+import { depositSyCoin, mintPY, splitCoinHelper } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
+import { initPyPosition } from "@/lib/txHelper/position"
+import { mintMultiSCoin } from "@/lib/txHelper/coin"
+import { NEED_MIN_VALUE_LIST } from "@/lib/constants"
 
 type MintResult = {
   ptAmount: string
@@ -23,7 +21,7 @@ type MintResult = {
 
 export default function useMintPYDryRun(
   coinConfig?: CoinConfig,
-  debug: boolean = false,
+  debug: boolean = false
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
@@ -31,11 +29,17 @@ export default function useMintPYDryRun(
 
   return useMutation({
     mutationFn: async ({
+      tokenType,
       mintValue,
       coinData,
+      slippage,
+      vaultId,
       pyPositions: inputPyPositions,
     }: {
+      slippage: string
+      vaultId?: string
       mintValue: string
+      tokenType: number
       coinData: CoinData[]
       pyPositions?: PyPosition[]
     }): Promise<[MintResult] | [MintResult, DebugInfo]> => {
@@ -53,35 +57,61 @@ export default function useMintPYDryRun(
         ? ((await fetchPyPositionAsync()) as [PyPosition[]])
         : [inputPyPositions]
 
+      const moveCallInfos: MoveCallInfo[] = []
+
       const tx = new Transaction()
       tx.setSender(address)
 
-      // Handle py position creation
-      let pyPosition
-      let created = false
-      if (!pyPositions?.length) {
-        created = true
-        pyPosition = initPyPosition(tx, coinConfig)
-      } else {
-        pyPosition = tx.object(pyPositions[0].id)
-      }
+      const { pyPosition, created } = initPyPosition({
+        tx,
+        coinConfig,
+        pyPositions,
+      })
+
+      const limited =
+        tokenType === 0
+          ? NEED_MIN_VALUE_LIST.some(
+              (item) =>
+                item.provider === coinConfig.provider ||
+                item.coinType === coinConfig.coinType
+            )
+          : false
 
       const amount = new Decimal(mintValue)
         .mul(new Decimal(10).pow(coinConfig.decimal))
         .toString()
 
-      const [splitCoin] = splitCoinHelper(
-        tx,
-        coinData,
-        [amount],
-        coinConfig.coinType,
-      )
+      const [[splitCoin, sCoin], mintSCoinMoveCall] =
+        tokenType === 0
+          ? await mintMultiSCoin({
+              tx,
+              amount,
+              limited,
+              vaultId,
+              address,
+              slippage,
+              coinData,
+              coinConfig,
+              debug: true,
+              coinAmount: amount,
+              splitAmounts: [amount],
+            })
+          : [
+              splitCoinHelper(tx, coinData, [amount], coinConfig.coinType),
+              [] as MoveCallInfo[],
+            ]
+
+      moveCallInfos.push(...mintSCoinMoveCall)
+
+      if (sCoin) {
+        tx.transferObjects([sCoin], address)
+      }
 
       const syCoin = depositSyCoin(
         tx,
         coinConfig,
         splitCoin,
-        coinConfig.coinType,
+        coinConfig.coinType
       )
 
       const [priceVoucher] = getPriceVoucher(tx, coinConfig)
@@ -92,7 +122,7 @@ export default function useMintPYDryRun(
         syCoin,
         priceVoucher,
         pyPosition,
-        true,
+        true
       )
 
       if (created) {

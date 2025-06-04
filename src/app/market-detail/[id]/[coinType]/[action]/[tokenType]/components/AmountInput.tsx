@@ -78,15 +78,15 @@ export default function AmountInput({
                 e.target instanceof HTMLElement && e.target.blur()
               }
               className={cn(
-                "bg-transparent outline-none min-w-0 placeholder:text-xl sm:placeholder:text-3xl p-0 font-bold w-full shrink-0 placeholder:text-[rgba(252,252,252,0.40)] text-white",
+                "bg-transparent outline-none min-w-0 placeholder:text-xl p-0 font-medium w-full shrink-0 placeholder:text-[rgba(252,252,252,0.40)] text-white",
                 disabled && "cursor-not-allowed",
                 amount.length <= 8
-                  ? "text-xl sm:text-3xl"
+                  ? "text-xl"
                   : amount.length <= 10
-                  ? "text-lg sm:text-2xl"
+                  ? "text-lg"
                   : amount.length <= 16
-                  ? "text-base sm:text-xl"
-                  : "text-sm sm:text-base"
+                  ? "text-base"
+                  : "text-sm"
               )}
             />
             <div className="flex">
@@ -141,14 +141,14 @@ export default function AmountInput({
                     </div>
                   )}
                   {maturity && (
-                    <span className="text-xs sm:text-sm text-[rgba(252,252,252,0.40)] min-w-24">
+                    <span className="text-xs sm:text-sm text-light-gray/40">
                       {dayjs(parseInt(maturity)).format("DD MMM YYYY")}
                     </span>
                   )}
                 </div>
                 <div>
                   {isBalanceLoading || isConfigLoading ? (
-                    <Skeleton className="h-3 sm:h-4 w-28 sm:w-40 bg-[rgba(252,252,252,0.10)]" />
+                    <Skeleton className="bg-[rgba(252,252,252,0.10)]" />
                   ) : (
                     <button
                       title={`${formatDecimalValue(
@@ -157,7 +157,7 @@ export default function AmountInput({
                       )} ${coinName}`}
                       disabled={disabled}
                       className={cn(
-                        "flex gap-x-1 text-xs sm:text-sm",
+                        "flex items-center gap-x-1 text-xs sm:text-sm",
                         disabled
                           ? "cursor-not-allowed "
                           : " cursor-pointer hover:underline"
@@ -181,7 +181,7 @@ export default function AmountInput({
                     >
                       <Wallet className="size-3 sm:size-3.5" />
                       {isConnected ? (
-                        <span className="max-w-40 truncate text-left text-[rgba(252,252,252,0.40)]">
+                        <span className="truncate text-left text-[rgba(252,252,252,0.40)]">
                           {`${formatDecimalValue(
                             coinBalance,
                             decimal
