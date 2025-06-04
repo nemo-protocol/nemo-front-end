@@ -354,35 +354,38 @@ export default function MarketDetailPage() {
           )}
         </div>
         {/* POOL RATIO */}
-        <div className="mb-3 sm:mb-4 cursor-pointer">
+        <div className="flex flex-col">
+          <span className="text-xs font-medium mb-4 text-[#FCFCFC]/40">
+            POOL RATIO
+          </span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span>{ptRatio}%</span>
-                    <span>{syRatio}%</span>
+                <div className="space-y-2 cursor-pointer">
+                  <div className="flex justify-between items-end text-xs">
+                    <span className="text-base">{ptRatio}%</span>
+                    <span className="text-light-gray/40">{syRatio}%</span>
                   </div>
                   <Progress
                     value={Number(ptRatio)}
-                    className="h-2 bg-[#2DF4DD]"
-                    indicatorClassName="bg-[#2C62D8]"
+                    className="h-1 bg-light-gray/10"
+                    indicatorClassName="bg-white"
                   />
-                  <div className="flex justify-between mb-3 sm:mb-4 text-xs sm:text-sm">
+                  <div className="flex justify-between text-xs text-light-gray/40">
                     <span>PT {coinConfig?.coinName}</span>
                     <span>{coinConfig?.coinName}</span>
                   </div>
                 </div>
               </TooltipTrigger>
               <TooltipContent
-                className="bg-[#12121B] border border-[#2D2D48] rounded-lg p-2 sm:p-3 text-xs sm:text-sm relative mb-2"
+                className="bg-dark-gray border border-light-gray/10 rounded-lg p-2 sm:p-3 text-xs sm:text-sm relative mb-2"
                 side="top"
                 align="end"
                 sideOffset={5}
               >
                 <div className="text-white space-y-1">
                   <div className="flex justify-between items-center gap-x-2 sm:gap-x-4">
-                    <span>
+                    <span className="text-light-gray/40">
                       {coinConfig.marketState.totalPt && coinConfig.decimal
                         ? `${formatDecimalValue(
                             new Decimal(coinConfig.marketState.totalPt).div(
@@ -394,9 +397,9 @@ export default function MarketDetailPage() {
                       PT {coinConfig?.coinName}:
                     </span>
                     <span>
-                      {coinConfig.marketState?.totalSy && coinConfig.decimal
-                        ? `${formatDecimalValue(
-                            new Decimal(coinConfig.marketState.totalSy).div(
+                      {coinConfig.marketState?.totalPt && coinConfig.decimal
+                        ? `$${formatDecimalValue(
+                            new Decimal(coinConfig.marketState.totalPt).div(
                               new Decimal(10).pow(coinConfig.decimal)
                             ),
                             2
@@ -405,7 +408,7 @@ export default function MarketDetailPage() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center gap-x-2 sm:gap-x-4">
-                    <span>
+                    <span className="text-light-gray/40">
                       {coinConfig.marketState.totalSy && coinConfig.decimal
                         ? `${formatDecimalValue(
                             new Decimal(coinConfig.marketState.totalSy).div(
@@ -418,7 +421,7 @@ export default function MarketDetailPage() {
                     </span>
                     <span>
                       {coinConfig.marketState?.totalSy && coinConfig.decimal
-                        ? `${formatDecimalValue(
+                        ? `$${formatDecimalValue(
                             new Decimal(coinConfig.marketState.totalSy).div(
                               new Decimal(10).pow(coinConfig.decimal)
                             ),
