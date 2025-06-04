@@ -15,6 +15,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 import TransactionStatusDialog from "@/components/TransactionStatusDialog"
 import { useDialogStore } from "@/lib/dialog"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 const queryClient = new QueryClient()
 
@@ -54,12 +55,14 @@ export default function RootLayout({
           >
             <WalletProvider autoConnect={true} chains={[SuiMainnetChain]}>
               <ToastProvider>
-                <Toaster />
-                <AnimatePresence>
-                  <Header key="header" />
-                  <section>{children}</section>
-                  <Footer key="footer" />
-                </AnimatePresence>
+                <TooltipProvider>
+                  <Toaster />
+                  <AnimatePresence>
+                    <Header key="header" />
+                    <section>{children}</section>
+                    <Footer key="footer" />
+                  </AnimatePresence>
+                </TooltipProvider>
               </ToastProvider>
               <TransactionStatusDialog
                 open={open}

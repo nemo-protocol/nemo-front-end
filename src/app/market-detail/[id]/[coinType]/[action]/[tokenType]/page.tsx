@@ -22,6 +22,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Progress } from "@/components/ui/progress"
+import { APYTooltip } from "@/components/APYTooltip"
+import Image from "next/image"
 
 export default function MarketDetailPage() {
   const params = useParams()
@@ -328,31 +330,71 @@ export default function MarketDetailPage() {
           </span>
         </div>
         {/* POOL APY */}
-        <div className="flex flex-col">
-          <span className="text-xs font-medium mb-4 text-[#FCFCFC]/40">
-            POOL APY
-          </span>
-          <span className="text-lg font-semibold text-white">
-            ${formatLargeNumber(coinConfig.poolApy)}%
-          </span>
-          {isValidAmount(coinConfig.poolApyRateChange) && (
-            <span
-              className={[
-                "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
-                new Decimal(coinConfig.poolApyRateChange).gt(0)
-                  ? "text-[#4CC877] bg-[#4CC877]/10"
-                  : "text-[#FF2E54] bg-[#FF2E54]/10",
-              ].join(" ")}
-            >
-              ${new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
-              {new Decimal(coinConfig.poolApyRateChange).gt(0) ? (
-                <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
-              ) : (
-                <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
+        <APYTooltip
+          config={{
+            poolApy: Number(coinConfig.poolApy),
+            perPoints: coinConfig.perPoints
+              ? Number(coinConfig.perPoints)
+              : undefined,
+            incentives: coinConfig.marketState?.rewardMetrics?.map(
+              (metric) => ({
+                tokenLogo: metric.tokenLogo,
+                apy:
+                  ((Number(metric.dailyEmission) *
+                    Number(metric.tokenPrice) *
+                    365) /
+                    Number(coinConfig.tvl)) *
+                  100,
+              })
+            ),
+          }}
+          trigger={
+            <div className="flex flex-col cursor-pointer">
+              <span className="text-xs font-medium mb-4 text-[#FCFCFC]/40 flex items-center gap-x-2">
+                <span>POOL APY</span>
+                {coinConfig.marketState?.rewardMetrics?.length > 0 && (
+                  <Image
+                    src="/assets/images/gift.svg"
+                    alt="gift"
+                    className="w-3 h-3"
+                    width={12}
+                    height={12}
+                  />
+                )}
+                {coinConfig.perPoints && (
+                  <Image
+                    src="/assets/images/star.svg"
+                    alt="star"
+                    className="w-3 h-3"
+                    width={12}
+                    height={12}
+                  />
+                )}
+              </span>
+              <span className="text-lg font-semibold text-white">
+                ${formatLargeNumber(coinConfig.poolApy)}%
+              </span>
+              {isValidAmount(coinConfig.poolApyRateChange) && (
+                <span
+                  className={[
+                    "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+                    new Decimal(coinConfig.poolApyRateChange).gt(0)
+                      ? "text-[#4CC877] bg-[#4CC877]/10"
+                      : "text-[#FF2E54] bg-[#FF2E54]/10",
+                  ].join(" ")}
+                >
+                  ${new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
+                  {new Decimal(coinConfig.poolApyRateChange).gt(0) ? (
+                    <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
+                  ) : (
+                    <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
+                  )}
+                </span>
               )}
-            </span>
-          )}
-        </div>
+            </div>
+          }
+        />
+
         {/* POOL RATIO */}
         <div className="flex flex-col">
           <span className="text-xs font-medium mb-4 text-[#FCFCFC]/40">

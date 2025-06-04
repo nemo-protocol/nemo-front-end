@@ -1,5 +1,6 @@
 "use client"
 
+import { APYTooltip } from "@/components/APYTooltip"
 import dayjs from "dayjs"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -34,6 +35,7 @@ export default function MarketPage() {
   const [listMode, setListMode] = useState<"list" | "grid" | undefined>(
     undefined
   )
+  const [tooltipOpen, setTooltipOpen] = useState<Record<string, boolean>>({})
 
   // 页面挂载后读取缓存
   useEffect(() => {
@@ -186,9 +188,7 @@ export default function MarketPage() {
             src={row.original.coinLogo}
             alt={row.original.coinName}
           />
-          <span className="font-medium text-base">
-            {row.original.coinName}
-          </span>
+          <span className="font-medium text-base">{row.original.coinName}</span>
           {row.original.ptTokenType && (
             <span className="text-light-gray/40 bg-[#956EFF]/10 text-xs px-1.5 py-1 rounded-lg ml-1">
               V2 TOKEN
@@ -251,34 +251,59 @@ export default function MarketPage() {
       header: "POOL APY",
       headerColor: "#956EFF",
       cell: ({ row }) => (
-        <button
-          onClick={() =>
-            handleTokenClick(
-              row.original.id,
-              row.original.coinType,
-              "provide",
-              "pool"
-            )
+        <APYTooltip
+          config={{
+            perPoints: Number(row.original.perPoints),
+            boost: Number(row.original.boost),
+            scaledPtApy: Number(row.original.scaledPtApy),
+            scaledUnderlyingApy: Number(row.original.scaledUnderlyingApy),
+            swapFeeApy: Number(row.original.swapFeeApy),
+            feeApy: Number(row.original.feeApy),
+            poolApy: Number(row.original.poolApy),
+            incentives: row.original.incentives?.map((incentive) => ({
+              tokenLogo: incentive.tokenLogo,
+              apy: Number(incentive.apy),
+            })),
+            scaledTotalApy:
+              Number(row.original.scaledPtApy) +
+              Number(row.original.scaledUnderlyingApy) +
+              Number(row.original.swapFeeApy),
+          }}
+          open={tooltipOpen[row.original.id]}
+          onOpenChange={(open) =>
+            setTooltipOpen((prev) => ({ ...prev, [row.original.id]: open }))
           }
-          className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer"
-        >
-          <span className="text-white">
-            {formatLargeNumber(row.original.poolApy, 2)}%
-          </span>
-          <Image
-            src="/assets/images/star.svg"
-            alt="star"
-            width={16}
-            height={16}
-          />
-          <Image
-            src="/assets/images/gift.svg"
-            alt="gift"
-            width={16}
-            height={16}
-          />
-          <Plus size={18} className="text-[#956EFF]" />
-        </button>
+          trigger={
+            <button
+              onClick={() =>
+                handleTokenClick(
+                  row.original.id,
+                  row.original.coinType,
+                  "provide",
+                  "pool"
+                )
+              }
+              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer"
+            >
+              <span className="text-white">
+                {formatLargeNumber(row.original.poolApy, 2)}%
+              </span>
+              <Image
+                src="/assets/images/star.svg"
+                alt="star"
+                width={16}
+                height={16}
+              />
+              <Image
+                src="/assets/images/gift.svg"
+                alt="gift"
+                width={16}
+                height={16}
+              />
+              <Plus size={18} className="text-[#956EFF]" />
+            </button>
+          }
+        />
       ),
     },
     {

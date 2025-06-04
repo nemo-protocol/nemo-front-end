@@ -242,7 +242,7 @@ export default function Redeem({ coinConfig }: Props) {
           disabled={!isConnected}
         />
       </div>
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-4">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
         <ChevronsDown className="w-5 h-5" />
       </div>
       <AmountOutput
