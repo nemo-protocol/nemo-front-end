@@ -118,8 +118,8 @@ export default function MarketPage() {
   ]
 
   // 更新展开状态并保存到 localStorage
-  const updateOpenState = (coinType: string, isOpen: boolean) => {
-    const newState = { ...open, [coinType]: isOpen }
+  const updateOpenState = (groupName: string, isOpen: boolean) => {
+    const newState = { ...open, [groupName]: isOpen }
     setOpen(newState)
     if (typeof window !== "undefined") {
       localStorage.setItem("marketExpandedState", JSON.stringify(newState))
@@ -130,15 +130,15 @@ export default function MarketPage() {
   const grouped = useMemo(() => {
     const map: Record<string, CoinInfoWithMetrics[]> = {}
     coinList.forEach((item) => {
-      if (!map[item.coinType]) map[item.coinType] = []
-      map[item.coinType].push(item)
+      if (!map[item.groupName]) map[item.groupName] = []
+      map[item.groupName].push(item)
     })
     // 计算每组TVL总和
-    const groupArr = Object.entries(map).map(([coinType, arr]) => ({
-      coinType,
+    const groupArr = Object.entries(map).map(([groupName, arr]) => ({
+      groupName,
       arr,
-      coinLogo: arr[0].coinLogo,
-      coinName: arr[0].coinName,
+      coinLogo: arr[0].groupLogo,
+      coinName: arr[0].groupName,
       totalTvl: arr.reduce((sum, c) => sum + Number(c.tvl), 0),
     }))
     // 按TVL总和降序
@@ -411,14 +411,14 @@ export default function MarketPage() {
             </div>
           ) : (
             filteredGroups.map(
-              ({ coinName, coinLogo, coinType, arr, totalTvl }) => (
+              ({ coinName, coinLogo, groupName, arr, totalTvl }) => (
                 <div
-                  key={coinType}
+                  key={groupName}
                   className="rounded-3xl bg-light-gray/[0.03]"
                 >
                   <button
                     className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
-                    onClick={() => updateOpenState(coinType, !open[coinType])}
+                    onClick={() => updateOpenState(groupName, !open[groupName])}
                     style={{ borderRadius: "24px 24px 0 0" }}
                   >
                     <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
@@ -434,7 +434,7 @@ export default function MarketPage() {
                       </span>
                       <ChevronDown
                         className={`transition-transform duration-200 ml-2 ${
-                          open[coinType] ? "rotate-180" : ""
+                          open[groupName] ? "rotate-180" : ""
                         } text-white/70`}
                         size={28}
                       />
@@ -446,7 +446,7 @@ export default function MarketPage() {
                       </span>
                     </div>
                   </button>
-                  {open[coinType] && (
+                  {open[groupName] && (
                     <div className="px-8 pb-8 pt-2">
                       <div className="overflow-x-auto">
                         <DataTable columns={columns} data={arr} />

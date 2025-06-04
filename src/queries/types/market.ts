@@ -16,6 +16,7 @@ export interface MarketState {
 // FIXME: optimize this
 export interface BaseCoinInfo {
   id: string
+  tvl: string
   coinLogo: string
   maturity: string
   startTime: string
@@ -52,6 +53,8 @@ export interface BaseCoinInfo {
   yieldTokenType: string
   tokenRegistryState: string
   ptPrice: string
+  ptTvl: string
+  syTvl: string
 }
 
 export interface Incentive {
@@ -69,8 +72,6 @@ export interface CoinInfoWithMetrics extends BaseCoinInfo {
   ytApy: string
   tvl: string
   poolApy: string
-  ptTvl: string
-  syTvl: string
   marketState: MarketState
   scaledApy: string
   underlyingApy: string
@@ -83,6 +84,9 @@ export interface CoinInfoWithMetrics extends BaseCoinInfo {
   swapFeeApy: string
   incentiveApy: string
   lpPrice: string
+  groupName: string
+  groupLogo: string
+  
 }
 
 interface BuiltOn {
@@ -97,7 +101,6 @@ export interface CoinConfig extends BaseCoinInfo {
   ytAddress: string | null | undefined
   assetAddress: string | null | undefined
   marketIntro: string
-
   PtAddress: string | null | undefined
   poolApyRateChange: string
   poolApy: string
@@ -105,9 +108,10 @@ export interface CoinConfig extends BaseCoinInfo {
   yieldApy: string
   fixedApyRateChange: string
   fixedApy: string
+  volume: string
   volumeRateChange: string
-  liquidityRateChange: string
   liquidity: string
+  liquidityRateChange: string
   pyStoreId: string
   pyPosition: string
   pyPositionType: string
