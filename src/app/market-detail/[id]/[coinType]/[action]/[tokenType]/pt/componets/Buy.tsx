@@ -510,16 +510,10 @@ export default function Buy({ coinConfig }: Props) {
             </SelectTrigger>
             <SelectContent className="border-none outline-none bg-[#0E0F16]">
               <SelectGroup>
-                <SelectItem
-                  value={"0"}
-                  className="cursor-pointer text-white"
-                >
+                <SelectItem value={"0"} className="cursor-pointer text-white">
                   {coinConfig?.underlyingCoinName}
                 </SelectItem>
-                <SelectItem
-                  value={"1"}
-                  className="cursor-pointer text-white"
-                >
+                <SelectItem value={"1"} className="cursor-pointer text-white">
                   {coinConfig?.coinName}
                 </SelectItem>
               </SelectGroup>
@@ -607,9 +601,7 @@ export default function Buy({ coinConfig }: Props) {
           <span>Trading Fees</span>
           <span className="text-white">
             {ptFeeValue
-              ? `${formatDecimalValue(ptFeeValue, 2)} ${
-                  coinConfig?.coinName
-                }`
+              ? `${formatDecimalValue(ptFeeValue, 2)} ${coinConfig?.coinName}`
               : "--"}
           </span>
         </div>

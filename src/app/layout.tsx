@@ -1,7 +1,6 @@
 "use client"
 
 import "./globals.css"
-import { network } from "@/config"
 import { getFullnodeUrl } from "@mysten/sui/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Header from "@/components/Header"
@@ -14,6 +13,8 @@ import { SuiMainnetChain, WalletProvider } from "@nemoprotocol/wallet-kit"
 import "@nemoprotocol/wallet-kit/style.css"
 import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
+import TransactionStatusDialog from "@/components/TransactionStatusDialog"
+import { useDialogStore } from "@/lib/dialog"
 
 const queryClient = new QueryClient()
 
@@ -34,6 +35,9 @@ export default function RootLayout({
   const router = useRouter()
   const pathname = usePathname()
 
+  const { open, status, network, txId, message, onClose, hideDialog } =
+    useDialogStore()
+
   useEffect(() => {
     if (pathname === "/") {
       router.push("/market")
@@ -43,7 +47,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans">
-        <Toaster />
         <QueryClientProvider client={queryClient}>
           <SuiClientProvider
             networks={networkConfig}
@@ -51,12 +54,24 @@ export default function RootLayout({
           >
             <WalletProvider autoConnect={true} chains={[SuiMainnetChain]}>
               <ToastProvider>
+                <Toaster />
                 <AnimatePresence>
                   <Header key="header" />
                   <section>{children}</section>
                   <Footer key="footer" />
                 </AnimatePresence>
               </ToastProvider>
+              <TransactionStatusDialog
+                open={open}
+                status={status}
+                network={network}
+                txId={txId}
+                message={message}
+                onClose={() => {
+                  hideDialog()
+                  onClose?.()
+                }}
+              />
             </WalletProvider>
           </SuiClientProvider>
         </QueryClientProvider>
