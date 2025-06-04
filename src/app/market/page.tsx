@@ -57,7 +57,7 @@ export default function MarketPage() {
       label: "Markets",
       active: tab === "all",
       onChange: () => setTab("all"),
-      desc: "View all available markets",
+      content: "View all available markets",
     },
     {
       id: "search",
@@ -177,6 +177,7 @@ export default function MarketPage() {
     {
       accessorKey: "coinName",
       header: "MARKET",
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <Image
@@ -185,7 +186,7 @@ export default function MarketPage() {
             src={row.original.coinLogo}
             alt={row.original.coinName}
           />
-          <span className="font-semibold text-base">
+          <span className="font-medium text-base">
             {row.original.coinName}
           </span>
           {row.original.ptTokenType && (
@@ -199,7 +200,7 @@ export default function MarketPage() {
     {
       accessorKey: "maturity",
       header: "MATURITY",
-      width: 400,
+      width: 300,
       cell: ({ row }) => {
         const maturity = parseInt(row.original.maturity)
         const startTime = parseInt(row.original.startTime)
@@ -211,15 +212,23 @@ export default function MarketPage() {
         if (activeCount > count) activeCount = count
         if (activeCount < 0) activeCount = 0
         return (
-          <div className="grid grid-cols-8">
-            <span className="text-white text-sm col-span-2">
-              {`${formatTimeDiff(maturity).toLocaleLowerCase()} left`}
-            </span>
-            <span className="col-span-4">
-              <StripedBar gap={2} rounded count={count} barWidth={3} activeCount={activeCount} />
-            </span>
-            <span className="col-span-2 shrink-0 text-sm text-white/40 font-medium">
-              {dayjs(maturity).format("DD MMM YYYY")}
+          <div className="grid grid-cols-5">
+            <div className="col-span-2 flex flex-col items-start gap-x-2">
+              <span className="text-white text-sm">
+                {`${formatTimeDiff(maturity).toLocaleLowerCase()} left`}
+              </span>
+              <span className="col-span-3 shrink-0 text-xs text-white/40 font-medium">
+                {dayjs(maturity).format("DD MMM YYYY")}
+              </span>
+            </div>
+            <span className="col-span-2">
+              <StripedBar
+                gap={2}
+                rounded
+                count={count}
+                barWidth={3}
+                activeCount={activeCount}
+              />
             </span>
           </div>
         )

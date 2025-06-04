@@ -42,7 +42,10 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
             />
           </TooltipTrigger>
           {content && (
-            <TooltipContent side={side} className="border-none p-0">
+            <TooltipContent
+              side={side}
+              className="border border-line-gray px-2.5 py-4.5 rounded-xl bg-dark-gray"
+            >
               {content}
             </TooltipContent>
           )}

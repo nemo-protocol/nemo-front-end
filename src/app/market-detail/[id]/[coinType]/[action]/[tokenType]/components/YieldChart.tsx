@@ -16,6 +16,7 @@ import { CoinConfig, Granularity, TokenType } from "@/queries/types/market"
 import Image from "next/image"
 import { useApyHistory } from "@/hooks/useApyHistory"
 import { useParams } from "next/navigation"
+import React from "react"
 
 const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
   { label: "1m", granularity: "MINUTELY", seconds: 60 * 60 },
@@ -121,21 +122,6 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     <>
       <div className="mb-4 flex items-center justify-between">
         <div className="relative" ref={dropRef}>
-          {/* <button
-            className="flex text-[#FCFCFC66] cursor-pointer items-center gap-1 text-[12px] font-medium uppercase "
-            onClick={() => setOpen((o) => !o)}
-          >
-            {TOKEN_TYPES.find((t) => t.value === tokenType)!.label}
-            <svg width="10" height="10" viewBox="0 0 20 20">
-              <path
-                d="M5 7l5 5 5-5"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-              />
-            </svg>
-          </button> */}
-
           <div className="flex items-center mt-2 gap-2">
             <p className="text-[20px] font-[550]">{mainMetric.value}</p>
 
@@ -164,23 +150,6 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
               </span>
             )}
           </div>
-
-          {/* {open && (
-            <ul className="absolute z-10 mt-0 top-[20px] w-32 rounded-md border border-[#3F3F3F] bg-[#0E1520] backdrop-blur text-[12px] text-[#FCFCFC66] shadow-lg">
-              {TOKEN_TYPES.map((opt) => (
-                <li
-                  key={opt.value}
-                  onClick={() => {
-                    setTokenType(opt.value)
-                    setOpen(false)
-                  }}
-                  className={`cursor-pointer px-3 py-2 hover:bg-white/10`}
-                >
-                  {opt.label}
-                </li>
-              ))}
-            </ul>
-          )} */}
         </div>
 
         <div className="flex gap-3 text-[12px]">
@@ -222,9 +191,49 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
             tick={{ fill: "rgba(252,252,252,0.4)", fontSize: 10 }}
           />
           <Tooltip
-            contentStyle={{ background: "#111827", border: "none" }}
-            labelFormatter={(v) => dayjs(v).format("YYYY-MM-DD HH:mm")}
-            formatter={(v: number) => `${v.toFixed(6)}%`}
+            content={({ active, payload, label }) => {
+              if (!active || !payload || !payload.length) return null
+              // 兼容 recharts payload 结构
+              const apy = Array.isArray(payload[0].value)
+                ? payload[0].value[0]
+                : payload[0].value
+              return (
+                <div
+                  style={{
+                    background: "#0E1520",
+                    border: "1px solid #3F3F3F",
+                    borderRadius: 12,
+                    padding: "16px 24px 12px 24px",
+                    minWidth: 240,
+                    color: "#fff",
+                    boxShadow: "0 4px 24px 0 rgba(0,0,0,0.24)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: 12,
+                    }}
+                  >
+                    <span className="text-light-gray/40 text-sm">
+                      Yield APY
+                    </span>
+                    <span className="text-white text-sm">
+                      {formatPercent(Number(apy), 2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-light-gray/40 text-sm">Time</span>
+                    <span className="text-white text-sm">
+                      {dayjs(label as string).format("YYYY-MM-DD HH:mm")}
+                    </span>
+                  </div>
+                </div>
+              )
+            }}
+            cursor={{ fill: "rgba(45, 244, 221, 0.10)" }}
           />
           <Line
             type="stepAfter"

@@ -105,16 +105,16 @@ const TransactionStatusDialog: React.FC<TransactionStatusDialogProps> = ({
             )}
             {status === "Success" && (
               <div className="py-2 flex flex-col gap-y-1 items-center">
-                <p className="text-white/50">Transaction submitted!</p>
+                <div className="text-white/50">Transaction submitted!</div>
                 <ViewDetailsPopover />
               </div>
             )}
             {status === "Failed" && (
               <div className="py-2 flex flex-col gap-y-1 items-center">
-                <p className="text-red-400">Transaction Error</p>
-                <p className="text-red-500 max-w-[446px] break-words whitespace-pre-wrap">
+                <div className="text-red-400">Transaction Error</div>
+                <div className="text-red-500 max-w-[446px] break-words whitespace-pre-wrap">
                   {message}
-                </p>
+                </div>
                 {txId && <ViewDetailsPopover />}
               </div>
             )}

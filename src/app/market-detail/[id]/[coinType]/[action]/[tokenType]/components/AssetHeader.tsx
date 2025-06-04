@@ -63,22 +63,22 @@ export default function AssetHeader({ coinConfig }: Props) {
               <Item
                 label="ASSET ADDRESS"
                 value={shortenAddress(coinConfig.assetAddress)}
-                link={coinConfig.marketPositionType}
+                link={`https://suivision.xyz/nft/collection/${coinConfig.assetAddress}`}
               />
               <Item
                 label="YT ADDRESS"
                 value={shortenAddress(coinConfig.ytAddress)}
-                link={coinConfig.marketPositionType}
+                link={`https://suivision.xyz/nft/collection/${coinConfig.ytAddress}`}
               />
               <Item
                 label="PT ADDRESS"
                 value={shortenAddress(coinConfig.ptAddress)}
-                link={coinConfig.marketPositionType}
+                link={`https://suivision.xyz/nft/collection/${coinConfig.ptAddress}`}
               />
               <Item
                 label="MARKET ADDRESS"
                 value={shortenAddress(coinConfig.marketAddress)}
-                link={coinConfig.marketPositionType}
+                link={`https://suivision.xyz/nft/collection/${coinConfig.marketAddress}`}
               />
 
               {/* AUDIT BY */}

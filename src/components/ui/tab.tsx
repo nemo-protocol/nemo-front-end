@@ -8,7 +8,7 @@ export interface TabItem {
   onChange?: () => void
   active?: boolean
   icon?: React.ReactNode
-  desc?: string
+  content?: React.ReactNode
 }
 
 interface TabProps {
@@ -21,12 +21,14 @@ export function Tab({ items, className }: TabProps) {
     <div className={cn("flex items-center gap-8", className)}>
       {items.map((item) => (
         <div key={item.id} className="flex items-center gap-2 relative">
-          {item.desc ? (
-            <InfoTooltip active={item.active} content={item.desc}>
+          {item.content ? (
+            <InfoTooltip active={item.active} content={item.content}>
               <button
                 className={cn(
-                  "text-[32px] font-medium font-serif",
-                  item.active ? "text-white" : "text-light-gray/40"
+                  "text-2xl font-normal font-serif",
+                  item.active
+                    ? "text-white [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]"
+                    : "text-light-gray/40"
                 )}
                 onClick={item.onChange}
               >
@@ -36,8 +38,10 @@ export function Tab({ items, className }: TabProps) {
           ) : (
             <button
               className={cn(
-                "text-[32px] font-medium font-serif",
-                item.active ? "text-white" : "text-light-gray/40"
+                "text-[32px] font-normal font-serif",
+                item.active
+                  ? "text-white [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]"
+                  : "text-light-gray/40"
               )}
               onClick={item.onChange}
             >

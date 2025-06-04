@@ -56,44 +56,76 @@ export function DataTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead 
+                  <TableHead
                     key={header.id}
                     style={{
-                      width: (header.column.columnDef as ExtendedColumnDef<TData, TValue>).width
+                      width: (
+                        header.column.columnDef as ExtendedColumnDef<
+                          TData,
+                          TValue
+                        >
+                      ).width,
                     }}
                   >
                     {header.isPlaceholder ? null : (
                       <div
                         className={
                           header.column.getCanSort()
-                            ? "cursor-pointer select-none flex items-center gap-2"
-                            : ""
+                            ? "cursor-pointer select-none flex items-center gap-2 text-light-gray/40"
+                            : "text-light-gray/40"
                         }
                         onClick={header.column.getToggleSortingHandler()}
                         style={{
-                          color: (header.column.columnDef as ExtendedColumnDef<TData, TValue>).headerColor
+                          color: (
+                            header.column.columnDef as ExtendedColumnDef<
+                              TData,
+                              TValue
+                            >
+                          ).headerColor,
                         }}
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                        {header.column.getIsSorted() === "asc" ? (
-                          <span className="inline-flex items-center justify-center rounded-full bg-white/0" style={{backgroundColor: 'transparent'}}>
-                            <ArrowUp className="h-4 w-4 text-white" />
-                          </span>
-                        ) : header.column.getIsSorted() === "desc" ? (
-                          <span className="inline-flex items-center justify-center rounded-full bg-white/0" style={{backgroundColor: 'transparent'}}>
-                            <ArrowDown className="h-4 w-4 text-white" />
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center rounded-full bg-light-gray/[0.04]">
-                            <ChevronsUpDown className="h-4 w-4 text-[#C7CBD7]" />
-                          </span>
+                        {header.column.getCanSort() && (
+                          <>
+                            {header.column.getIsSorted() === "asc" ? (
+                              <span
+                                className="inline-flex items-center justify-center rounded-full bg-white/0"
+                                style={{ backgroundColor: "transparent" }}
+                              >
+                                <ArrowUp className="h-4 w-4 text-white" />
+                              </span>
+                            ) : header.column.getIsSorted() === "desc" ? (
+                              <span
+                                className="inline-flex items-center justify-center rounded-full bg-white/0"
+                                style={{ backgroundColor: "transparent" }}
+                              >
+                                <ArrowDown className="h-4 w-4 text-white" />
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center rounded-full bg-light-gray/[0.04]">
+                                <ChevronsUpDown className="h-4 w-4 text-[#C7CBD7]" />
+                              </span>
+                            )}
+                          </>
                         )}
-                        {(header.column.columnDef as ExtendedColumnDef<TData, TValue>).subHeader && (
+                        {(
+                          header.column.columnDef as ExtendedColumnDef<
+                            TData,
+                            TValue
+                          >
+                        ).subHeader && (
                           <span className="text-sm text-gray-400 ml-2">
-                            {(header.column.columnDef as ExtendedColumnDef<TData, TValue>).subHeader}
+                            {
+                              (
+                                header.column.columnDef as ExtendedColumnDef<
+                                  TData,
+                                  TValue
+                                >
+                              ).subHeader
+                            }
                           </span>
                         )}
                       </div>
@@ -112,10 +144,15 @@ export function DataTable<TData, TValue>({
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell 
+                  <TableCell
                     key={cell.id}
                     style={{
-                      width: (cell.column.columnDef as ExtendedColumnDef<TData, TValue>).width
+                      width: (
+                        cell.column.columnDef as ExtendedColumnDef<
+                          TData,
+                          TValue
+                        >
+                      ).width,
                     }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -134,4 +171,4 @@ export function DataTable<TData, TValue>({
       </Table>
     </div>
   )
-} 
+}

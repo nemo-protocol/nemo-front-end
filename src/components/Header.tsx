@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import { cn } from "@/lib/utils"
 
 import { useState } from "react"
@@ -7,7 +7,7 @@ import { IS_DEV } from "@/config"
 import { motion } from "framer-motion"
 import { truncateStr } from "@/lib/utils"
 import { useToast } from "@/components/Toast"
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation"
 
 import { ChevronDown, LayoutGrid } from "lucide-react"
 import { ConnectModal, useWallet } from "@nemoprotocol/wallet-kit"
@@ -18,20 +18,24 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import Image from "next/image"
 const MENU: {
-  label: string;
-  href: string;
-  icon?: string;
-  liCls?: string;
+  label: string
+  href: string
+  icon?: string
+  liCls?: string
 }[] = [
-    { label: 'Markets', href: '/market', icon: '/header/markets.svg' },
-    { label: 'My Portfolio', href: '/portfolio', icon: '/header/portfolio.svg' },
-    { label: 'Swap', href: '/swap', icon: '/header/swap.svg' },
-    // { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
-    { label: 'Leaderboard', href: '/leaderboard', icon: '/header/leaderboard.svg' },
-    { label: 'Airdrop', href: '/airdrop', icon: '/header/airdrop.svg' },
-
-  ];
+  { label: "Markets", href: "/market", icon: "/header/markets.svg" },
+  { label: "My Portfolio", href: "/portfolio", icon: "/header/portfolio.svg" },
+  { label: "Swap", href: "/swap", icon: "/header/swap.svg" },
+  // { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
+  {
+    label: "Leaderboard",
+    href: "/leaderboard",
+    icon: "/header/leaderboard.svg",
+  },
+  { label: "Airdrop", href: "/airdrop", icon: "/header/airdrop.svg" },
+]
 
 export default function Header({ className }: { className?: string }) {
   const toast = useToast()
@@ -50,17 +54,24 @@ export default function Header({ className }: { className?: string }) {
 
   return (
     <header className={cn("h-24.5 shrink-0", className)}>
-      <div className=" w-full h-full mx-auto flex bg-[#080E16] justify-between text-xs"
-
-        style={{ padding: '32px 30px' }}>
-        <div className="flex items-center gap-x-14"><Link href="/" className="flex gap-x-2 items-center">
-          <img src="/logo-nemo.svg" alt="logo" className="w-26 h-auto" />
-
-        </Link>
+      <div
+        className=" w-full h-full mx-auto flex bg-[#080E16] justify-between text-xs"
+        style={{ padding: "32px 30px" }}
+      >
+        <div className="flex items-center gap-x-14">
+          <Link href="/" className="flex gap-x-2 items-center">
+            <Image
+              src="/logo-nemo.svg"
+              alt="logo"
+              className="w-26 h-auto"
+              width={106}
+              height={32}
+            />
+          </Link>
 
           <ul className="md:flex gap-x-4 items-center hidden h-full text-sm font-medium">
-            {MENU.map(({ label, href, icon, liCls = '' }) => {
-              const active = location === href;
+            {MENU.map(({ label, href, icon, liCls = "" }) => {
+              const active = location === href
 
               return (
                 <li key={href} className={liCls}>
@@ -69,16 +80,26 @@ export default function Header({ className }: { className?: string }) {
                     className={`
                 flex items-center gap-x-2 px-3 py-2 rounded-full
                 transition-colors duration-200
-                ${active
-                        ? 'bg-gradient-to-r from-white/10 to-white/5 text-white'
-                        : 'text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5'}
+                ${
+                  active
+                    ? "bg-gradient-to-r from-white/10 to-white/5 text-white"
+                    : "text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5"
+                }
               `}
                   >
-                    {icon && <img src={icon} alt="" className="w-4 h-4" />}
+                    {icon && (
+                      <Image
+                        src={icon}
+                        alt=""
+                        width={16}
+                        height={16}
+                        className="w-4 h-4"
+                      />
+                    )}
                     <span>{label}</span>
                   </Link>
                 </li>
-              );
+              )
             })}
           </ul>
         </div>
@@ -88,17 +109,26 @@ export default function Header({ className }: { className?: string }) {
               "relative h-full text-center cursor-pointer items-center justify-center",
               "bg-transparent md:flex hidden",
             ].join(" ")}
-          >
-          </span>
+          ></span>
           {location === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-x-1 border-none outline-none">
+              <DropdownMenuTrigger className="flex items-center gap-x-1 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
+                <Image
+                  src="/assets/images/wallet.svg"
+                  alt="wallet"
+                  className="size-4"
+                  width={16}
+                  height={16}
+                />
                 <span className="text-white">
                   {truncateStr(currentAccount?.address || "", 4)}
                 </span>
-                <ChevronDown className="size-3 mt-1" />
+                <ChevronDown className="size-3" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#0E0F16] border-none min-w-[140px]">
+              <DropdownMenuContent
+                className="bg-[#0E0F16] border-none min-w-[140px]"
+                align="end"
+              >
                 <DropdownMenuItem>
                   <button
                     onClick={() => disconnect()}
@@ -124,24 +154,30 @@ export default function Header({ className }: { className?: string }) {
               theme="dark"
               open={open}
               onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
-            // trigger={
-            //   <button
-            //     disabled={!!currentAccount}
-            //     className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
-            //   >
-            //     <span className="hidden md:inline-block">Connect Wallet</span>
-            //     <span className="inline-block md:hidden text-xs">
-            //       Connect
-            //     </span>
-            //   </button>
-            // }
+              // trigger={
+              //   <button
+              //     disabled={!!currentAccount}
+              //     className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
+              //   >
+              //     <span className="hidden md:inline-block">Connect Wallet</span>
+              //     <span className="inline-block md:hidden text-xs">
+              //       Connect
+              //     </span>
+              //   </button>
+              // }
             >
               <button
                 disabled={!!currentAccount}
-
-                className="bg-gradient-to-r from-white/10 to-white/5 text-white flex gap-x-2 items-center justify-center cursor-pointer text-white outline-none py-2 px-2.5 rounded-2xl"
+                className="bg-light-gray/[0.03] text-white flex gap-x-1 items-center justify-center cursor-pointer outline-none py-2 px-2.5 rounded-full"
               >
-                <img src={"/header/wallet.svg"} alt="icon" className="size-4 ml-1" /> <span className="hidden md:inline-block">  Connect Wallet</span>
+                <Image
+                  src={"/assets/images/wallet.svg"}
+                  alt="icon"
+                  className="size-4"
+                  width={16}
+                  height={16}
+                />{" "}
+                <span className="hidden md:inline-block"> Connect Wallet</span>
                 <span className="inline-block md:hidden text-xs">Connect</span>
               </button>
             </ConnectModal>
