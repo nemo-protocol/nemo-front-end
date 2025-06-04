@@ -139,6 +139,8 @@ export interface CoinConfig extends BaseCoinInfo {
 export interface PortfolioItem extends CoinConfig {
   lpPrice: string
   ytPrice: string
+  ytTokenLogo: string;
+  ptTokenLogo: string;
   ytReward: string
   underlyingProtocol: string
   yieldFactoryConfigId: string

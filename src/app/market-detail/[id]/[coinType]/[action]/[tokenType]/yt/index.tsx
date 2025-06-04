@@ -18,13 +18,7 @@ export default function YTMarketDetail({ coinConfig }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Calculator
-        open={open}
-        inputYT={236}
-        maturity={111}
-        underlyingPrice={0.1}
-        onClose={() => setOpen(false)}
-      />
+      
 
       {/* 主布局 */}
       <div className="mt-6 grid lg:grid-cols-4 gap-6">

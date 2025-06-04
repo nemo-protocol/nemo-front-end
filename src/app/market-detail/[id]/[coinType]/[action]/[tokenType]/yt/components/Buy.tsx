@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useMemo, useCallback, useEffect } from "react"
+import { useState, useMemo, useCallback, useEffect, SetStateAction, Dispatch } from "react"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
 import { ChevronsDown } from "lucide-react"
+import Image from 'next/image';
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
@@ -40,9 +41,11 @@ import { depositSyCoin, initPyPosition, splitCoinHelper } from "@/lib/txHelper"
 import { mintSCoin } from "@/lib/txHelper/coin"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { debugLog } from "@/config"
+import Calculator from "../../components/Calculator"
 
 interface Props {
   coinConfig: CoinConfig
+
 }
 
 export default function Buy({ coinConfig }: Props) {
@@ -233,8 +236,8 @@ export default function Buy({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType,
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType,
+        )?.vaultId
         : "",
     [coinConfig],
   )
@@ -271,16 +274,16 @@ export default function Buy({ coinConfig }: Props) {
         const [splitCoin] =
           tokenType === 0
             ? [
-                await mintSCoin({
-                  tx,
-                  vaultId,
-                  address,
-                  slippage,
-                  coinData,
-                  coinConfig,
-                  amount: swapAmount,
-                }),
-              ]
+              await mintSCoin({
+                tx,
+                vaultId,
+                address,
+                slippage,
+                coinData,
+                coinConfig,
+                amount: swapAmount,
+              }),
+            ]
             : splitCoinHelper(tx, coinData, [swapAmount], coinConfig.coinType)
 
         const syCoin = depositSyCoin(
@@ -400,6 +403,7 @@ export default function Buy({ coinConfig }: Props) {
       }
     }
   }
+  const [open, setOpen] = useState(false)
 
   const { isLoading } = useInputLoadingState(tradeValue, false)
 
@@ -408,7 +412,13 @@ export default function Buy({ coinConfig }: Props) {
       <div className="flex justify-end">
         <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
       </div>
-
+      <Calculator
+        open={open}
+        inputYT={Number(tradeValue)}
+     
+        coinConfig={coinConfig}
+        onClose={() => setOpen(false)}
+      />
       <AmountInput
         amount={tradeValue}
         onChange={setTradeValue}
@@ -485,9 +495,9 @@ export default function Buy({ coinConfig }: Props) {
           <span className="text-white">
             {ptYtData?.ytPrice && price
               ? `1 ${coinName} = ${formatDecimalValue(
-                  new Decimal(1).div(ptYtData.ytPrice).mul(price),
-                  6,
-                )} YT ${coinConfig?.coinName}`
+                new Decimal(1).div(ptYtData.ytPrice).mul(price),
+                6,
+              )} YT ${coinConfig?.coinName}`
               : "--"}
           </span>
         </div>
@@ -495,20 +505,26 @@ export default function Buy({ coinConfig }: Props) {
           <span>Trading Fees</span>
           <span className="text-white">
             {ytFeeValue
-              ? `${formatDecimalValue(ytFeeValue, 6)} ${
-                  coinConfig?.coinName
-                }`
+              ? `${formatDecimalValue(ytFeeValue, 6)} ${coinConfig?.coinName
+              }`
               : "-"}
           </span>
         </div>
       </div>
-
-      <ActionButton
-        btnText={btnText}
-        disabled={btnDisabled}
-        loading={isSwapping}
-        onClick={swap}
-      />
+      <div className="flex gap-4">
+        <ActionButton
+          btnText={btnText}
+          disabled={btnDisabled}
+          loading={isSwapping}
+          onClick={swap}
+        />
+        <div className="mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 bg-[rgba(252,252,252,0.03)] text-white rounded-full w-full h-10 sm:h-14 text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
+          onClick={() => { setOpen(true) }}
+        >
+          <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
+          Calculate
+        </div>
+      </div>
     </div>
   )
 } 

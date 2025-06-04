@@ -2,23 +2,25 @@ import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import Slider from '@/components/Slider';
+import { CoinConfig } from '@/queries/types/market';
+import { formatDecimalValue } from '@/lib/utils';
 
 type Props = {
   averageFutureAPY?: number;
   open: boolean;
   onClose: () => void;
   inputYT: number;
-  underlyingPrice: number;
-  maturity: number;
+
+  coinConfig: CoinConfig
 };
 
 export default function Calculator({
   open,
-  averageFutureAPY = 20,
+  averageFutureAPY,
   onClose,
   inputYT,
-  underlyingPrice,
-  maturity
+
+  coinConfig
 }: Props) {
   const [tradeSize, setTradeSize] = useState<number>(inputYT);
   const [targetAPY, setTargetAPY] = useState<number>(20);
@@ -36,11 +38,15 @@ export default function Calculator({
 
   // Function to handle calculations
   const handleCalculate = () => {
-    const netProfitYT = (tradeSize * underlyingPrice * targetAPY) / (36500) - (tradeSize * underlyingPrice * averageFutureAPY) / 365;
-    const netProfitUnderlying = (tradeSize * underlyingPrice * averageFutureAPY) / 365;
+    const underlyingPrice = Number(coinConfig.underlyingPrice)
+    const now = Date.now();
+    const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000))
+    const netProfitYT = (inputYT * underlyingPrice * targetAPY) * (maturity / 365) - inputYT * underlyingPrice;
+    const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
-    const effectiveApyYT = ((netProfitYT / (tradeSize * underlyingPrice)) + 1) ** (365 / maturity) * 100 - 100;
-    const effectiveApyUA = ((netProfitUnderlying / (tradeSize * underlyingPrice)) + 1) ** (365 / maturity) * 100 - 100;
+    const effectiveApyYT = ((netProfitYT / (inputYT * underlyingPrice)) + 1) ** ((1 + targetAPY*0.01) / maturity) * 100 - 100;
+    const effectiveApyUA = targetAPY;
+    console.log(maturity, underlyingPrice, netProfitYT, tradeSize, inputYT, 'sixu')
 
     setCalculatedResults({
       netProfitYT,
@@ -58,7 +64,7 @@ export default function Calculator({
           <X size={20} />
         </button>
         <div className="px-0 py-0">
-        <div className="flex gap-1">
+          <div className="flex gap-1">
             <h1 className="fallback #FCFCFC 
         text-[color:var(--typo-primary,#FCFCFC)]
         [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Yield calculator"}</h1>
@@ -98,10 +104,12 @@ export default function Calculator({
                 <label className="text-[12px] font-[650] text-[#FCFCFC66] uppercase">Trade</label>
                 <div className="flex items-baseline gap-1.5 mt-0">
                   <span className="text-[20px] text-[#FCFCFC]">{inputYT}</span>
-                  <span className="text-[12px] text-[#FCFCFC66]">~ ${tradeSize.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                  <span className="text-[12px] text-[#FCFCFC66]">~ ${formatDecimalValue(Number(inputYT) * Number(coinConfig.underlyingPrice), 6)}</span>
                 </div>
               </div>
-              <div className="text-lg">xSUI</div>
+              <div className="text-lg flex gap-2 items-center">{coinConfig.underlyingCoinName}
+                <Image src={coinConfig.underlyingCoinLogo} alt={""} width={20} height={20} className="shrink-0" />
+              </div>
             </div>
             <div className="bg-[rgba(252,252,252,0.03)] rounded-xl py-4 ">
               <div className='px-4 '>
@@ -118,7 +126,7 @@ export default function Calculator({
             Average Future APY&nbsp;
             <span className="text-[#FCFCFC] ml-2.5 font-[550]">{averageFutureAPY}%</span>
           </p>
-          <button 
+          <button
             className="w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550]"
             onClick={handleCalculate}  // Call handleCalculate on button click
           >
@@ -127,79 +135,79 @@ export default function Calculator({
           </button>
           {showResults && calculatedResults && (  // Display results if calculatedResults is available
             <section className="mt-12">
-                  <div className="flex gap-1">
-              <h1 className="fallback #FCFCFC 
+              <div className="flex gap-1">
+                <h1 className="fallback #FCFCFC 
         text-[color:var(--typo-primary,#FCFCFC)]
         [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{" Calculation result"}</h1>
 
-              <div className="relative mt-1">
-                <button
-                  onClick={() => setCalculationOpen(o => !o)}
-                  className="text-xs rounded-full
+                <div className="relative mt-1">
+                  <button
+                    onClick={() => setCalculationOpen(o => !o)}
+                    className="text-xs rounded-full
                      inline-flex justify-center leading-none
                      w-4 h-8 select-none cursor-pointer"
-                >
-                  <Image
-                    src={"/tip.svg"}
-                    alt={""}
-                    width={16}
-                    height={16}
-                    className="shrink-0"
-                  />
-                </button>
+                  >
+                    <Image
+                      src={"/tip.svg"}
+                      alt={""}
+                      width={16}
+                      height={16}
+                      className="shrink-0"
+                    />
+                  </button>
 
-                {calculationOpen && (
-                  <div
-                    className="
+                  {calculationOpen && (
+                    <div
+                      className="
               absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
               border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
               animate-fade-in z-10
             "
-                  >
-                    {"The results show the values under the expected APY."}
-                  </div>
-                )}
+                    >
+                      {"The results show the values under the expected APY."}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
               <div className="text-sm text-[#FCFCFC66] mt-4 font-[550]">All calculations are approximate</div>
               <div className="grid md:grid-cols-2 gap-2 mt-6">
                 {/* Net Profit */}
                 <div className="bg-[#FCFCFC08] rounded-xl p-6">
-                <div className="flex gap-1">
-                  <h1 className="fallback #FCFCFC 
+                  <div className="flex gap-1">
+                    <h1 className="fallback #FCFCFC 
         text-[color:var(--typo-primary,#FCFCFC)]
         [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Net profit"}</h1>
 
-                  <div className="relative mt-1">
-                    <button
-                      onClick={() => setProfitOpen(o => !o)}
-                      className="text-xs rounded-full
+                    <div className="relative mt-1">
+                      <button
+                        onClick={() => setProfitOpen(o => !o)}
+                        className="text-xs rounded-full
                      inline-flex justify-center leading-none
                      w-4 h-8 select-none cursor-pointer"
-                    >
-                      <Image
-                        src={"/tip.svg"}
-                        alt={""}
-                        width={16}
-                        height={16}
-                        className="shrink-0"
-                      />
-                    </button>
+                      >
+                        <Image
+                          src={"/tip.svg"}
+                          alt={""}
+                          width={16}
+                          height={16}
+                          className="shrink-0"
+                        />
+                      </button>
 
-                    {profitOpen && (
-                      <div
-                        className="
+                      {profitOpen && (
+                        <div
+                          className="
               absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
               border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
               animate-fade-in z-10
             "
-                      >
-                        {"The Net Profit module compares the expected profit of buying YT users versus holders, under the expected APY at maturity."}
-                      </div>
-                    )}
+                        >
+                          {"The Net Profit module compares the expected profit of buying YT users versus holders, under the expected APY at maturity."}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
                   <div className="flex mt-10 justify-between text-lg">
                     <div>
                       <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitYT.toFixed(2)}</div>
@@ -213,40 +221,40 @@ export default function Calculator({
                 </div>
                 {/* Effective APY */}
                 <div className="bg-[#FCFCFC08] rounded-xl p-6">
-                <div className="flex gap-1">
-                  <h1 className="fallback #FCFCFC 
+                  <div className="flex gap-1">
+                    <h1 className="fallback #FCFCFC 
         text-[color:var(--typo-primary,#FCFCFC)]
         [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Effective APY"}</h1>
 
-                  <div className="relative mt-1">
-                    <button
-                      onClick={() => setEffectiveOpen(o => !o)}
-                      className="text-xs rounded-full
+                    <div className="relative mt-1">
+                      <button
+                        onClick={() => setEffectiveOpen(o => !o)}
+                        className="text-xs rounded-full
                      inline-flex justify-center leading-none
                      w-4 h-8 select-none cursor-pointer"
-                    >
-                      <Image
-                        src={"/tip.svg"}
-                        alt={""}
-                        width={16}
-                        height={16}
-                        className="shrink-0"
-                      />
-                    </button>
+                      >
+                        <Image
+                          src={"/tip.svg"}
+                          alt={""}
+                          width={16}
+                          height={16}
+                          className="shrink-0"
+                        />
+                      </button>
 
-                    {effectiveOpen && (
-                      <div
-                        className="
+                      {effectiveOpen && (
+                        <div
+                          className="
               absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
               border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
               animate-fade-in z-10
             "
-                      >
-                        {"The Effective APY module compares the expected APY of users buying YT versus holding the underlying asset."}
-                      </div>
-                    )}
+                        >
+                          {"The Effective APY module compares the expected APY of users buying YT versus holding the underlying asset."}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
                   <div className="flex mt-10 justify-between">
                     <div>
                       <div className="text-[20px] font-[550] text-[#FCFCFC]">{calculatedResults.effectiveApyYT.toFixed(2)}%</div>

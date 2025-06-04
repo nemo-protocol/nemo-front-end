@@ -125,15 +125,15 @@ export default function PortfolioPage() {
             let _balance = new Decimal(0)
             let _totalClaim = new Decimal(0)
             filteredLists.pt.forEach((item) => {
-                _balance = _balance.add(new Decimal(pyPositionsMap?.[item?.id]?.ptBalance).mul(item.ptPrice) || 0)
+                _balance = _balance.add(new Decimal(pyPositionsMap?.[item?.id]?.ptBalance || 0).mul(item.ptPrice) || 0)
 
             })
             filteredLists.yt.forEach((item) => {
-                _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ytBalance).mul(item.ytPrice) || 0)
+                _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ytBalance || 0).mul(item.ytPrice) || 0)
                 _totalClaim = _totalClaim.add(new Decimal(ytReward[item.id]).mul(item.underlyingPrice))
             })
             filteredLists.lp.forEach((item) => {
-                _balance = _balance.add(new Decimal(lpPositionsMap[item.id]?.lpBalance).mul(item.lpPrice) || 0)
+                _balance = _balance.add(new Decimal(lpPositionsMap[item.id]?.lpBalance || 0).mul(item.lpPrice) || 0)
                 marketStates[item.marketStateId].rewardMetrics.forEach(rewardMetric => {
 
                     _totalClaim = _totalClaim.add(new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice))

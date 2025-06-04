@@ -9,7 +9,7 @@ import Decimal from 'decimal.js';
 import { ArrowUpRight, Router } from 'lucide-react';
 import Link from 'next/link';
 
-const isExpired = (maturityTime: string) => {
+export const isExpired = (maturityTime: string) => {
     return dayjs().isAfter(dayjs(parseInt(maturityTime)));
 };
 
@@ -94,7 +94,7 @@ export default function Assets({
 
 
     return (
-        <div className="mt-10 mx-auto max-w-7xl px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <div className="mt-10 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
             {/* Tabs */}
             <div className="flex gap-8 items-center">
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Assets</div>
@@ -144,7 +144,7 @@ export default function Assets({
                                 return <tr key={index} className="">
                                     <td className="py-3  text-[20px] font-[550] text-[#FCFCFC] flex gap-x-2">
                                         <Image
-                                            src={item.coinLogo}
+                                            src={item.ptTokenLogo}
                                             alt={""}
                                             width={24}
                                             height={24}
@@ -189,7 +189,7 @@ export default function Assets({
                                 return <tr key={index} className="">
                                     <td className="py-3  text-[20px] font-[550] text-[#FCFCFC] flex gap-x-2">
                                         <Image
-                                            src={item.coinLogo}
+                                            src={item.ytTokenLogo}
                                             alt={""}
                                             width={24}
                                             height={24}
@@ -350,8 +350,9 @@ export default function Assets({
                             }
 
                         })}
-                        {loading && [0, 0, 0].map((item, index) => (
+                        {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
