@@ -8,7 +8,12 @@ import { ChevronsDown, Info } from "lucide-react"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
-import { formatDecimalValue, isValidAmount, safeDivide, debounce } from "@/lib/utils"
+import {
+  formatDecimalValue,
+  isValidAmount,
+  safeDivide,
+  debounce,
+} from "@/lib/utils"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import { showTransactionDialog } from "@/lib/dialog"
 import {
@@ -43,15 +48,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-import {
-  initPyPosition,
-  redeemSyCoin,
-  swapExactPtForSy,
-  splitCoinHelper,
-} from "@/lib/txHelper"
+import { redeemSyCoin, swapExactPtForSy, splitCoinHelper } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { burnSCoin } from "@/lib/txHelper/coin"
 import { burnPt } from "@/lib/txHelper/pt"
+import { initPyPosition } from "@/lib/txHelper/position"
+import Image from "next/image"
 
 interface Props {
   coinConfig: CoinConfig
@@ -59,25 +61,28 @@ interface Props {
 
 export default function Sell({ coinConfig }: Props) {
   const [warning, setWarning] = useState("")
-  const [syValue, setSyValue] = useState("")
+  const [syAmount, setSyAmount] = useState("")
   const [error, setError] = useState<string>()
   const [slippage, setSlippage] = useState("0.5")
   const [redeemValue, setRedeemValue] = useState("")
   const [targetValue, setTargetValue] = useState("")
   const [isRedeeming, setIsRedeeming] = useState(false)
   const [errorDetail, setErrorDetail] = useState<string>()
-  const [receivingType, setReceivingType] = useState<"underlying" | "sy">("underlying")
+  const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
+    "underlying"
+  )
   const [minValue, setMinValue] = useState(0)
 
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
 
-  const { data: pyPositionData, refetch: refetchPyPosition } = usePyPositionData(
-    address,
-    coinConfig?.pyStateId,
-    coinConfig?.maturity,
-    coinConfig?.pyPositionTypeList,
-  )
+  const { data: pyPositionData, refetch: refetchPyPosition } =
+    usePyPositionData(
+      address,
+      coinConfig?.pyStateId,
+      coinConfig?.maturity,
+      coinConfig?.pyPositionTypeList
+    )
 
   const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
 
@@ -85,10 +90,10 @@ export default function Sell({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType,
+            (item) => item.coinType === coinConfig?.coinType
           )?.vaultId
         : "",
-    [coinConfig],
+    [coinConfig]
   )
 
   useEffect(() => {
@@ -96,7 +101,7 @@ export default function Sell({ coinConfig }: Props) {
       const minValue = NEED_MIN_VALUE_LIST.find(
         (item) =>
           item.provider === coinConfig.provider ||
-          item.coinType === coinConfig.coinType,
+          item.coinType === coinConfig.coinType
       )?.minValue
       if (minValue) {
         setMinValue(minValue)
@@ -113,7 +118,7 @@ export default function Sell({ coinConfig }: Props) {
         if (isValidAmount(value) && decimal && coinConfig?.conversionRate) {
           try {
             const inputAmount = new Decimal(value).mul(10 ** decimal).toString()
-            const { outputValue } = await sellPtDryRun({
+            const { outputValue, syAmount } = await sellPtDryRun({
               vaultId,
               slippage,
               ptCoins,
@@ -122,13 +127,13 @@ export default function Sell({ coinConfig }: Props) {
               ptAmount: inputAmount,
               pyPositions: pyPositionData,
             })
-            setSyValue(outputValue)
+            setSyAmount(syAmount)
 
             const targetValue = formatDecimalValue(
               new Decimal(outputValue).mul(
-                receivingType === "underlying" ? coinConfig.conversionRate : 1,
+                receivingType === "underlying" ? coinConfig.conversionRate : 1
               ),
-              decimal,
+              decimal
             )
 
             setTargetValue(targetValue)
@@ -140,15 +145,15 @@ export default function Sell({ coinConfig }: Props) {
               setError(
                 `Please enter at least ${formatDecimalValue(
                   new Decimal(value).mul(minValue).div(targetValue),
-                  decimal,
-                )} PT ${coinConfig.coinName}`,
+                  decimal
+                )} PT ${coinConfig.coinName}`
               )
             } else {
               setError(undefined)
             }
           } catch (errorMsg) {
             const { error, detail } = parseErrorMessage(
-              (errorMsg as Error)?.message,
+              (errorMsg as Error)?.message
             )
             setError(error)
             setErrorDetail(detail)
@@ -173,7 +178,7 @@ export default function Sell({ coinConfig }: Props) {
       ptCoins,
       receivingType,
       minValue,
-    ],
+    ]
   )
 
   useEffect(() => {
@@ -205,12 +210,12 @@ export default function Sell({ coinConfig }: Props) {
 
   const ptBalance = useMemo(
     () => new Decimal(ptPositionBalance).add(ptTokenBalance).toString(),
-    [ptPositionBalance, ptTokenBalance],
+    [ptPositionBalance, ptTokenBalance]
   )
 
   const insufficientBalance = useMemo(
     () => new Decimal(Number(ptBalance)).lt(redeemValue || 0),
-    [ptBalance, redeemValue],
+    [ptBalance, redeemValue]
   )
 
   const handleInputChange = (value: string) => {
@@ -222,19 +227,16 @@ export default function Sell({ coinConfig }: Props) {
   }, [refetchPyPosition])
 
   async function redeem() {
-    if (!insufficientBalance && coinConfig && address && syValue) {
+    if (!insufficientBalance && coinConfig && address && syAmount) {
       try {
         setIsRedeeming(true)
         const tx = new Transaction()
 
-        let pyPosition
-        let created = false
-        if (!pyPositionData?.length) {
-          created = true
-          pyPosition = initPyPosition(tx, coinConfig)
-        } else {
-          pyPosition = tx.object(pyPositionData[0].id)
-        }
+        const { pyPosition, created } = initPyPosition({
+          tx,
+          coinConfig,
+          pyPositions: pyPositionData,
+        })
 
         const [priceVoucher] = getPriceVoucher(tx, coinConfig)
 
@@ -242,26 +244,16 @@ export default function Sell({ coinConfig }: Props) {
           .mul(10 ** decimal)
           .toString()
 
-        const minSyOut = new Decimal(syValue)
-          .mul(10 ** decimal)
+        const minSyOut = new Decimal(syAmount)
           .mul(new Decimal(1).sub(new Decimal(slippage).div(100)))
           .toFixed(0)
-
-        const syCoin = swapExactPtForSy(
-          tx,
-          coinConfig,
-          inputAmount,
-          pyPosition,
-          priceVoucher,
-          minSyOut,
-        )
 
         if (coinConfig?.ptTokenType && ptCoins?.length) {
           const [ptCoin] = splitCoinHelper(
             tx,
             ptCoins,
             [inputAmount],
-            coinConfig.ptTokenType,
+            coinConfig.ptTokenType
           )
           burnPt({
             tx,
@@ -270,6 +262,15 @@ export default function Sell({ coinConfig }: Props) {
             pyPosition,
           })
         }
+
+        const syCoin = swapExactPtForSy(
+          tx,
+          coinConfig,
+          inputAmount,
+          pyPosition,
+          priceVoucher,
+          minSyOut
+        )
 
         const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
 
@@ -312,7 +313,7 @@ export default function Sell({ coinConfig }: Props) {
         setTargetValue("")
       } catch (errorMsg) {
         const { error, detail } = parseErrorMessage(
-          (errorMsg as Error)?.message ?? "",
+          (errorMsg as Error)?.message ?? ""
         )
         setErrorDetail(detail)
         showTransactionDialog({
@@ -330,10 +331,7 @@ export default function Sell({ coinConfig }: Props) {
   const { data: marketState } = useMarketStateData(coinConfig?.marketStateId)
   const { data: ptYtData } = useCalculatePtYt(coinConfig, marketState)
 
-  const price = useMemo(
-    () => ptYtData?.ptPrice?.toString(),
-    [ptYtData],
-  )
+  const price = useMemo(() => ptYtData?.ptPrice?.toString(), [ptYtData])
 
   const { isLoading } = useInputLoadingState(redeemValue, false)
 
@@ -350,7 +348,7 @@ export default function Sell({ coinConfig }: Props) {
       }
       return value
     },
-    [decimal, coinConfig],
+    [decimal, coinConfig]
   )
 
   const btnDisabled = useMemo(() => {
@@ -371,15 +369,15 @@ export default function Sell({ coinConfig }: Props) {
     const inputValue = new Decimal(redeemValue).mul(ptYtData.ptPrice)
     const outputValue = new Decimal(targetValue).mul(
       receivingType === "underlying"
-        ? (coinConfig.underlyingPrice ?? "0")
-        : (coinConfig.coinPrice ?? "0"),
+        ? coinConfig.underlyingPrice ?? "0"
+        : coinConfig.coinPrice ?? "0"
     )
 
     const value = outputValue
     const ratio = safeDivide(
       inputValue.minus(outputValue),
       inputValue,
-      "decimal",
+      "decimal"
     ).mul(100)
 
     return { value, ratio }
@@ -412,7 +410,9 @@ export default function Sell({ coinConfig }: Props) {
         maturity={coinConfig?.maturity}
         coinLogo={coinConfig?.coinLogo}
         isConfigLoading={false}
-        coinBalance={coinConfig?.ptTokenType ? ptTokenBalance : ptPositionBalance}
+        coinBalance={
+          coinConfig?.ptTokenType ? ptTokenBalance : ptPositionBalance
+        }
       />
 
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
@@ -439,7 +439,7 @@ export default function Sell({ coinConfig }: Props) {
                       const newTargetValue = convertReceivingValue(
                         targetValue,
                         receivingType,
-                        value,
+                        value
                       )
                       setReceivingType(value as "underlying" | "sy")
                       setTargetValue(newTargetValue)
@@ -463,7 +463,7 @@ export default function Sell({ coinConfig }: Props) {
                           {(receivingType === "underlying"
                             ? coinConfig?.underlyingCoinLogo
                             : coinConfig?.coinLogo) && (
-                            <img
+                            <Image
                               src={
                                 receivingType === "underlying"
                                   ? coinConfig?.underlyingCoinLogo
@@ -474,6 +474,8 @@ export default function Sell({ coinConfig }: Props) {
                                   ? coinConfig?.underlyingCoinName
                                   : coinConfig?.coinName
                               }
+                              width={16}
+                              height={16}
                               className="size-4 sm:size-5"
                             />
                           )}
@@ -489,9 +491,11 @@ export default function Sell({ coinConfig }: Props) {
                           <div className="flex items-center gap-x-1">
                             <span>{coinConfig?.underlyingCoinName}</span>
                             {coinConfig?.underlyingCoinLogo && (
-                              <img
+                              <Image
                                 src={coinConfig.underlyingCoinLogo}
                                 alt={coinConfig.underlyingCoinName}
+                                width={16}
+                                height={16}
                                 className="size-4 sm:size-5"
                               />
                             )}
@@ -504,9 +508,11 @@ export default function Sell({ coinConfig }: Props) {
                           <div className="flex items-center gap-x-1">
                             <span>{coinConfig?.coinName}</span>
                             {coinConfig?.coinLogo && (
-                              <img
+                              <Image
                                 src={coinConfig.coinLogo}
                                 alt={coinConfig.coinName}
+                                width={16}
+                                height={16}
                                 className="size-4 sm:size-5"
                               />
                             )}
@@ -534,8 +540,8 @@ export default function Sell({ coinConfig }: Props) {
                           priceImpact.ratio.gt(15)
                             ? "text-red-500"
                             : priceImpact.ratio.gt(5)
-                              ? "text-yellow-500"
-                              : "text-white/60"
+                            ? "text-yellow-500"
+                            : "text-white/60"
                         }`}
                       />
                     </TooltipTrigger>
@@ -553,8 +559,8 @@ export default function Sell({ coinConfig }: Props) {
                   priceImpact.ratio.gt(15)
                     ? "text-red-500"
                     : priceImpact.ratio.gt(5)
-                      ? "text-yellow-500"
-                      : "text-white/60"
+                    ? "text-yellow-500"
+                    : "text-white/60"
                 }`}
               >
                 ${formatDecimalValue(priceImpact.value, 4)}
@@ -564,8 +570,8 @@ export default function Sell({ coinConfig }: Props) {
                   priceImpact.ratio.gt(15)
                     ? "text-red-500"
                     : priceImpact.ratio.gt(5)
-                      ? "text-yellow-500"
-                      : "text-white/60"
+                    ? "text-yellow-500"
+                    : "text-white/60"
                 }`}
               >
                 ({formatDecimalValue(priceImpact.ratio, 4)}%)

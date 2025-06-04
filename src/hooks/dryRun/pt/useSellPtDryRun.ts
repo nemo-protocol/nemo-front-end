@@ -2,22 +2,17 @@ import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
 import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo } from "../../types"
+import type { DebugInfo, MoveCallInfo } from "../../types"
 import { ContractError } from "../../types"
 import type { PyPosition } from "../../types"
-import {
-  initPyPosition,
-  swapExactPtForSy,
-  redeemSyCoin,
-  splitCoinHelper,
-} from "@/lib/txHelper"
+import { swapExactPtForSy, redeemSyCoin, splitCoinHelper } from "@/lib/txHelper"
 import Decimal from "decimal.js"
 import { bcs } from "@mysten/sui/bcs"
-import { UNSUPPORTED_UNDERLYING_COINS } from "@/lib/constants"
 import { getPriceVoucher } from "@/lib/txHelper/price"
-import { burnSCoin } from "@/lib/txHelper/coin"
+// import { burnSCoin } from "@/lib/txHelper/coin"
 import { CoinData } from "@/types"
 import { burnPt } from "@/lib/txHelper/pt"
+import { initPyPosition } from "@/lib/txHelper/position"
 
 interface SellPtParams {
   minSyOut: string
@@ -37,16 +32,16 @@ type DryRunResult<T extends boolean> = T extends true
 
 export default function useSellPtDryRun<T extends boolean = false>(
   coinConfig?: CoinConfig,
-  debug: T = false as T,
+  debug: T = false as T
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
 
   return useMutation({
     mutationFn: async ({
-      vaultId,
+      // vaultId,
       ptCoins,
-      slippage,
+      // slippage,
       minSyOut,
       ptAmount,
       receivingType,
@@ -59,83 +54,71 @@ export default function useSellPtDryRun<T extends boolean = false>(
         throw new Error("Please select a pool")
       }
 
+      const moveCalls: MoveCallInfo[] = []
+
       const tx = new Transaction()
       tx.setSender(address)
 
-      let pyPosition
-      let created = false
-      if (!inputPyPositions?.length) {
-        created = true
-        pyPosition = initPyPosition(tx, coinConfig)
-      } else {
-        pyPosition = tx.object(inputPyPositions[0].id)
-      }
+      const [{ pyPosition, created }, pyPositionMoveCall] = initPyPosition({
+        tx,
+        coinConfig,
+        pyPositions: inputPyPositions,
+        returnDebugInfo: true,
+      })
+
+      moveCalls.push(pyPositionMoveCall)
 
       const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
         tx,
-        coinConfig,
+        coinConfig
       )
 
-      const [syCoin, moveCallInfo] = swapExactPtForSy(
-        tx,
-        coinConfig,
-        ptAmount,
-        pyPosition,
-        priceVoucher,
-        minSyOut,
-        true,
-      )
+      moveCalls.push(priceVoucherMoveCall)
 
       if (coinConfig?.ptTokenType && ptCoins?.length) {
         const [ptCoin] = splitCoinHelper(
           tx,
           ptCoins,
           [ptAmount],
-          coinConfig.ptTokenType,
+          coinConfig.ptTokenType
         )
-        burnPt({
+        const [, burnPtMoveCall] = burnPt({
           tx,
           ptCoin,
           coinConfig,
           pyPosition,
+          returnDebugInfo: true,
         })
+        moveCalls.push(burnPtMoveCall)
       }
+
+      const [syCoin, swapExactPtForSyMoveCall] = swapExactPtForSy(
+        tx,
+        coinConfig,
+        ptAmount,
+        pyPosition,
+        priceVoucher,
+        minSyOut,
+        true
+      )
+
+      moveCalls.push(swapExactPtForSyMoveCall)
 
       const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
 
       if (coinConfig.provider === "Cetus" && receivingType === "underlying") {
         throw new Error(
-          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`,
+          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
         )
       }
 
-      if (
-        receivingType === "underlying" &&
-        !UNSUPPORTED_UNDERLYING_COINS.includes(coinConfig?.coinType)
-      ) {
-        const underlyingCoin = await burnSCoin({
-          tx,
-          // FIXME: cetus amount
-          amount: "",
-          coinConfig,
-          sCoin: yieldToken,
-          address,
-          slippage,
-          vaultId,
-        })
-        tx.moveCall({
-          target: `0x2::coin::value`,
-          arguments: [underlyingCoin],
-          typeArguments: [coinConfig.underlyingCoinType],
-        })
-      } else {
-        // tx.transferObjects([yieldToken], address)
-        tx.moveCall({
-          target: `0x2::coin::value`,
-          arguments: [yieldToken],
-          typeArguments: [coinConfig.coinType],
-        })
-      }
+      // FIXME: support burn scoin
+
+      tx.moveCall({
+        target: `0x2::coin::value`,
+        arguments: [yieldToken],
+        typeArguments: [coinConfig.coinType],
+      })
 
       if (created) {
         tx.transferObjects([pyPosition], address)
@@ -150,7 +133,7 @@ export default function useSellPtDryRun<T extends boolean = false>(
       })
 
       const debugInfo: DebugInfo = {
-        moveCall: [priceVoucherMoveCall, moveCallInfo],
+        moveCall: moveCalls,
         rawResult: result,
       }
 
@@ -166,7 +149,7 @@ export default function useSellPtDryRun<T extends boolean = false>(
         throw new ContractError(message, debugInfo)
       }
 
-      if (!result.events[1].parsedJson.amount_out) {
+      if (!result.events[result.events.length - 1].parsedJson.amount_out) {
         const message = "Failed to get sy amount"
         debugInfo.rawResult.error = message
         throw new ContractError(message, debugInfo)
@@ -174,11 +157,16 @@ export default function useSellPtDryRun<T extends boolean = false>(
 
       const outputAmount = bcs.U64.parse(
         new Uint8Array(
-          result.results[result.results.length - 1].returnValues[0][0],
-        ),
+          result.results[result.results.length - 1].returnValues[0][0]
+        )
       )
 
-      const syAmount = result.events[1].parsedJson.amount_out
+      console.log("outputAmount", outputAmount)
+
+      const syAmount =
+        result.events[result.events.length - 1].parsedJson.amount_out
+
+      console.log("syAmount", syAmount)
 
       const decimal = Number(coinConfig.decimal)
 
