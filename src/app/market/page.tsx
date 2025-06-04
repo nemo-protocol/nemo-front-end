@@ -288,18 +288,22 @@ export default function MarketPage() {
               <span className="text-white">
                 {formatLargeNumber(row.original.poolApy, 2)}%
               </span>
-              <Image
-                src="/assets/images/star.svg"
-                alt="star"
-                width={16}
-                height={16}
-              />
-              <Image
-                src="/assets/images/gift.svg"
-                alt="gift"
-                width={16}
-                height={16}
-              />
+              {row.original.perPoints && (
+                <Image
+                  src="/assets/images/star.svg"
+                  alt="star"
+                  width={16}
+                  height={16}
+                />
+              )}
+              {row.original.incentives?.length > 0 && (
+                <Image
+                  src="/assets/images/gift.svg"
+                  alt="gift"
+                  width={16}
+                  height={16}
+                />
+              )}
               <Plus size={18} className="text-[#956EFF]" />
             </button>
           }
