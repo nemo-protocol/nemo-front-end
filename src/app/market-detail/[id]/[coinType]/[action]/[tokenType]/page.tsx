@@ -8,9 +8,20 @@ import { Action, CoinConfig, TokenType } from "@/queries/types/market"
 import AssetHeader from "./components/AssetHeader"
 import { Tab, type TabItem } from "@/components/ui/tab"
 import Decimal from "decimal.js"
-import { formatLargeNumber } from "@/lib/utils"
+import {
+  formatDecimalValue,
+  formatLargeNumber,
+  isValidAmount,
+} from "@/lib/utils"
 import dayjs from "dayjs"
 import { useMemo } from "react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { Progress } from "@/components/ui/progress"
 
 export default function MarketDetailPage() {
   const params = useParams()
@@ -228,8 +239,20 @@ export default function MarketDetailPage() {
           <span className="text-lg font-semibold text-white">
             ${formatLargeNumber(coinConfig.tvl)}
           </span>
-          <span className="text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit text-[#4CC877] bg-[#4cc877]/10">
-            +4.11% <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
+          <span
+            className={[
+              "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
+              new Decimal(coinConfig.tvlRateChange).gt(0)
+                ? "text-[#4CC877] bg-[#4cc877]/10"
+                : "text-[#FF2E54] bg-[#FF2E54]/10",
+            ].join(" ")}
+          >
+            <span>{new Decimal(coinConfig.tvlRateChange).toFixed(2)}%</span>
+            {new Decimal(coinConfig.tvlRateChange).gt(0) ? (
+              <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
+            ) : (
+              <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
+            )}
           </span>
         </div>
         {/* YIELD APY */}
@@ -288,43 +311,102 @@ export default function MarketDetailPage() {
           <span className="text-lg font-semibold text-white">
             ${formatLargeNumber(coinConfig.poolApy)}%
           </span>
-          <span
-            className={[
-              "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
-              new Decimal(coinConfig.poolApyRateChange).gt(0)
-                ? "text-[#4CC877] bg-[#4CC877]/10"
-                : "text-[#FF2E54] bg-[#FF2E54]/10",
-            ].join(" ")}
-          >
-            ${new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
-            {new Decimal(coinConfig.poolApyRateChange).gt(0) ? (
-              <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
-            ) : (
-              <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
-            )}
-          </span>
+          {isValidAmount(coinConfig.poolApyRateChange) && (
+            <span
+              className={[
+                "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+                new Decimal(coinConfig.poolApyRateChange).gt(0)
+                  ? "text-[#4CC877] bg-[#4CC877]/10"
+                  : "text-[#FF2E54] bg-[#FF2E54]/10",
+              ].join(" ")}
+            >
+              ${new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
+              {new Decimal(coinConfig.poolApyRateChange).gt(0) ? (
+                <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
+              ) : (
+                <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
+              )}
+            </span>
+          )}
         </div>
         {/* POOL RATIO */}
-        <div className="flex flex-col">
-          <span
-            className="text-xs font-medium mb-4"
-            style={{ color: "rgba(252,252,252,0.4)" }}
-          >
-            POOL RATIO
-          </span>
-          <span className="text-lg font-semibold text-white">63%</span>
-          <div className="w-full h-2 bg-white/10 rounded-full mt-2 mb-1 relative">
-            <div
-              className="absolute left-0 top-0 h-2 bg-white/80 rounded-full"
-              style={{ width: "63%" }}
-            ></div>
-          </div>
-          <div className="flex justify-between text-xs text-[#FCFCFC]/40">
-            <span>PT {coinConfig.underlyingCoinName} {ptRatio}%</span>
-            <span>
-              {coinConfig.underlyingCoinName} {syRatio}%
-            </span>
-          </div>
+        <div className="mb-3 sm:mb-4 cursor-pointer">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span>{ptRatio}%</span>
+                    <span>{syRatio}%</span>
+                  </div>
+                  <Progress
+                    value={Number(ptRatio)}
+                    className="h-2 bg-[#2DF4DD]"
+                    indicatorClassName="bg-[#2C62D8]"
+                  />
+                  <div className="flex justify-between mb-3 sm:mb-4 text-xs sm:text-sm">
+                    <span>PT {coinConfig?.coinName}</span>
+                    <span>{coinConfig?.coinName}</span>
+                  </div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                className="bg-[#12121B] border border-[#2D2D48] rounded-lg p-2 sm:p-3 text-xs sm:text-sm relative mb-2"
+                side="top"
+                align="end"
+                sideOffset={5}
+              >
+                <div className="text-white space-y-1">
+                  <div className="flex justify-between items-center gap-x-2 sm:gap-x-4">
+                    <span>
+                      {coinConfig.marketState.totalPt && coinConfig.decimal
+                        ? `${formatDecimalValue(
+                            new Decimal(coinConfig.marketState.totalPt).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
+                        : "--"}
+                      PT {coinConfig?.coinName}:
+                    </span>
+                    <span>
+                      {coinConfig.marketState?.totalSy && coinConfig.decimal
+                        ? `${formatDecimalValue(
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
+                        : "--"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center gap-x-2 sm:gap-x-4">
+                    <span>
+                      {coinConfig.marketState.totalSy && coinConfig.decimal
+                        ? `${formatDecimalValue(
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
+                        : "--"}
+                      {coinConfig?.coinName}:
+                    </span>
+                    <span>
+                      {coinConfig.marketState?.totalSy && coinConfig.decimal
+                        ? `${formatDecimalValue(
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
+                        : "--"}
+                    </span>
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 

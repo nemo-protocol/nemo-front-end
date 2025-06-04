@@ -17,6 +17,7 @@ export interface MarketState {
 export interface BaseCoinInfo {
   id: string
   tvl: string
+  tvlRateChange: string
   coinLogo: string
   maturity: string
   startTime: string
@@ -55,6 +56,7 @@ export interface BaseCoinInfo {
   ptPrice: string
   ptTvl: string
   syTvl: string
+  marketState: MarketState
 }
 
 export interface Incentive {
@@ -86,7 +88,6 @@ export interface CoinInfoWithMetrics extends BaseCoinInfo {
   lpPrice: string
   groupName: string
   groupLogo: string
-  
 }
 
 interface BuiltOn {
