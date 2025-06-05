@@ -129,19 +129,17 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
               <span
                 className={`
                   text-xs py-0.5 px-1.5 rounded-full flex items-center gap-1
-                  ${
-                    mainMetric.positive
-                      ? "bg-[#4CC8771A] text-[#4CC877]"
-                      : "bg-[#FF2E541A] text-[#FF2E54]"
+                  ${mainMetric.positive
+                    ? "bg-[#4CC8771A] text-[#4CC877]"
+                    : "bg-[#FF2E541A] text-[#FF2E54]"
                   }
                 `}
               >
                 {mainMetric.positive ? "+" : ""}
                 {mainMetric.delta}
                 <Image
-                  src={`/arrow-${
-                    mainMetric.positive ? "up" : "down"
-                  }-right.svg`}
+                  src={`/arrow-${mainMetric.positive ? "up" : "down"
+                    }-right.svg`}
                   alt={""}
                   width={16}
                   height={16}
@@ -236,11 +234,12 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
             cursor={{ fill: "rgba(45, 244, 221, 0.10)" }}
           />
           <Line
-            type="stepAfter"
+            type="monotone"
             dataKey="apy"
             stroke="#1785B7"
             strokeWidth={2}
             dot={false}
+            isAnimationActive={false}  
           />
         </LineChart>
       </ResponsiveContainer>
