@@ -14,7 +14,7 @@ export default function PortfolioPage() {
 
     return (
         <>
-            <div className="py-4 bg-[#080d16]">
+            <div className="py-4 min-h-screen bg-[#080d16]">
                 <div className="px-7.5">
                     <div
                         onClick={() => history.back()}

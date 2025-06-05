@@ -151,16 +151,23 @@ export default function PortfolioPage() {
     return (
         <>
             <div className="py-4 bg-[#080d16]">
-                <h1 className="text-[32px] w-full flex justify-center font-normal font-serif font-[470] text-[#FCFCFC]">My Portfolio</h1>
+                <h1 className="text-[32px] w-full flex justify-center gap-2 items-start font-normal font-serif font-[470] text-[#FCFCFC]">My Portfolio
+                    <Image
+                        src={"/folder-open.svg"}
+                        alt={""}
+                        width={16}
+                        height={16}
+                        className="shrink-0 mt-1.5"
+                    /></h1>
                 <div className="mt-12">
                     <div className="grid grid-cols-2">
                         <div className="flex flex-col h-[182px] justify-center items-center">
                             <div className="text-[12px] font-[650] text-[#FCFCFC66]">Balance</div>
-                            {loading ? <div className="w-[290px] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-normal font-[470] text-[#FCFCFC]">{formatTVL(balance)}</div>}
+                            {loading ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{formatTVL(balance)}</div>}
                         </div>
                         <div className="flex flex-col h-[182px] justify-center items-center">
                             <div className="text-[12px] font-[650] text-[#FCFCFC66]">Total Claimable Yield</div>
-                            {loading ? <div className="w-[290px] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <><div className="text-[56px] font-serif font-normal font-[470] text-[#FCFCFC]">{formatTVL(totalClaim)}</div>
+                            {loading ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <><div className="text-[56px] font-serif font-Medium text-[#FCFCFC]">{formatTVL(totalClaim)}</div>
                                 <div>
                                     <div className="text-[12px] font-[550] text-[#FCFCFC66] flex
                               transition-colors duration-200

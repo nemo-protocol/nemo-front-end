@@ -45,21 +45,20 @@ function shortHash(hash: string, len = 10) {
 }
 
 export default function Transactions() {
-    /* 每页 10 条，自动拉取 */
     const {
         data,
         loading,
         error,
         setPageIndex,
     } = useMarketTransactions({ pageSize: 10 });
-    const pathname = usePathname();   
+    const pathname = usePathname();
     const isPage = pathname.startsWith('/portfolio/history');
     if (error) return <div className="text-center mt-8 text-red-500">{error.message}</div>;
 
     const transactions = data?.data ?? [];
 
     return (
-        <>{transactions.length !== 0 &&<div className="mt-10 mx-auto mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <>{transactions.length !== 0 && <div className="mt-10 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
 
             {!isPage && <div className="flex gap-8 items-center justify-between mb-6">
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Latest transactions</div>
@@ -138,7 +137,7 @@ export default function Transactions() {
                             </tr>
                         ))}
 
-                        {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        {transactions.length==0 && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
                                 <td></td>
                                 <td></td>
@@ -155,23 +154,64 @@ export default function Transactions() {
             </div>
 
 
-            {/* <div className="flex justify-center gap-6 mt-6">
-                <button
-                    className="px-3 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
-                    disabled={data?.page.pageIndex === 1}
-                    onClick={() => setPageIndex(p => Math.max(1, p - 1))}
-                >
-                    Prev
-                </button>
+            {isPage && data && (
+                <div className="flex justify-end gap-3 mt-6">
+                  
+                    {(() => {
+                        const pageIndex = data.page.pageIndex;                
+                        const pageSize = data.page.pageSize;
+                        const totalPages = Math.max(
+                            1,
+                            Math.ceil(data.count / pageSize),                     
+                        );
 
-                <button
-                    className="px-3 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
-                    disabled={transactions.length < (data?.page.pageSize ?? 10)}
-                    onClick={() => setPageIndex(p => p + 1)}
-                >
-                    Next
-                </button>
-            </div> */}
+                        return (
+                            <>
+                                {/* FIRST */}
+                                <button
+                                    className="px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    disabled={pageIndex === 1}
+                                    onClick={() => setPageIndex(1)}
+                                >
+                                    FIRST
+                                </button>
+
+                                {/* < */}
+                                <button
+                                    className="w-8 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    disabled={pageIndex === 1}
+                                    onClick={() => setPageIndex(p => Math.max(1, p - 1))}
+                                >
+                                    &lt;
+                                </button>
+
+                                {/* PAGE X OF Y */}
+                                <div className="px-4 py-1 rounded bg-[#1b1f25] opacity-30  text-[#FCFCFC]/60 select-none">
+                                    PAGE&nbsp;{pageIndex}&nbsp;OF&nbsp;{totalPages}
+                                </div>
+
+                                {/* > */}
+                                <button
+                                    className="w-8 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    disabled={pageIndex === totalPages}
+                                    onClick={() => setPageIndex(p => Math.min(totalPages, p + 1))}
+                                >
+                                    &gt;
+                                </button>
+
+                                {/* LAST */}
+                                <button
+                                    className="px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    disabled={pageIndex === totalPages}
+                                    onClick={() => setPageIndex(totalPages)}
+                                >
+                                    LAST
+                                </button>
+                            </>
+                        );
+                    })()}
+                </div>
+            )}
 
 
         </div>}</>

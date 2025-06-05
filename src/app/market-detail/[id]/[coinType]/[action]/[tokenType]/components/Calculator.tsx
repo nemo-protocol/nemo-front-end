@@ -10,16 +10,56 @@ type Props = {
   open: boolean;
   onClose: () => void;
   inputYT: number;
-
+  outputYT: number;
   coinConfig: CoinConfig
 };
+export interface CalcEffectiveApyParams {
+  netProfit: number;
+  ytAmount: number;
+  underlyingAmount: number;
+  underlyingPrice: number;
+  targetApy: number;
+}
 
+
+export function calcEffectiveApyBuyYT(
+  {
+    netProfit,
+    ytAmount,
+    underlyingAmount,
+    underlyingPrice,
+    targetApy,
+  }: CalcEffectiveApyParams,
+): number {
+  if (
+    ytAmount <= 0 ||
+    underlyingAmount <= 0 ||
+    underlyingPrice <= 0
+  ) {
+    throw new Error('ytAmount, underlyingAmount, underlyingPrice must be positive.');
+  }
+
+  // 1 + NP / (YT * P)
+  const base1 = 1 + netProfit / (ytAmount * underlyingPrice);
+
+  // 1 + NP / (UA * P)
+  const base2 = 1 + netProfit / (underlyingAmount * underlyingPrice);
+
+  if (base1 <= 0 || base2 <= 0) {
+    throw new Error('Invalid base for logarithm / power.');
+  }
+  const exponent = Math.log(1 + targetApy) / Math.log(base2) - 1;
+
+  const effectiveApy = Math.pow(base1, exponent);
+
+  return effectiveApy;
+}
 export default function Calculator({
   open,
   averageFutureAPY,
   onClose,
   inputYT,
-
+  outputYT,
   coinConfig
 }: Props) {
   const [tradeSize, setTradeSize] = useState<number>(inputYT);
@@ -41,12 +81,18 @@ export default function Calculator({
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
     const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000))
-    const netProfitYT = (inputYT * underlyingPrice * targetAPY) * (maturity / 365) - inputYT * underlyingPrice;
+    const netProfitYT = (outputYT * underlyingPrice * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
     const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
-    const effectiveApyYT = ((netProfitYT / (inputYT * underlyingPrice)) + 1) ** ((1 + targetAPY*0.01) / maturity) * 100 - 100;
+    const effectiveApyYT =
+      ((calcEffectiveApyBuyYT({
+        netProfit: netProfitYT,
+        ytAmount: outputYT,
+        underlyingPrice: underlyingPrice,
+        underlyingAmount: inputYT,
+        targetApy: targetAPY * 0.01
+      })) * 100)
     const effectiveApyUA = targetAPY;
-    console.log(maturity, underlyingPrice, netProfitYT, tradeSize, inputYT, 'sixu')
 
     setCalculatedResults({
       netProfitYT,
@@ -59,7 +105,7 @@ export default function Calculator({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#080d16]" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-3xl max-h-[100vh] overflow-y-auto rounded-xl text-slate-100">
+      <div onClick={(e) => e.stopPropagation()} className="relative w-full max-w-3xl max-h-[100vh]  rounded-xl text-slate-100">
         <button className="absolute top-4 right-4 text-white/60 hover:text-white cursor-pointer" onClick={onClose}>
           <X size={20} />
         </button>
@@ -124,11 +170,12 @@ export default function Calculator({
           </div>
           <p className="mt-6 text-sm text-[#FCFCFC66] font-[550]">
             Average Future APY&nbsp;
-            <span className="text-[#FCFCFC] ml-2.5 font-[550]">{averageFutureAPY}%</span>
+            <span className="text-[#FCFCFC] ml-2.5 font-[550]">{targetAPY}%</span>
           </p>
           <button
             className="w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550]"
             onClick={handleCalculate}  // Call handleCalculate on button click
+            disabled={!outputYT}
           >
             <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
             Calculate
