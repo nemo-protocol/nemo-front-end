@@ -104,7 +104,7 @@ export default function Transactions() {
                                         height={24}
                                         className="shrink-0"
                                     />}{tx.asset}</td>
-}
+
                                 <td className="py-3 ">
                                     <span
                                         className={`px-1.5 py-1 text-[12px] font-[650] gap-1 inline-flex items-center rounded ${typeColor[tx.tradeType]} ${textColor[tx.tradeType]}`}>
