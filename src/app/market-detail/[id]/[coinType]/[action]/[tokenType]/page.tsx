@@ -11,7 +11,7 @@ import Decimal from "decimal.js"
 import {
   formatDecimalValue,
   formatLargeNumber,
-  isValidAmount,
+  isValidAmountWithoutZero,
 } from "@/lib/utils"
 import dayjs from "dayjs"
 import { useMemo } from "react"
@@ -201,6 +201,7 @@ export default function MarketDetailPage() {
           <span
             className={[
               "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
+              isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
               new Decimal(coinConfig.liquidityRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
@@ -209,14 +210,19 @@ export default function MarketDetailPage() {
             <span
               className={[
                 "text-xs",
+                isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
                 new Decimal(coinConfig.liquidityRateChange).gt(0)
                   ? "text-[#4CC877]"
                   : "text-[#FF2E54]",
               ].join(" ")}
             >
-              {new Decimal(coinConfig.liquidityRateChange).toFixed(2)}%
+              {isValidAmountWithoutZero(coinConfig.liquidityRateChange)
+                ? new Decimal(coinConfig.liquidityRateChange).toFixed(2)
+                : "--"}
+              %
             </span>
-            {new Decimal(coinConfig.liquidityRateChange).gt(0) ? (
+            {isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
+            new Decimal(coinConfig.liquidityRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -234,13 +240,20 @@ export default function MarketDetailPage() {
           <span
             className={[
               "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+              isValidAmountWithoutZero(coinConfig.volumeRateChange) &&
               new Decimal(coinConfig.volumeRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
           >
-            <span>{new Decimal(coinConfig.volumeRateChange).toFixed(2)}%</span>
-            {new Decimal(coinConfig.volumeRateChange).gt(0) ? (
+            <span>
+              {isValidAmountWithoutZero(coinConfig.volumeRateChange)
+                ? new Decimal(coinConfig.volumeRateChange).toFixed(2)
+                : "--"}
+              %
+            </span>
+            {isValidAmountWithoutZero(coinConfig.volumeRateChange) &&
+            new Decimal(coinConfig.volumeRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -252,7 +265,12 @@ export default function MarketDetailPage() {
           <span className="text-xs font-medium mb-4 text-[#FCFCFC]/40">
             MATURITY
           </span>
-          <span className="text-lg font-semibold text-white">{Math.max(0, Math.ceil((Number(coinConfig.maturity) - Date.now()) / 86_400_000))}</span>
+          <span className="text-lg font-semibold text-white">
+            {Math.max(
+              0,
+              Math.ceil((Number(coinConfig.maturity) - Date.now()) / 86_400_000)
+            )}
+          </span>
           <span className="text-xs rounded-lg px-3 py-1 mt-1 inline-block w-fit text-[#F80] bg-[#F80]/10">
             {dayjs(parseInt(coinConfig.maturity)).format("DD MMM YYYY")}
           </span>
@@ -268,13 +286,20 @@ export default function MarketDetailPage() {
           <span
             className={[
               "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
+              isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
               new Decimal(coinConfig.tvlRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4cc877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
           >
-            <span>{new Decimal(coinConfig.tvlRateChange).toFixed(2)}%</span>
-            {new Decimal(coinConfig.tvlRateChange).gt(0) ? (
+            <span>
+              {isValidAmountWithoutZero(coinConfig.tvlRateChange)
+                ? new Decimal(coinConfig.tvlRateChange).toFixed(2)
+                : "--"}
+              %
+            </span>
+            {isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
+            new Decimal(coinConfig.tvlRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -292,13 +317,20 @@ export default function MarketDetailPage() {
           <span
             className={[
               "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+              isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
               new Decimal(coinConfig.yieldApyRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
           >
-            ${new Decimal(coinConfig.yieldApyRateChange).toFixed(2)}%
-            {new Decimal(coinConfig.yieldApyRateChange).gt(0) ? (
+            <span>
+              {isValidAmountWithoutZero(coinConfig.yieldApyRateChange)
+                ? new Decimal(coinConfig.yieldApyRateChange).toFixed(2)
+                : "--"}
+              %
+            </span>
+            {isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
+            new Decimal(coinConfig.yieldApyRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -313,26 +345,35 @@ export default function MarketDetailPage() {
           <span className="text-lg font-semibold text-white">
             ${formatLargeNumber(coinConfig.fixedApy)}%
           </span>
-          <span
-            className={[
-              "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
-              new Decimal(coinConfig.fixedApyRateChange).gt(0)
-                ? "text-[#4CC877] bg-[#4CC877]/10"
-                : "text-[#FF2E54] bg-[#FF2E54]/10",
-            ].join(" ")}
-          >
-            ${new Decimal(coinConfig.fixedApyRateChange).toFixed(2)}%
-            {new Decimal(coinConfig.fixedApyRateChange).gt(0) ? (
-              <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
-            ) : (
-              <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
-            )}
-          </span>
+          {isValidAmountWithoutZero(coinConfig.fixedApyRateChange) && (
+            <span
+              className={[
+                "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+
+                new Decimal(coinConfig.fixedApyRateChange).gt(0)
+                  ? "text-[#4CC877] bg-[#4CC877]/10"
+                  : "text-[#FF2E54] bg-[#FF2E54]/10",
+              ].join(" ")}
+            >
+              <span>
+                {`${new Decimal(coinConfig.fixedApyRateChange).toFixed(2)} %`}
+              </span>
+              {new Decimal(coinConfig.fixedApyRateChange).gt(0) ? (
+                <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
+              ) : (
+                <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
+              )}
+            </span>
+          )}
         </div>
         {/* POOL APY */}
         <APYTooltip
           config={{
             poolApy: Number(coinConfig.poolApy),
+            scaledPtApy: Number(coinConfig.scaledPtApy),
+            scaledUnderlyingApy: Number(coinConfig.scaledUnderlyingApy),
+            swapFeeApy: Number(coinConfig.swapFeeApy),
+            feeApy: Number(coinConfig.feeApy),
             perPoints: coinConfig.perPoints
               ? Number(coinConfig.perPoints)
               : undefined,
@@ -365,7 +406,7 @@ export default function MarketDetailPage() {
                   <Image
                     src="/assets/images/star.svg"
                     alt="star"
-                    className="w-3 h-3"
+                    className="w-4 h-4"
                     width={12}
                     height={12}
                   />
@@ -374,7 +415,7 @@ export default function MarketDetailPage() {
               <span className="text-lg font-semibold text-white">
                 ${formatLargeNumber(coinConfig.poolApy)}%
               </span>
-              {isValidAmount(coinConfig.poolApyRateChange) && (
+              {isValidAmountWithoutZero(coinConfig.poolApyRateChange) && (
                 <span
                   className={[
                     "text-xs rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
@@ -383,7 +424,7 @@ export default function MarketDetailPage() {
                       : "text-[#FF2E54] bg-[#FF2E54]/10",
                   ].join(" ")}
                 >
-                  ${new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
+                  {new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
                   {new Decimal(coinConfig.poolApyRateChange).gt(0) ? (
                     <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
                   ) : (

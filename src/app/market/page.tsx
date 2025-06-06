@@ -212,9 +212,9 @@ export default function MarketPage() {
         if (activeCount > count) activeCount = count
         if (activeCount < 0) activeCount = 0
         return (
-          <div className="grid grid-cols-5">
+          <div className="grid grid-cols-5 items-center">
             <div className="col-span-2 flex flex-col items-start gap-x-2">
-              <span className="text-white text-sm">
+              <span className="text-white text-sm font-medium">
                 {`${formatTimeDiff(maturity).toLocaleLowerCase()} left`}
               </span>
               <span className="col-span-3 shrink-0 text-xs text-white/40 font-medium">
@@ -239,7 +239,7 @@ export default function MarketPage() {
       header: "TVL",
       cell: ({ row }) => (
         <div className="flex items-center gap-x-2">
-          <div className="text-white text-base font-bold">
+          <div className="text-white text-base font-medium">
             ${formatLargeNumber(row.original.tvl, 2)}
           </div>
           <div className="text-xs text-white/40">10%</div>
@@ -283,9 +283,9 @@ export default function MarketPage() {
                   "pool"
                 )
               }
-              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer"
+              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer hover:bg-[#956EFF]/30"
             >
-              <span className="text-white">
+              <span className="text-white font-medium">
                 {formatLargeNumber(row.original.poolApy, 2)}%
               </span>
               {row.original.perPoints && (
@@ -325,9 +325,9 @@ export default function MarketPage() {
               "yield"
             )
           }
-          className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
+          className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer hover:bg-[#1785B7]/30"
         >
-          <span className="text-white">
+          <span className="text-white font-medium">
             {formatLargeNumber(row.original.ytApy, 2)}%
           </span>
           <span className="text-[#FCFCFC]/40">
@@ -352,9 +352,9 @@ export default function MarketPage() {
               "fixed"
             )
           }
-          className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer"
+          className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer hover:bg-[#17B69B]/30"
         >
-          <span className="text-white">
+          <span className="text-white font-medium">
             {formatLargeNumber(row.original.ptApy, 2)}%
           </span>
           <span className="text-[#FCFCFC]/40">
@@ -402,6 +402,12 @@ export default function MarketPage() {
               >
                 <X size={18} />
               </button>
+            )}
+            {/* 搜索浮层结果列表 */}
+            {searchQuery && filteredList.length > 0 && (
+              <div className="absolute left-0 w-full px-8 mt-2 z-30 backdrop-blur-md h-[800px] bg-transparent">
+                <DataTable columns={columns} data={filteredList} />
+              </div>
             )}
           </div>
         )}
@@ -466,7 +472,7 @@ export default function MarketPage() {
                         src={coinLogo}
                         alt={coinName}
                       />
-                      <span>{coinName}</span>
+                      <span className="font-medium">{coinName}</span>
                       <span className="text-white/60 text-lg font-normal ml-1">
                         {arr.length}
                       </span>
@@ -486,7 +492,7 @@ export default function MarketPage() {
                   </button>
                   {open[groupName] && (
                     <div className="px-8 pb-8 pt-2">
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto border-l border-light-gray/10">
                         <DataTable columns={columns} data={arr} />
                       </div>
                     </div>

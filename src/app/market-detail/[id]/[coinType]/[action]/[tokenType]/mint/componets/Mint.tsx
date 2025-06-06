@@ -3,7 +3,7 @@ import { network } from "@/config"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import useCoinData from "@/hooks/query/useCoinData"
 import { Transaction } from "@mysten/sui/transactions"
-import { ChevronsDown } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 import usePyPositionData from "@/hooks/usePyPositionData"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import {
@@ -234,6 +234,7 @@ export default function Mint({ coinConfig }: Props) {
     <div className="flex flex-col items-center gap-y-6">
       <AmountInput
         amount={mintValue}
+        title={"Underlying asset".toUpperCase()}
         onChange={setMintValue}
         setWarning={() => {}}
         coinName={coinName}
@@ -269,11 +270,12 @@ export default function Mint({ coinConfig }: Props) {
       />
 
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
-        <ChevronsDown className="w-5 h-5" />
+        <ArrowUpDown className="w-5 h-5" />
       </div>
 
       <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
         <AmountOutput
+          title={"Principle Token".toUpperCase()}
           className="bg-transparent rounded-none"
           name={`PT ${coinConfig.coinName}`}
           value={
@@ -290,6 +292,7 @@ export default function Mint({ coinConfig }: Props) {
           <div className="border-t border-light-gray/10" />
         </div>
         <AmountOutput
+          title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"
           name={`YT ${coinConfig.coinName}`}
           value={

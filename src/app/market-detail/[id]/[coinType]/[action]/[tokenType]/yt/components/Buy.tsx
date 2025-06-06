@@ -1,15 +1,10 @@
 "use client"
 
-import {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-} from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
-import { ChevronsDown } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 import Image from "next/image"
 
 import { network } from "@/config"
@@ -419,6 +414,7 @@ export default function Buy({ coinConfig }: Props) {
         onClose={() => setOpen(false)}
       />
       <AmountInput
+        title={"Trade".toUpperCase()}
         amount={tradeValue}
         onChange={setTradeValue}
         coinName={coinName}
@@ -461,7 +457,7 @@ export default function Buy({ coinConfig }: Props) {
       />
 
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
-        <ChevronsDown className="w-5 h-5" />
+        <ArrowUpDown className="w-5 h-5" />
       </div>
 
       <AmountOutput
@@ -516,7 +512,7 @@ export default function Buy({ coinConfig }: Props) {
           onClick={swap}
         />
         <div
-          className="mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 bg-[rgba(252,252,252,0.03)] text-white rounded-full w-full h-10 sm:h-14 text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
+          className="px-4 sm:px-8 bg-[rgba(252,252,252,0.03)] text-white rounded-full w-full h-[42px] text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
           onClick={() => {
             setOpen(true)
           }}

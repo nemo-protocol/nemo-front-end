@@ -57,6 +57,9 @@ export interface BaseCoinInfo {
   ptTvl: string
   syTvl: string
   marketState: MarketState
+  scaledPtApy: string
+  scaledUnderlyingApy: string
+  feeApy: string
 }
 
 export interface Incentive {
@@ -77,11 +80,8 @@ export interface CoinInfoWithMetrics extends BaseCoinInfo {
   marketState: MarketState
   scaledApy: string
   underlyingApy: string
-  scaledUnderlyingApy: string
-  scaledPtApy: string
   incentive: string
   totalApy: string
-  feeApy: string
   incentives: Incentive[]
   swapFeeApy: string
   incentiveApy: string

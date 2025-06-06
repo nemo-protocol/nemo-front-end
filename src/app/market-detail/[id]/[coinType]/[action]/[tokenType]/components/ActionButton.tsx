@@ -21,12 +21,12 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     <>
       {!isConnected ? (
         <ConnectModal>
-          <button className="mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 bg-[#0F60FF] text-white rounded-full w-full h-10 sm:h-14 text-sm sm:text-base cursor-pointer">
+          <button className="px-4 sm:px-8 bg-[#0F60FF] text-white rounded-full w-full h-[42px] text-sm sm:text-base cursor-pointer">
             Connect Wallet
           </button>
         </ConnectModal>
       ) : disabled ? (
-        <div className="mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 bg-[#0F60FF]/50 text-white/50 rounded-full w-full h-10 sm:h-14 text-sm sm:text-base  flex items-center justify-center select-none">
+        <div className="px-4 sm:px-8 bg-[#0F60FF]/50 text-white/50 rounded-full w-full h-[42px] text-sm sm:text-base  flex items-center justify-center select-none">
           {btnText}
         </div>
       ) : (
@@ -34,7 +34,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
           onClick={onClick}
           disabled={disabled || loading}
           className={[
-            "mt-5 sm:mt-7.5 px-4 sm:px-8 py-2 sm:py-2.5 rounded-full w-full h-10 sm:h-14 text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 select-none",
+            "px-4 sm:px-8 rounded-full w-full h-[42px] text-sm sm:text-base flex items-center justify-center gap-1.5 sm:gap-2 select-none",
             disabled || loading
               ? "bg-[#0F60FF]/50 text-white/50 cursor-not-allowed"
               : "bg-[#0F60FF] text-white cursor-pointer",

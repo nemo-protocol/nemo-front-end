@@ -3,7 +3,7 @@ import { network } from "@/config"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { Transaction } from "@mysten/sui/transactions"
 import usePyPositionData from "@/hooks/usePyPositionData"
-import { ChevronsDown } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import { initPyPosition, redeemPy, redeemSyCoin } from "@/lib/txHelper"
@@ -213,6 +213,7 @@ export default function Redeem({ coinConfig }: Props) {
     <div className="flex flex-col items-center gap-y-6">
       <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
         <AmountInput
+          title={"Principle Token".toUpperCase()}
           className="bg-transparent rounded-none"
           amount={redeemValue}
           onChange={setRedeemValue}
@@ -229,6 +230,7 @@ export default function Redeem({ coinConfig }: Props) {
           <div className="border-t border-light-gray/10" />
         </div>
         <AmountInput
+          title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"
           amount={redeemValue}
           onChange={setRedeemValue}
@@ -243,10 +245,11 @@ export default function Redeem({ coinConfig }: Props) {
         />
       </div>
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
-        <ChevronsDown className="w-5 h-5" />
+        <ArrowUpDown className="w-5 h-5" />
       </div>
       <AmountOutput
         name={coinName}
+        title={"Underlying asset".toUpperCase()}
         value={
           isInputLoading
             ? undefined

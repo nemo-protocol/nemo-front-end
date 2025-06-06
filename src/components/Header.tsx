@@ -112,14 +112,18 @@ export default function Header({ className }: { className?: string }) {
           ></span>
           {location === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-x-1 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
-                <Image
-                  src="/assets/images/wallet.svg"
-                  alt="wallet"
-                  className="size-4"
-                  width={16}
-                  height={16}
-                />
+              <DropdownMenuTrigger className="flex items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
+                {currentAccount?.address ? (
+                  <div className="size-4 bg-[#F80] rounded-full"></div>
+                ) : (
+                  <Image
+                    src="/assets/images/wallet.svg"
+                    alt="wallet"
+                    className="size-4"
+                    width={16}
+                    height={16}
+                  />
+                )}
                 <span className="text-white">
                   {truncateStr(currentAccount?.address || "", 4)}
                 </span>

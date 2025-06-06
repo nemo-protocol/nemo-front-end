@@ -3,7 +3,6 @@
 import { useState } from "react"
 import YieldChart from "../components/YieldChart"
 import { CoinConfig } from "@/queries/types/market"
-import Calculator from "../components/Calculator"
 import SimpleTabs from "../components/SimpleTabs"
 import Buy from "./components/Buy"
 import Sell from "./components/Sell"
@@ -13,7 +12,6 @@ interface Props {
 }
 
 export default function YTMarketDetail({ coinConfig }: Props) {
-  const [open, setOpen] = useState(false)
   const [currentTab, setCurrentTab] = useState<"buy" | "sell">("buy")
 
   return (

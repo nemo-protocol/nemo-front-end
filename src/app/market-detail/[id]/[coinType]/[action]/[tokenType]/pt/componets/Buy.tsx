@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from "react"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
-import { ChevronsDown } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 import dayjs from "dayjs"
 
 import { network } from "@/config"
@@ -477,6 +477,7 @@ export default function Buy({ coinConfig }: Props) {
       {/* TRADE 输入区 用AmountInput组件 */}
       <AmountInput
         error={error}
+        title={"Trade".toUpperCase()}
         price={coinConfig?.coinPrice?.toString()}
         decimal={decimal}
         warning={warning}
@@ -524,7 +525,7 @@ export default function Buy({ coinConfig }: Props) {
 
       {/* 切换按钮 */}
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
-        <ChevronsDown className="w-5 h-5" />
+        <ArrowUpDown className="w-5 h-5" />
       </div>
 
       {/* RECEIVE 输出区 用AmountOutput组件 */}

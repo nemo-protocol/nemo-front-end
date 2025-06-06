@@ -3,7 +3,6 @@ import { cn, formatDecimalValue, isValidAmount } from "@/lib/utils"
 import Decimal from "decimal.js"
 import { Info, Wallet } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
-import dayjs from "dayjs"
 import {
   TooltipProvider,
   Tooltip,
@@ -15,6 +14,7 @@ import Image from "next/image"
 interface AmountInputProps {
   price?: string
   error?: string
+  title?: string
   warning?: string
   amount: string
   decimal?: number
@@ -40,6 +40,7 @@ export default function AmountInput({
   error,
   warning,
   amount,
+  title,
   decimal = 0,
   coinName,
   coinLogo,
@@ -53,7 +54,6 @@ export default function AmountInput({
   onChange,
   setWarning,
   disabled,
-  maturity,
   errorDetail,
   warningDetail,
 }: AmountInputProps) {
@@ -61,12 +61,15 @@ export default function AmountInput({
     <div className="w-full">
       <div
         className={cn(
-          "rounded-lg px-2 sm:px-3 py-3 sm:py-4 bg-[rgba(252,252,252,0.03)]",
+          "rounded-lg px-2 sm:px-4 py-3 sm:py-6 bg-[rgba(252,252,252,0.03)]",
           className
         )}
       >
         <div className="flex items-center justify-between h-auto sm:h-12">
           <div className="grow space-y-0.5 sm:space-y-1 ml-2 sm:ml-0">
+            {title && (
+              <span className="text-xs text-light-gray/40">{title}</span>
+            )}
             <input
               min={0}
               type="number"
@@ -120,13 +123,13 @@ export default function AmountInput({
 
           <div className="flex items-center rounded-xl gap-x-1 sm:gap-x-2 shrink-0">
             <div className="flex items-center gap-x-2 sm:gap-x-4">
-              <div className="space-y-0.5 sm:space-y-1">
+              <div className="flex flex-col items-end gap-y-1">
                 <div className="h-5 sm:h-6 flex items-center justify-end gap-x-1 sm:gap-x-2">
                   {isConfigLoading ? (
                     <Skeleton className="h-full w-10 sm:w-12 bg-[#2D2D48]" />
                   ) : (
                     <div className="flex items-center gap-x-1 sm:gap-x-2">
-                      {coinNameComponent}
+                      {coinNameComponent ? coinNameComponent : coinName}
                       {isConfigLoading ? (
                         <Skeleton className="size-8 sm:size-12 rounded-full bg-[#2D2D48]" />
                       ) : (
@@ -140,11 +143,11 @@ export default function AmountInput({
                       )}
                     </div>
                   )}
-                  {maturity && (
+                  {/* {maturity && (
                     <span className="text-xs sm:text-sm text-light-gray/40">
                       {dayjs(parseInt(maturity)).format("DD MMM YYYY")}
                     </span>
-                  )}
+                  )} */}
                 </div>
                 <div>
                   {isBalanceLoading || isConfigLoading ? (

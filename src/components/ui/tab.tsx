@@ -25,7 +25,7 @@ export function Tab({ items, className }: TabProps) {
             <InfoTooltip active={item.active} content={item.content}>
               <button
                 className={cn(
-                  "text-2xl font-normal font-serif",
+                  "text-[32px] font-normal font-serif",
                   item.active
                     ? "text-white [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]"
                     : "text-light-gray/40"

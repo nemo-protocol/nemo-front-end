@@ -5,7 +5,7 @@ import YieldChart from "../components/YieldChart"
 import { CoinConfig } from "@/queries/types/market"
 import SimpleTabs from "../components/SimpleTabs"
 import AmountInput from "../components/AmountInput"
-import { ChevronsDown } from "lucide-react"
+import { ArrowUpDown } from "lucide-react"
 import ActionButton from "../components/ActionButton"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
@@ -438,6 +438,7 @@ export default function LPMarketDetail({ coinConfig }: Props) {
             coinBalance={coinBalance}
             isConnected={isConnected}
             errorDetail={errorDetail}
+            title={"Provide Liquidity".toUpperCase()}
             onChange={(value) => {
               setAddValue(value)
             }}
@@ -474,7 +475,7 @@ export default function LPMarketDetail({ coinConfig }: Props) {
 
           {/* swap icon */}
           <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
-            <ChevronsDown className="w-5 h-5" />
+            <ArrowUpDown className="w-5 h-5" />
           </div>
 
           {/* 输出框 */}
@@ -483,6 +484,7 @@ export default function LPMarketDetail({ coinConfig }: Props) {
             loading={isCalculating}
             coinConfig={coinConfig}
             name={`LP ${coinConfig.coinName}`}
+            title={"LP Position".toUpperCase()}
             value={
               !addValue || !decimal
                 ? "--"

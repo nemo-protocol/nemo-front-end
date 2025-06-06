@@ -16,7 +16,7 @@ export const truncateStr = (str: string, charsPerSide = 4) => {
 
 export const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
   func: T,
-  delay: number,
+  delay: number
 ): T & { cancel: () => void } => {
   let timeout: NodeJS.Timeout | null = null
 
@@ -47,7 +47,7 @@ export const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(
  */
 export const formatDecimalValue = (
   _value?: string | number | Decimal,
-  decimal = 0,
+  decimal = 0
 ): string => {
   try {
     const value = _value instanceof Decimal ? _value : new Decimal(_value || 0)
@@ -65,7 +65,7 @@ export const splitSyAmount = (
   totalSy: string,
   totalPt: string,
   exchangeRate: string,
-  pyIndexStored: string,
+  pyIndexStored: string
 ) => {
   const result = getMintLpParameter(
     syAmount,
@@ -73,7 +73,7 @@ export const splitSyAmount = (
     totalSy,
     totalPt,
     exchangeRate,
-    pyIndexStored,
+    pyIndexStored
   )
   const syForPtValue = result?.syForPt.toFixed(0) || "1"
   const syValue = result?.syDesired.toFixed(0) || "1"
@@ -87,7 +87,7 @@ function getMintLpParameter(
   totalSy: string,
   totalPt: string,
   exchangeRate: string,
-  pyIndexStored: string,
+  pyIndexStored: string
 ): { syForPt: number; syDesired: number; pt: number } | null {
   const total_sy = Number(syAmount)
   const lp_supply = Number(lpSupply)
@@ -143,7 +143,7 @@ function get_max_rate(exchange_rate: number, py_index_stored: number): number {
 export function get_pt_out(
   syAmount: number,
   exchange_rate: number,
-  py_index_stored: number,
+  py_index_stored: number
 ): number {
   const max_rate = Math.max(exchange_rate / 2 ** 64, py_index_stored / 2 ** 64)
   return syAmount * max_rate
@@ -178,7 +178,7 @@ export function handleInfinityValues<T>(data: T): T {
  * @returns boolean indicating if the amount is valid
  */
 export const isValidAmount = (
-  amount?: string | number | Decimal | null,
+  amount?: string | number | Decimal | null
 ): boolean => {
   if (
     !amount ||
@@ -191,6 +191,20 @@ export const isValidAmount = (
     return false
   const num = Number(amount)
   return !isNaN(num) && num > 0
+}
+
+export const isValidAmountWithoutZero = (
+  amount?: string | number | Decimal | null
+): boolean => {
+  if (
+    !amount ||
+    amount === "" ||
+    amount === "NaN" ||
+    new Decimal(amount).isZero()
+  )
+    return false
+  const num = Number(amount)
+  return !isNaN(num)
 }
 
 /**
@@ -225,13 +239,13 @@ export const formatTimeDiff = (timestamp: number): string => {
 type DivideReturnType<T> = T extends "string"
   ? string
   : T extends "number"
-    ? number
-    : Decimal
+  ? number
+  : Decimal
 
 export const safeDivide = <T extends "string" | "number" | "decimal">(
   numerator?: string | number | Decimal,
   denominator?: string | number | Decimal,
-  returnType: T = "string" as T,
+  returnType: T = "string" as T
 ): DivideReturnType<T> => {
   try {
     const num = new Decimal(numerator || 0)
@@ -242,8 +256,8 @@ export const safeDivide = <T extends "string" | "number" | "decimal">(
         returnType === "string"
           ? "0"
           : returnType === "number"
-            ? 0
-            : new Decimal(0)
+          ? 0
+          : new Decimal(0)
       ) as DivideReturnType<T>
     }
 
@@ -253,16 +267,16 @@ export const safeDivide = <T extends "string" | "number" | "decimal">(
       returnType === "number"
         ? result.toNumber()
         : returnType === "decimal"
-          ? result
-          : result.toString()
+        ? result
+        : result.toString()
     ) as DivideReturnType<T>
   } catch {
     return (
       returnType === "string"
         ? "0"
         : returnType === "number"
-          ? 0
-          : new Decimal(0)
+        ? 0
+        : new Decimal(0)
     ) as DivideReturnType<T>
   }
 }
@@ -275,7 +289,7 @@ export const safeDivide = <T extends "string" | "number" | "decimal">(
  */
 export const formatLargeNumber = (
   value?: string | number | Decimal,
-  decimals = 2,
+  decimals = 2
 ): string => {
   try {
     if (!value) return "0"
@@ -297,7 +311,7 @@ export const formatLargeNumber = (
 
     return formatDecimalValue(
       num.div(new Decimal(1000000).pow(magnitude)),
-      decimals,
+      decimals
     ).concat(suffixes[magnitude])
   } catch {
     return "0"
@@ -327,7 +341,7 @@ export const formatTVL = (tvlStr: string): string => {
 }
 
 export function formatPortfolioNumber(
-  input: string | number | Decimal,
+  input: string | number | Decimal
 ): string {
   let val: Decimal
   if (typeof input === "string") {
@@ -364,14 +378,13 @@ export function formatPortfolioNumber(
   return `${val.div(1_000_000_000).toFixed(2)}B`
 }
 
-
 export function shortenAddress(
   addr: string | undefined | null,
   left = 18,
-  right = 18,
+  right = 18
 ): string {
-  if (!addr) return '';
-  if (addr.length <= left + right + 3) return addr; // 3 = '...'
+  if (!addr) return ""
+  if (addr.length <= left + right + 3) return addr // 3 = '...'
 
-  return `${addr.slice(0, left)}…${addr.slice(-right)}`;
+  return `${addr.slice(0, left)}…${addr.slice(-right)}`
 }
