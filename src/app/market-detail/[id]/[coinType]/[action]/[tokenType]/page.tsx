@@ -252,7 +252,7 @@ export default function MarketDetailPage() {
           <span className="text-xs font-medium mb-4 text-[#FCFCFC]/40">
             MATURITY
           </span>
-          <span className="text-lg font-semibold text-white">128 Days</span>
+          <span className="text-lg font-semibold text-white">{Math.max(0, Math.ceil((Number(coinConfig.maturity) - Date.now()) / 86_400_000))}</span>
           <span className="text-xs rounded-lg px-3 py-1 mt-1 inline-block w-fit text-[#F80] bg-[#F80]/10">
             {dayjs(parseInt(coinConfig.maturity)).format("DD MMM YYYY")}
           </span>

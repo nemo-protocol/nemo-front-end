@@ -414,7 +414,7 @@ export default function Buy({ coinConfig }: Props) {
       <Calculator
         open={open}
         inputYT={Number(tradeValue)}
-        outputYT={Number(ytValue)}
+        outputYT={Number(32.38)}
         coinConfig={coinConfig}
         onClose={() => setOpen(false)}
       />

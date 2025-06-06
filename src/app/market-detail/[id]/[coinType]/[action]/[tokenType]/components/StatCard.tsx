@@ -27,7 +27,7 @@ function formatPercent(num: string | number | undefined, opts?: { signed?: boole
   return `${sign}${n.toFixed(2)}%`;
 }
 
-function getMaturityStat(maturityMs?: string | number) {
+export function getMaturityStat(maturityMs?: string | number) {
   if (!maturityMs) {
     return { value: '—', delta: '—' };
   }

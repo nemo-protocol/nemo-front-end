@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Slider from '@/components/Slider';
 import { CoinConfig } from '@/queries/types/market';
 import { formatDecimalValue } from '@/lib/utils';
+import { getMaturityStat } from './StatCard';
 
 type Props = {
   averageFutureAPY?: number;
@@ -16,7 +17,7 @@ type Props = {
 export interface CalcEffectiveApyParams {
   netProfit: number;
   ytAmount: number;
-  underlyingAmount: number;
+  input: number;
   underlyingPrice: number;
   targetApy: number;
 }
@@ -26,24 +27,22 @@ export function calcEffectiveApyBuyYT(
   {
     netProfit,
     ytAmount,
-    underlyingAmount,
+    input,
     underlyingPrice,
     targetApy,
   }: CalcEffectiveApyParams,
 ): number {
   if (
     ytAmount <= 0 ||
-    underlyingAmount <= 0 ||
+    input <= 0 ||
     underlyingPrice <= 0
   ) {
     throw new Error('ytAmount, underlyingAmount, underlyingPrice must be positive.');
   }
 
-  // 1 + NP / (YT * P)
   const base1 = 1 + netProfit / (ytAmount * underlyingPrice);
 
-  // 1 + NP / (UA * P)
-  const base2 = 1 + netProfit / (underlyingAmount * underlyingPrice);
+  const base2 = 1 + netProfit / (input * underlyingPrice);
 
   if (base1 <= 0 || base2 <= 0) {
     throw new Error('Invalid base for logarithm / power.');
@@ -54,6 +53,7 @@ export function calcEffectiveApyBuyYT(
 
   return effectiveApy;
 }
+
 export default function Calculator({
   open,
   averageFutureAPY,
@@ -82,16 +82,12 @@ export default function Calculator({
     const now = Date.now();
     const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000))
     const netProfitYT = (outputYT * underlyingPrice * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
+    console.log(outputYT, underlyingPrice, targetAPY, maturity, inputYT, netProfitYT)
+    const apr = (netProfitYT) * (365 / maturity) / underlyingPrice
+    const effectiveApyYT = (Math.pow((1+apr/(apr/maturity)), (365/maturity))-1)*100
     const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
-    const effectiveApyYT =
-      ((calcEffectiveApyBuyYT({
-        netProfit: netProfitYT,
-        ytAmount: outputYT,
-        underlyingPrice: underlyingPrice,
-        underlyingAmount: inputYT,
-        targetApy: targetAPY * 0.01
-      })) * 100)
+   
     const effectiveApyUA = targetAPY;
 
     setCalculatedResults({
