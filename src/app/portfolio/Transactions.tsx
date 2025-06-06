@@ -96,8 +96,15 @@ export default function Transactions() {
                                         {dayjs(Number(tx.maturity)).format("YYYY-MM-DD")}
                                     </div>
                                 </td>
-                                <td className="py-3 text-[20px] font-[550]">{tx.asset}</td>
-
+                                <td className="py-3 text-[20px] font-[550]">
+                                    {tx.tokenLogo && <Image
+                                        src={tx.tokenLogo || ""}
+                                        alt={""}
+                                        width={24}
+                                        height={24}
+                                        className="shrink-0"
+                                    />}{tx.asset}</td>
+}
                                 <td className="py-3 ">
                                     <span
                                         className={`px-1.5 py-1 text-[12px] font-[650] gap-1 inline-flex items-center rounded ${typeColor[tx.tradeType]} ${textColor[tx.tradeType]}`}>
@@ -137,7 +144,7 @@ export default function Transactions() {
                             </tr>
                         ))}
 
-                        {transactions.length==0 && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        {transactions.length == 0 && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
                                 <td></td>
                                 <td></td>
@@ -156,13 +163,13 @@ export default function Transactions() {
 
             {isPage && data && (
                 <div className="flex justify-end gap-3 mt-6">
-                  
+
                     {(() => {
-                        const pageIndex = data.page.pageIndex;                
+                        const pageIndex = data.page.pageIndex;
                         const pageSize = data.page.pageSize;
                         const totalPages = Math.max(
                             1,
-                            Math.ceil(data.count / pageSize),                     
+                            Math.ceil(data.count / pageSize),
                         );
 
                         return (
