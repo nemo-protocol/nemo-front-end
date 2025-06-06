@@ -6,6 +6,7 @@ import { useWallet } from '@nemoprotocol/wallet-kit';
 
 
 export interface MarketTransaction {
+  tokenLogo: string;
   id: string;
   tradeTime: number;   
   maturity: number;    
