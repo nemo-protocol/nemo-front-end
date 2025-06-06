@@ -80,12 +80,13 @@ export default function Calculator({
   const handleCalculate = () => {
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
-    const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000))
-    const netProfitYT = (outputYT * underlyingPrice * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
-    console.log(outputYT, underlyingPrice, targetAPY, maturity, inputYT, netProfitYT)
-    const apr = (netProfitYT) * (365 / maturity) / underlyingPrice
-    const effectiveApyYT = (Math.pow((1+apr/(apr/maturity)), (365/maturity))-1)*100
+    const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000)-1)
+    const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
     const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
+
+    const apr = (netProfitYT) * (365 / maturity) / inputYT * underlyingPrice
+    const effectiveApyYT = (Math.pow((1+apr/(365/maturity)), (365/maturity))-1)*100
+    console.log(outputYT, underlyingPrice, targetAPY, maturity, inputYT, netProfitYT,apr)
 
    
     const effectiveApyUA = targetAPY;
@@ -171,7 +172,7 @@ export default function Calculator({
           <button
             className="w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550]"
             onClick={handleCalculate}  // Call handleCalculate on button click
-            disabled={!outputYT}
+            disabled={!outputYT||!inputYT}
           >
             <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
             Calculate
@@ -253,11 +254,11 @@ export default function Calculator({
                   </div>
                   <div className="flex mt-10 justify-between text-lg">
                     <div>
-                      <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitYT.toFixed(2)}</div>
+                      <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitYT.toFixed(3)}</div>
                       <div className="text-[12px] font-[650] text-[#FCFCFC66] mt-0">Buy YT</div>
                     </div>
                     <div>
-                      <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitUnderlying.toFixed(2)}</div>
+                      <div className="text-[20px] font-[550] text-[#FCFCFC]">${calculatedResults.netProfitUnderlying.toFixed(3)}</div>
                       <div className="text-[12px] font-[650] text-[#FCFCFC66] mt-0">Hold underlying asset</div>
                     </div>
                   </div>
