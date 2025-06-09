@@ -180,8 +180,9 @@ export default function MarketPage() {
       accessorKey: "coinName",
       header: "MARKET",
       enableSorting: false,
+      width: 250,
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Image
             width={20}
             height={20}
@@ -237,6 +238,7 @@ export default function MarketPage() {
     {
       accessorKey: "tvl",
       header: "TVL",
+      width: 200,
       cell: ({ row }) => (
         <div className="flex items-center gap-x-2">
           <div className="text-white text-base font-medium">
@@ -250,6 +252,7 @@ export default function MarketPage() {
       accessorKey: "poolApy",
       header: "POOL APY",
       headerColor: "#956EFF",
+      width: 300,
       cell: ({ row }) => (
         <APYTooltip
           config={{
@@ -300,8 +303,8 @@ export default function MarketPage() {
                 <Image
                   src="/assets/images/gift.svg"
                   alt="gift"
-                  width={16}
-                  height={16}
+                  width={12}
+                  height={12}
                 />
               )}
               <Plus size={18} className="text-[#956EFF]" />
@@ -315,6 +318,7 @@ export default function MarketPage() {
       header: "YEILD APY",
       subHeader: "YT PRICE",
       headerColor: "#1785B7",
+      width: 300,
       cell: ({ row }) => (
         <button
           onClick={() =>
@@ -342,6 +346,7 @@ export default function MarketPage() {
       header: "FIXED APY",
       subHeader: "PT PRICE",
       headerColor: "#17B69B",
+      width: 300,
       cell: ({ row }) => (
         <button
           onClick={() =>

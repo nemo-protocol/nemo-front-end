@@ -28,8 +28,8 @@ const StripedBar: React.FC<StripedBarProps> = ({
       {Array.from({ length: count }).map((_, i) => {
         let style
         if (activeCount === undefined || i < activeCount) {
-          // 渐变白色，左侧最透明，右侧全白
-          const alpha = i / (count - 1)
+          // 渐变白色，左侧最透明(0.1)，右侧全白(1.0)
+          const alpha = 0.1 + (i / (count - 1)) * 0.9
 
           style = {
             backgroundColor: `rgba(255,255,255,${alpha})`,

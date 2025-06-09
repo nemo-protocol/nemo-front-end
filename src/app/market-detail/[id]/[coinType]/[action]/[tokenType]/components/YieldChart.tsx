@@ -17,6 +17,14 @@ import Image from "next/image"
 import { useApyHistory } from "@/hooks/useApyHistory"
 import { useParams } from "next/navigation"
 import React from "react"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+} from "@/components/ui/select"
 
 const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
   { label: "1m", granularity: "MINUTELY", seconds: 60 * 60 },
@@ -24,6 +32,11 @@ const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
   { label: "1D", granularity: "DAILY", seconds: 60 * 60 * 24 * 60 },
   { label: "1M", granularity: "MONTHLY", seconds: 60 * 60 * 24 * 120 },
 ]
+
+const METRICS = [
+  { label: "APY", value: "apy" },
+  { label: "Price", value: "price" },
+] as const
 
 function formatPercent(num?: string | number, digits = 2) {
   if (num == null) return "—"
@@ -35,6 +48,8 @@ function formatPercent(num?: string | number, digits = 2) {
 export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
   const params = useParams()
   const [activeTab, setActiveTab] = useState(0)
+  const [activeMetric, setActiveMetric] =
+    useState<(typeof METRICS)[number]["value"]>("apy")
   const { tokenType: _tokenType } = params as {
     tokenType: Lowercase<TokenType>
   }
@@ -84,12 +99,15 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
       return { chartData: [], yDomain: [0, 1], yTicks: [], xInterval: 0 }
 
     const arr = data.data.map((d) => ({
+      price: d.price,
       apy: +d.apy,
       ts: dayjs(d.timeLabel, "YYYY-MM-DD HH:mm:ss").valueOf(),
     }))
     const apys = arr.map((v) => v.apy)
-    const min = Math.min(...apys)
-    const max = Math.max(...apys)
+    const prices = arr.map((v) => v.price)
+    const values = activeMetric === "apy" ? apys : prices
+    const min = Math.min(...values)
+    const max = Math.max(...values)
 
     const wantTickCount = 7
     const segmentCount = wantTickCount - 1
@@ -113,7 +131,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
       yTicks: ticks,
       xInterval: interval,
     }
-  }, [data])
+  }, [data, activeMetric])
 
   // if (isLoading) return <p className="text-sm text-gray-500">Loading…</p>;
   if (error) return <p className="text-red-500">{error.message}</p>
@@ -122,31 +140,60 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
     <>
       <div className="mb-4 flex items-center justify-between">
         <div className="relative" ref={dropRef}>
-          <div className="flex items-center mt-2 gap-2">
-            <p className="text-[20px] font-[550]">{mainMetric.value}</p>
-
-            {!!mainMetric.delta && (
-              <span
-                className={`
+          <div className="flex flex-col gap-2">
+            <Select
+              value={activeMetric}
+              onValueChange={(v) =>
+                setActiveMetric(v as (typeof METRICS)[number]["value"])
+              }
+            >
+              <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-xs text-white/80 w-fit min-w-[60px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="border-none outline-none bg-[#181C23]">
+                <SelectGroup>
+                  {METRICS.map((metric) => (
+                    <SelectItem
+                      key={metric.value}
+                      value={metric.value}
+                      className="cursor-pointer text-white text-xs"
+                    >
+                      {`${tokenType} ${metric.label}`}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-3">
+              {/* <span className="text-xs text-white/40 font-medium">
+                  {mainMetric.label}
+                </span> */}
+              <p className="text-[20px] font-[550]">{mainMetric.value}</p>
+              {!!mainMetric.delta && (
+                <span
+                  className={`
                   text-xs py-0.5 px-1.5 rounded-full flex items-center gap-1
-                  ${mainMetric.positive
-                    ? "bg-[#4CC8771A] text-[#4CC877]"
-                    : "bg-[#FF2E541A] text-[#FF2E54]"
+                  ${
+                    mainMetric.positive
+                      ? "bg-[#4CC8771A] text-[#4CC877]"
+                      : "bg-[#FF2E541A] text-[#FF2E54]"
                   }
                 `}
-              >
-                {mainMetric.positive ? "+" : ""}
-                {mainMetric.delta}
-                <Image
-                  src={`/arrow-${mainMetric.positive ? "up" : "down"
+                >
+                  {mainMetric.positive ? "+" : ""}
+                  {mainMetric.delta}
+                  <Image
+                    src={`/arrow-${
+                      mainMetric.positive ? "up" : "down"
                     }-right.svg`}
-                  alt={""}
-                  width={16}
-                  height={16}
-                  className="shrink-0"
-                />
-              </span>
-            )}
+                    alt={""}
+                    width={16}
+                    height={16}
+                    className="shrink-0"
+                  />
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -191,8 +238,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
           <Tooltip
             content={({ active, payload, label }) => {
               if (!active || !payload || !payload.length) return null
-              // 兼容 recharts payload 结构
-              const apy = Array.isArray(payload[0].value)
+              const value = Array.isArray(payload[0].value)
                 ? payload[0].value[0]
                 : payload[0].value
               return (
@@ -216,10 +262,12 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
                     }}
                   >
                     <span className="text-light-gray/40 text-sm">
-                      Yield APY
+                      {activeMetric === "apy" ? "Yield APY" : "Price"}
                     </span>
                     <span className="text-white text-sm">
-                      {formatPercent(Number(apy), 2)}
+                      {activeMetric === "apy"
+                        ? formatPercent(Number(value), 2)
+                        : Number(value).toFixed(4)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -235,11 +283,11 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
           />
           <Line
             type="monotone"
-            dataKey="apy"
+            dataKey={activeMetric}
             stroke="#1785B7"
             strokeWidth={2}
             dot={false}
-            isAnimationActive={false}  
+            isAnimationActive={false}
           />
         </LineChart>
       </ResponsiveContainer>
