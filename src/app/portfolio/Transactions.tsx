@@ -64,39 +64,39 @@ export default function Transactions() {
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Latest transactions</div>
 
                 <Link href="/portfolio/history" className="ursor-pointer px-2.5 py-1.5 gap-2 items-center rounded-[16px]
-                                    transition-colors duration-200 text-[14px] font-[550]
+                                    transition-colors duration-200 text-[14px] font-[500]
                                    text-[rgba(252,252,252,0.4)] hover:text-white hover:bg-[rgba(252,252,252,0.10)] cursor-pointer inline-flex">
                     <ArrowUpRight className='size-4' />View full history
                 </Link>
             </div>}
 
-            <div className="overflow-x-auto">
-                <table className={`min-w-full border-collapse  border-separate ${transactions.length === 0 ? 'border-spacing-y-4' : "border-spacing-y-0.5"}`}>
+            <div className="w-full overflow-x-auto">
+                <table className={`w-max min-w-[calc(100vw-128px)] border-collapse  border-separate ${transactions.length === 0 ? 'border-spacing-y-4' : "border-spacing-y-0.5"}`}>
                     <thead className="text-white/60">
                         <tr>
-                            <th className="py-2  w-[180px] text-left text-[12px] font-[650]">DATE</th>
-                            <th className="py-2 w-[180px] text-left text-[12px] font-[650]">MATURITY</th>
-                            <th className="py-2 w-[180px] text-left text-[12px] font-[650]">ASSET</th>
-                            <th className="py-2 w-[180px] text-left text-[12px] font-[650]">TYPE</th>
-                            <th className="py-2 w-[180px] text-left text-[12px] font-[650]">AMOUNT</th>
-                            <th className="py-2 text-left text-[12px] font-[650]">LINK</th>
-                            <th className="py-2 text-right text-[12px] font-[650]">STATUS</th>
+                            <th className="py-2  w-[15%] text-left text-[12px] font-[600]">DATE</th>
+                            <th className="py-2 w-[13%] text-left text-[12px] font-[600]">MATURITY</th>
+                            <th className="py-2 w-[15%] text-left text-[12px] font-[600]">ASSET</th>
+                            <th className="py-2 w-[13%] text-left text-[12px] font-[600]">TYPE</th>
+                            <th className="py-2 w-[12%] text-left text-[12px] font-[600]">AMOUNT</th>
+                            <th className="py-2 w-[15%] text-left text-[12px] font-[600]">LINK</th>
+                            <th className="py-2 text-right text-[12px] font-[600]">STATUS</th>
                         </tr>
                     </thead>
 
                     <tbody className="text-[#FCFCFC]">
                         {transactions.map(tx => (
                             <tr key={tx.id} className="">
-                                <td className="py-3 text-[14px] font-[550]">
+                                <td className="py-3 text-[14px] font-[500]">
                                     {dayjs(Number(tx.tradeTime)).format('YYYY-MM-DD HH:mm')}
                                 </td>
                                 <td className="py-3">
-                                    <div className={`text-[12px] font-[650] py-1 px-1.5 rounded-[8px] inline-flex 
+                                    <div className={`text-[12px] font-[600] py-1 px-1.5 rounded-[8px] inline-flex 
                                             ${isExpired(tx.maturity.toString()) ? 'text-[#4CC877] bg-[rgba(76,200,119,0.1)]' : 'text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]'}`}>
                                         {dayjs(Number(tx.maturity)).format("YYYY-MM-DD")}
                                     </div>
                                 </td>
-                                <td className="py-3 text-[20px] font-[550]">
+                                <td className="py-3 text-[20px] font-[500]">
                                     {tx.tokenLogo && <Image
                                         src={tx.tokenLogo || ""}
                                         alt={""}
@@ -107,7 +107,7 @@ export default function Transactions() {
 
                                 <td className="py-3 ">
                                     <span
-                                        className={`px-1.5 py-1 text-[12px] font-[650] gap-1 inline-flex items-center rounded ${typeColor[tx.tradeType]} ${textColor[tx.tradeType]}`}>
+                                        className={`px-1.5 py-1 text-[12px] font-[600] gap-1 inline-flex items-center rounded ${typeColor[tx.tradeType]} ${textColor[tx.tradeType]}`}>
                                         <Image
                                             src={(tx.tradeType == "SELL" || tx.tradeType == "REMOVE") ? '/arrow-up-right-red.svg' : "/arrow-down-left.svg"}
                                             alt={""}
@@ -118,7 +118,7 @@ export default function Transactions() {
                                     </span>
                                 </td>
 
-                                <td className="py-3 text-[14px] font-[550] ">
+                                <td className="py-3 text-[14px] font-[500] ">
                                     {Number(tx.amount).toLocaleString()}
                                 </td>
 
@@ -127,7 +127,7 @@ export default function Transactions() {
                                         href={`https://suiscan.xyz/mainnet/tx/${tx.tx}`}
                                         rel="noopener noreferrer"
                                         target="_blank"
-                                        className="text-[#ffffff] text-[14px] font-[550] cursor-pointer underline"
+                                        className="text-[#ffffff] text-[14px] font-[500] cursor-pointer underline"
                                     >
                                         {shortHash(tx.tx)}
                                     </Link>
@@ -135,7 +135,7 @@ export default function Transactions() {
 
                                 <td className="py-3 text-right">
                                     <span
-                                        className={`px-1.5 py-1 text-[12px] font-[650] gap-1 inline-flex items-center rounded ${typeColor[tx.processType]} ${textColor[tx.processType]}`}>
+                                        className={`px-1.5 py-1 text-[12px] font-[600] gap-1 inline-flex items-center rounded ${typeColor[tx.processType]} ${textColor[tx.processType]}`}>
                                         {tx.processType === 'success' ? 'COMPLETED'
                                             : tx.processType === 'failed' ? 'FAILED'
                                                 : tx.processType || 'UNKNOWN'}

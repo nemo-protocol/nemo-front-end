@@ -88,7 +88,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
             <div className="scrollbar-thin scrollbar-track-transparent mt-4 scrollbar-thumb-gray-700 overflow-y-auto">
                 <table className="w-full  text-sm">
                     <thead>
-                        <tr className="text-left text-[12px] font-[650] text-white/60">
+                        <tr className="text-left text-[12px] font-[600] text-white/60">
                             <th className="py-2">Type</th>
                             <th className="py-2">Asset</th>
                             <th className="py-2">Maturity</th>
@@ -99,7 +99,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                     </thead>
                     <tbody>
                         {filteredLists.yt.map((item, index) => {
-                            return <tr key={index} className=" text-[14px] font-[550] text-[#FCFCFC]">
+                            return <tr key={index} className=" text-[14px] font-[500] text-[#FCFCFC]">
                                 <td className="py-3 ">
                                     {"YT Yield"}
                                 </td>
@@ -113,11 +113,11 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                                     />YT {item.coinName}</td>
 
                                 <td className="py-3">
-                                    <div className={`text-[12px] font-[650] py-1 px-1.5 rounded-[8px] inline-flex text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]`}>
+                                    <div className={`text-[12px] font-[600] py-1 px-1.5 rounded-[8px] inline-flex text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]`}>
                                         {dayjs(parseInt(item.maturity)).format("YYYY-MM-DD")}
                                     </div>
                                 </td>
-                                <td className="py-3  flex gap-x-2 font-[550] text-[14px] text-[#FCFCFC]"><Image
+                                <td className="py-3  flex gap-x-2 font-[500] text-[14px] text-[#FCFCFC]"><Image
                                     src={item.underlyingCoinLogo}
                                     alt={""}
                                     width={24}
@@ -125,14 +125,14 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                                     className="shrink-0"
                                 />{item.underlyingCoinName}</td>
 
-                                <td className="py-3 font-[550] text-[14px] text-[#FCFCFC]">
+                                <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
                                     <span>
                                         {new Decimal(ytReward?.[item.id] || 0).mul(item.conversionRate).lt(0.01) && "<"}
                                         {formatPortfolioNumber(new Decimal(ytReward?.[item.id] || 0).mul(item.conversionRate))}
                                     </span>
 
                                 </td>
-                                <td className="py-3 font-[550] text-[14px] text-[#FCFCFC]">
+                                <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
 
 
                                     ~{new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice).lt(0.01) && "<"}
@@ -144,7 +144,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                         })}
                         {lpReward && filteredLists.lp.map((item, index) => {
                             return marketStates[item.marketStateId]?.rewardMetrics.map((rewardMetric) => (lpReward[item.id + rewardMetric.tokenName] != "0" &&
-                                <tr key={index + rewardMetric?.tokenType} className=" text-[14px] font-[550] text-[#FCFCFC]">
+                                <tr key={index + rewardMetric?.tokenType} className=" text-[14px] font-[500] text-[#FCFCFC]">
                                     <td className="py-3 ">
                                         {"Incentive"}
                                     </td>
@@ -158,11 +158,11 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                                         />LP {item.coinName}</td>
 
                                     <td className="py-3">
-                                        <div className={`text-[12px] font-[650] py-1 px-1.5 rounded-[8px] inline-flex text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]`}>
+                                        <div className={`text-[12px] font-[600] py-1 px-1.5 rounded-[8px] inline-flex text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]`}>
                                             {dayjs(parseInt(item.maturity)).format("YYYY-MM-DD")}
                                         </div>
                                     </td>
-                                    <td className="py-3  flex gap-x-2 font-[550] text-[14px] text-[#FCFCFC]"><Image
+                                    <td className="py-3  flex gap-x-2 font-[500] text-[14px] text-[#FCFCFC]"><Image
                                         src={rewardMetric.tokenLogo}
                                         alt={""}
                                         width={24}
@@ -170,7 +170,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                                         className="shrink-0"
                                     />{rewardMetric.tokenName}</td>
 
-                                    <td className="py-3 font-[550] text-[14px] text-[#FCFCFC]">
+                                    <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
                                         <span>
                                             {new Decimal(lpReward[item.id + rewardMetric.tokenName]).lt(0.01) && "<"}
 
@@ -179,7 +179,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
                                         </span>
 
                                     </td>
-                                    <td className="py-3 font-[550] text-[14px] text-[#FCFCFC]">
+                                    <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
                                         ~{new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice).lt(0.01) && "<"}
                                         ${formatPortfolioNumber(new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice))}
                                     </td>
@@ -195,7 +195,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
 
             {/* Claim All */}
             <button
-                className="mt-5 w-full rounded-[16px] bg-[#2b76e4] font-[550] text-[14px]   py-2 font-medium transition  disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-5 w-full rounded-[16px] bg-[#2b76e4] font-[500] text-[14px]   py-2 font-medium transition  disabled:cursor-not-allowed disabled:opacity-40"
 
                 onClick={onClaimAll}
             >
