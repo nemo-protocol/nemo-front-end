@@ -6,7 +6,7 @@ interface StripedBarProps {
   gap?: number // 条纹间距(px)
   rounded?: boolean // 是否圆角
   className?: string
-  activeCount?: number // 高亮条数
+  activeCount: number // 高亮条数
 }
 
 const FIXED_WIDTH = 148
@@ -27,9 +27,9 @@ const StripedBar: React.FC<StripedBarProps> = ({
     >
       {Array.from({ length: count }).map((_, i) => {
         let style
-        if (activeCount === undefined || i < activeCount) {
+        if (i < activeCount) {
           // 渐变白色，左侧最透明(0.1)，右侧全白(1.0)
-          const alpha = 0.1 + (i / (count - 1)) * 0.9
+          const alpha = 0.1 + (i / (activeCount - 1)) * 0.9
 
           style = {
             backgroundColor: `rgba(255,255,255,${alpha})`,
