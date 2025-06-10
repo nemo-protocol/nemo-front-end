@@ -136,7 +136,7 @@ export default function Assets({
                 </div>
             </div>
             {/* Assets Table */}
-            <div className='w-full'>
+            <div className='w-full mt-6'>
                 <table className={`w-max min-w-[calc(100vw-128px)] border-collapse  border-separate ${loading ? 'border-spacing-y-4' : "border-spacing-y-0.5"}`}>
                     <thead className="text-white/60">
                         <tr>
