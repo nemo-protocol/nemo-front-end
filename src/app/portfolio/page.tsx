@@ -3,7 +3,7 @@
 import { ArrowDownToLine, Download, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-import { useEffect, useMemo, useState } from 'react';;
+import { Suspense, useEffect, useMemo, useState } from 'react';;
 import Image from 'next/image';
 import Assets from './Assets';
 import Transactions from './Transactions';
@@ -149,7 +149,7 @@ export default function PortfolioPage() {
     }, [lpReward, ytReward])
 
     return (
-        <>
+        <Suspense >
             <div className="py-4 bg-[#080d16]">
                 <h1 className="text-[32px] w-full flex justify-center gap-2 items-start font-normal font-serif font-[470] text-[#FCFCFC]">My Portfolio
                     <Image
@@ -202,6 +202,6 @@ export default function PortfolioPage() {
                 />
             </div>
 
-        </>
+        </Suspense>
     );
 }
