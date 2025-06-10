@@ -11,6 +11,7 @@ import { CoinData } from "@/types"
 import { mergeAllCoins } from "@/lib/txHelper"
 import useCoinData from "./query/useCoinData"
 import { MarketStateMap } from "./query/useMultiMarketState"
+import { useSearchParams } from "next/navigation"
 
 interface ClaimLpRewardParams {
   filteredLPLists: PortfolioItem[]
@@ -29,144 +30,110 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
   params: ClaimLpRewardParams,
   debug: T = false as T,
 ) {
-  const client = useSuiClient()
-  const { address } = useWallet()
-  const { data: suiCoins } = useCoinData(address, "0x2::sui::SUI")
+  /* ------------------------------------------------------------------ */
+  /* 1. 计算最终要用的地址：mockAddress > 钱包地址                      */
+  /* ------------------------------------------------------------------ */
+  const { address } = useWallet();
+  const searchParams = useSearchParams();           // app-router
+  const mockAddressRaw = searchParams.get("mockAddress");
+  // pages-router 写法：
+  // const { query } = useRouter();
+  // const mockAddressRaw = query.mockAddress as string | undefined;
+
+  const effectiveAddress =
+    process.env.NODE_ENV !== "production" && mockAddressRaw
+      ? mockAddressRaw
+      : address;
+
+
+  const client = useSuiClient();
+  const { data: suiCoins } = useCoinData(
+    effectiveAddress,
+    "0x2::sui::SUI",
+  );
 
   return useQuery({
-    queryKey: [
-      "claimLpReward",
-      address,
-    ],
+    queryKey: ["claimLpReward", effectiveAddress],
     enabled:
-      !!address &&
-      !!params?.filteredLPLists?.length,
-    refetchInterval: 60 * 1000,
+      !!effectiveAddress && !!params.filteredLPLists?.length,
+    refetchInterval: 60_000,
     refetchIntervalInBackground: true,
+
+    /* ------------------------- 核心查询函数 ------------------------- */
     queryFn: async () => {
-      if (!address) {
-        throw new Error("Please connect wallet first")
+      if (!effectiveAddress) {
+        throw new Error("Please connect wallet first");
       }
-
       if (!suiCoins) {
-        throw new Error("No SUI coins found")
+        throw new Error("No SUI coins found");
       }
 
-      // const rewardMetric =
-      //   params.marketState?.rewardMetrics?.[params.rewardIndex]
-      // if (!rewardMetric?.tokenType) {
-      //   throw new Error("No reward token type found")
-      // }
+      const tx = new Transaction();
+      tx.setSender(effectiveAddress);
 
-      const tx = new Transaction()
-      tx.setSender(address)
-      params.filteredLPLists.map(item => {
+      /* 每个 LP 列表 → 每个 rewardMetric 生成 moveCall */
+      params.filteredLPLists.forEach((item) => {
+        const marketState = params.marketStates[item.marketStateId];
+        const lpPositions =
+          params.lpPositionsMap?.[item.id]?.lpPositions ?? [];
 
-        const marketState = params.marketStates[item.marketStateId]
-        marketState.rewardMetrics.map((rewardMetric) => {
-
-          const lpPositions = params.lpPositionsMap?.[item.id]?.lpPositions
-          const coinConfig = item
-          // mergeAllCoins(tx, address, suiCoins, coinConfig.coinType)
-
-          const moveCallInfo = {
-            target: `${coinConfig?.nemoContractId}::market::claim_reward`,
-            arguments: [
-              { name: "version", value: coinConfig.version },
-              { name: "market_state", value: coinConfig.marketStateId },
-              { name: "market_position", value: lpPositions[0].id.id },
-              { name: "clock", value: "0x6" },
-            ],
-            typeArguments: [coinConfig.syCoinType, rewardMetric.tokenType],
-          }
+        marketState.rewardMetrics.forEach((rewardMetric) => {
+          const moveTarget = `${item.nemoContractId}::market::claim_reward`;
 
           const [coin] = tx.moveCall({
-            target: moveCallInfo.target,
+            target: moveTarget,
             arguments: [
-              tx.object(coinConfig.version),
-              tx.object(coinConfig.marketStateId),
+              tx.object(item.version),
+              tx.object(item.marketStateId),
               tx.object(lpPositions[0].id.id),
-              tx.object("0x6"),
+              tx.object("0x6"), // clock
             ],
-            typeArguments: [coinConfig.syCoinType, rewardMetric.tokenType],
-          })
+            typeArguments: [item.syCoinType, rewardMetric.tokenType],
+          });
 
+          /* 查询 coin 数值 */
           tx.moveCall({
             target: `0x2::coin::value`,
             arguments: [coin],
             typeArguments: [rewardMetric.tokenType],
-          })
-        })
-      })
+          });
+        });
+      });
 
+      /* devInspect（dry-run） */
       const result = await client.devInspectTransactionBlock({
-        sender: address,
+        sender: effectiveAddress,
         transactionBlock: await tx.build({
-          client: client,
+          client,
           onlyTransactionKind: true,
         }),
-      })
-      const lpReward: Record<string, string> = {}
-      params.filteredLPLists.map((item, index1) => {
-        const marketState = params.marketStates[item.marketStateId]
-        marketState.rewardMetrics.map((rewardMetric, index2) => {
+      });
+      /* ---------------- 解析返回值，生成奖励 Map ----------------- */
+      const lpReward: Record<string, string> = {};
+      let index = 1
+      params.filteredLPLists.forEach((item) => {
+        const rewardMetrics = params.marketStates[item.marketStateId].rewardMetrics;
 
-          const [[balanceBytes]] = result.results[((index1 + 1) * (index2 + 1) * 2) - 1].returnValues
-          const rewardAmount = bcs.U64.parse(new Uint8Array(balanceBytes))
+        rewardMetrics.forEach((rewardMetric) => {
+          // 每个 rewardMetric 会触发两次 moveCall（claim + value）
+          // 取 value 的返回：索引 = (前面调用数)*2 + 1
+          const flatIndex = index;
+          index = index + 2
 
-          const decimal = Number(rewardMetric.decimal)
-          const rewardValue = formatDecimalValue(
-            new Decimal(rewardAmount).div(new Decimal(10).pow(decimal)),
+          const [[balanceBytes]] =
+            result.results[flatIndex].returnValues;
+          const rewardRaw = bcs.U64.parse(new Uint8Array(balanceBytes));
+
+          const decimal = Number(rewardMetric.decimal);
+          lpReward[item.id + rewardMetric.tokenName] = formatDecimalValue(
+            new Decimal(rewardRaw).div(new Decimal(10).pow(decimal)),
             decimal,
-          )
-         
-          lpReward[item.id + rewardMetric.tokenName] = rewardValue
+          );
+        });
+      });
+      console.log(result, lpReward, 'sixu')
 
-
-        }
-          // params.pyPositionsMap?.[item.id]?.pyPositions.Ytreward = 
-
-        )
-      })
-
-
-      // const debugInfo: DebugInfo = {
-      //   moveCall: [moveCallInfo],
-      //   rawResult: result,
-      // }
-
-      // if (result?.error) {
-      //   const message = result.error
-      //   if (debugInfo.rawResult) {
-      //     debugInfo.rawResult.error = message
-      //   }
-      //   debugLog("claim_reward error:", debugInfo)
-      //   throw new ContractError(message, debugInfo)
-      // }
-
-      // if (!result?.results?.[result.results.length - 1]?.returnValues?.[0]) {
-      //   const message = "Failed to get reward amount"
-      //   if (debugInfo.rawResult) {
-      //     debugInfo.rawResult.error = message
-      //   }
-      //   debugLog("claim_reward error:", debugInfo)
-      //   throw new ContractError(message, debugInfo)
-      // }
-
-
-      // debugInfo.parsedOutput = rewardAmount
-
-      // if (!debug) {
-      //   debugLog("claim_reward debugInfo:", debugInfo)
-      // }
-
-      // const decimal = Number(rewardMetric.decimal)
-      // const rewardValue = formatDecimalValue(
-      //   new Decimal(rewardAmount).div(new Decimal(10).pow(decimal)),
-      //   decimal,
-      // )
-
-      return lpReward
+      return lpReward;
     },
-  })
+  });
 }

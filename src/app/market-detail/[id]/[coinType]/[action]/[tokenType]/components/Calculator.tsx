@@ -68,11 +68,6 @@ export default function Calculator({
   const [showResults, setShowResults] = useState(false); // State to manage result visibility
 
 
-  const [yieldOpen, setYieldOpen] = useState(false);
-  const [calculationOpen, setCalculationOpen] = useState(false)
-  const [profitOpen, setProfitOpen] = useState(false)
-  const [effectiveOpen, setEffectiveOpen] = useState(false)
-
 
   if (!open) return null;
 
@@ -80,15 +75,15 @@ export default function Calculator({
   const handleCalculate = () => {
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
-    const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000)-1)
+    const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000) - 1)
     const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
     const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
     const apr = (netProfitYT) * (365 / maturity) / inputYT * underlyingPrice
-    const effectiveApyYT = (Math.pow((1+apr/(365/maturity)), (365/maturity))-1)*100
-    console.log(outputYT, underlyingPrice, targetAPY, maturity, inputYT, netProfitYT,apr)
+    const effectiveApyYT = (Math.pow((1 + apr / (365 / maturity)), (365 / maturity)) - 1) * 100
+    console.log(outputYT, underlyingPrice, targetAPY, maturity, inputYT, netProfitYT, apr,(1 + apr / (365 / maturity)),(365 / maturity))
 
-   
+
     const effectiveApyUA = targetAPY;
 
     setCalculatedResults({
@@ -108,37 +103,29 @@ export default function Calculator({
         </button>
         <div className="px-0 py-0">
           <div className="flex gap-1">
-            <h1 className="fallback #FCFCFC 
-        text-[color:var(--typo-primary,#FCFCFC)]
-        [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Yield calculator"}</h1>
+            <h1
+              className="fallback #FCFCFC text-[color:var(--typo-primary,#FCFCFC)]
+           [text-shadow:0_0_32px_rgba(239,244,252,0.56)]
+           [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">
+              Yield calculator
+            </h1>
 
-            <div className="relative mt-1">
+            <div className="relative mt-1 group">
               <button
-                onClick={() => setYieldOpen(o => !o)}
-                className="text-xs rounded-full
-                     inline-flex justify-center leading-none
-                     w-4 h-8 select-none cursor-pointer"
-              >
-                <Image
-                  src={"/tip.svg"}
-                  alt={""}
-                  width={16}
-                  height={16}
-                  className="shrink-0"
-                />
+                className="text-xs rounded-full inline-flex justify-center
+                 leading-none w-4 h-8 select-none cursor-pointer">
+                <Image src="/tip.svg" alt="" width={16} height={16} className="shrink-0" />
               </button>
 
-              {yieldOpen && (
-                <div
-                  className="
-              absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
-              border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
-              animate-fade-in z-10
-            "
-                >
-                  {"The Yield Calculator helps you to predict the potential returns from various strategies on Nemo."}
-                </div>
-              )}
+              <div
+                className="hidden group-hover:block absolute top-0 left-0.5 ml-4
+                 w-[480px] rounded-xl border border-[#3F3F3F] bg-[#0E1520]
+                 backdrop-blur px-2.5 py-3.5 text-sm z-10
+                 animate-fade-in"
+              >
+                The Yield Calculator helps you to predict the potential returns
+                from various strategies on Nemo.
+              </div>
             </div>
           </div>
           <div className="mt-6 grid md:grid-cols-2 gap-8 ">
@@ -172,7 +159,7 @@ export default function Calculator({
           <button
             className="w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550]"
             onClick={handleCalculate}  // Call handleCalculate on button click
-            disabled={!outputYT||!inputYT}
+            disabled={!outputYT || !inputYT}
           >
             <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
             Calculate
@@ -180,39 +167,41 @@ export default function Calculator({
           {showResults && calculatedResults && (  // Display results if calculatedResults is available
             <section className="mt-12">
               <div className="flex gap-1">
-                <h1 className="fallback #FCFCFC 
-        text-[color:var(--typo-primary,#FCFCFC)]
-        [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{" Calculation result"}</h1>
+                <h1
+                  className="
+      fallback #FCFCFC
+      text-[color:var(--typo-primary,#FCFCFC)]
+      [text-shadow:0_0_32px_rgba(239,244,252,0.56)]
+      [font-family:'Season Serif TRIAL']
+      text-[32px] font-normal font-serif
+    "
+                >
+                  Calculation result
+                </h1>
 
-                <div className="relative mt-1">
+                <div className="relative mt-1 group">
                   <button
-                    onClick={() => setCalculationOpen(o => !o)}
-                    className="text-xs rounded-full
-                     inline-flex justify-center leading-none
-                     w-4 h-8 select-none cursor-pointer"
+                    className="
+        text-xs rounded-full inline-flex justify-center leading-none
+        w-4 h-8 select-none cursor-pointer
+      "
                   >
-                    <Image
-                      src={"/tip.svg"}
-                      alt={""}
-                      width={16}
-                      height={16}
-                      className="shrink-0"
-                    />
+                    <Image src="/tip.svg" alt="" width={16} height={16} className="shrink-0" />
                   </button>
 
-                  {calculationOpen && (
-                    <div
-                      className="
-              absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
-              border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
-              animate-fade-in z-10
-            "
-                    >
-                      {"The results show the values under the expected APY."}
-                    </div>
-                  )}
+                  <div
+                    className="
+        hidden group-hover:block
+        absolute top-0 left-0.5 ml-4 w-[480px]
+        rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur
+        px-2.5 py-3.5 text-sm z-10 animate-fade-in
+      "
+                  >
+                    The results show the values under the expected APY.
+                  </div>
                 </div>
               </div>
+
 
               <div className="text-sm text-[#FCFCFC66] mt-4 font-[550]">All calculations are approximate</div>
               <div className="grid md:grid-cols-2 gap-2 mt-6">
@@ -223,34 +212,29 @@ export default function Calculator({
         text-[color:var(--typo-primary,#FCFCFC)]
         [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Net profit"}</h1>
 
-                    <div className="relative mt-1">
+                    <div className="relative mt-1 group">
                       <button
-                        onClick={() => setProfitOpen(o => !o)}
-                        className="text-xs rounded-full
-                     inline-flex justify-center leading-none
-                     w-4 h-8 select-none cursor-pointer"
+                        className="
+      text-xs rounded-full inline-flex justify-center leading-none
+      w-4 h-8 select-none cursor-pointer
+    "
                       >
-                        <Image
-                          src={"/tip.svg"}
-                          alt={""}
-                          width={16}
-                          height={16}
-                          className="shrink-0"
-                        />
+                        <Image src="/tip.svg" alt="" width={16} height={16} className="shrink-0" />
                       </button>
 
-                      {profitOpen && (
-                        <div
-                          className="
-              absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
-              border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
-              animate-fade-in z-10
-            "
-                        >
-                          {"The Net Profit module compares the expected profit of buying YT users versus holders, under the expected APY at maturity."}
-                        </div>
-                      )}
+                      <div
+                        className="
+      hidden group-hover:block  
+      absolute top-0 left-0.5 ml-4 w-[480px]
+      rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur
+      px-2.5 py-3.5 text-sm z-10 animate-fade-in
+    "
+                      >
+                        The Net Profit module compares the expected profit of buying YT users
+                        versus holders, under the expected APY at maturity.
+                      </div>
                     </div>
+
                   </div>
                   <div className="flex mt-10 justify-between text-lg">
                     <div>
@@ -270,34 +254,29 @@ export default function Calculator({
         text-[color:var(--typo-primary,#FCFCFC)]
         [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Effective APY"}</h1>
 
-                    <div className="relative mt-1">
+                    <div className="relative mt-1 group">
                       <button
-                        onClick={() => setEffectiveOpen(o => !o)}
-                        className="text-xs rounded-full
-                     inline-flex justify-center leading-none
-                     w-4 h-8 select-none cursor-pointer"
+                        className="
+      text-xs rounded-full inline-flex justify-center leading-none
+      w-4 h-8 select-none cursor-pointer
+    "
                       >
-                        <Image
-                          src={"/tip.svg"}
-                          alt={""}
-                          width={16}
-                          height={16}
-                          className="shrink-0"
-                        />
+                        <Image src="/tip.svg" alt="" width={16} height={16} className="shrink-0" />
                       </button>
 
-                      {effectiveOpen && (
-                        <div
-                          className="
-              absolute top-0 left-0.5 ml-4 w-[480px]  rounded-xl border
-              border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
-              animate-fade-in z-10
-            "
-                        >
-                          {"The Effective APY module compares the expected APY of users buying YT versus holding the underlying asset."}
-                        </div>
-                      )}
+                      <div
+                        className="
+      hidden group-hover:block               
+      absolute top-0 left-0.5 ml-4 w-[480px]
+      rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur
+      px-2.5 py-3.5 text-sm z-10 animate-fade-in
+    "
+                      >
+                        The Effective APY module compares the expected APY of users buying YT
+                        versus holding the underlying asset.
+                      </div>
                     </div>
+
                   </div>
                   <div className="flex mt-10 justify-between">
                     <div>

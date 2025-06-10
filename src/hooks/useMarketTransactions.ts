@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import axios, { AxiosError, CancelTokenSource } from 'axios';
 import http from '@/lib/http';
 import { useWallet } from '@nemoprotocol/wallet-kit';
+import { useSearchParams } from 'next/navigation';
 
 
 export interface MarketTransaction {
@@ -57,61 +58,88 @@ export interface UseMarketTransactionsResult {
  *                        Hook
  * ======================================================= */
 export function useMarketTransactions(
-    { pageSize: initSize = 10, pageIndex: initIdx = 1, autoFetch = true }: UseMarketTransactionsParams = {},
-  ): UseMarketTransactionsResult {
-    const { address } = useWallet();
-  
-    const [data, setData]       = useState<MarketTransactionsData | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError]     = useState<AxiosError | null>(null);
-    const [pageSize, setPageSize]   = useState(initSize);
-    const [pageIndex, setPageIndex] = useState(initIdx);
-  
-    const cancelRef = useRef<CancelTokenSource>();
-  
-    /* -------------------- 请求函数 -------------------- */
-    const fetchData = useCallback(async () => {
-      /* 如果没有地址可以直接 return，或者改成显示错误 */
-      if (!address) return;
-  
-      setLoading(true);
-      setError(null);
-  
-      cancelRef.current?.cancel('abort previous');
-      const source = axios.CancelToken.source();
-      cancelRef.current = source;
-  
-      try {
-        const res = await http.get<MarketTransactionsResponse>(
-          '/api/v1/market/transactions',
-          {
-            cancelToken: source.token,
-            params : { pageSize, pageIndex },
-            headers: { userAddress: address },  
-          },
-        );
-  
-        const { msg, ...payload } = res.data;
-        if (msg === 'success') {
-          setData({
-            count: payload.count,
-            data : payload.data,
-            page : payload.page,
-          });
-        } else {
-          throw new Error(msg);
-        }
-      } catch (err) {
-        if (!axios.isCancel(err)) setError(err as AxiosError);
-      } finally {
-        setLoading(false);
-      }
-    }, [pageSize, pageIndex, address]);         
-  
+  {
+    pageSize: initSize = 10,
+    pageIndex: initIdx = 1,
+    autoFetch = true,
+  }: UseMarketTransactionsParams = {},
+): UseMarketTransactionsResult {
+  /* ------------------------------------------------------------------ */
+  /* 计算最终要用的地址：mockAddress（dev 环境） > 钱包 address          */
+  /* ------------------------------------------------------------------ */
+  const { address } = useWallet();
+  const searchParams   = useSearchParams();           // app-router
+  const mockAddressRaw = searchParams.get("mockAddress");
 
-    useEffect(() => () => cancelRef.current?.cancel('unmount'), []);
-    useEffect(() => { if (autoFetch && address) fetchData(); },
-              [fetchData, autoFetch, address]);
-  
-    return { data, loading, error, refetch: fetchData, setPageSize, setPageIndex };
-  }
+  // pages-router 写法：
+  // const { query } = useRouter();
+  // const mockAddressRaw = query.mockAddress as string | undefined;
+
+  const effectiveAddress =
+    process.env.NODE_ENV !== "production" && mockAddressRaw
+      ? mockAddressRaw
+      : address;
+
+  /* ------------------------- 组件状态 ------------------------------ */
+  const [data, setData]       = useState<MarketTransactionsData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState<AxiosError | null>(null);
+  const [pageSize, setPageSize]   = useState(initSize);
+  const [pageIndex, setPageIndex] = useState(initIdx);
+
+  const cancelRef = useRef<CancelTokenSource>();
+
+  /* --------------------------- 请求函数 --------------------------- */
+  const fetchData = useCallback(async () => {
+    if (!effectiveAddress) return;           // 未连接钱包 & 无 mockAddress
+
+    setLoading(true);
+    setError(null);
+
+    cancelRef.current?.cancel("abort previous");
+    const source = axios.CancelToken.source();
+    cancelRef.current = source;
+
+    try {
+      const res = await http.get<MarketTransactionsResponse>(
+        "/api/v1/market/transactions",
+        {
+          cancelToken: source.token,
+          params : { pageSize, pageIndex },
+          headers: { userAddress: effectiveAddress },  // ← 用替换后的地址
+        },
+      );
+
+      const { msg, ...payload } = res.data;
+      if (msg === "success") {
+        setData({
+          count: payload.count,
+          data : payload.data,
+          page : payload.page,
+        });
+      } else {
+        throw new Error(msg);
+      }
+    } catch (err) {
+      if (!axios.isCancel(err)) setError(err as AxiosError);
+    } finally {
+      setLoading(false);
+    }
+  }, [pageSize, pageIndex, effectiveAddress]);
+
+  /* --------------------------- 副作用 ----------------------------- */
+  useEffect(() => () => cancelRef.current?.cancel("unmount"), []);
+  useEffect(() => {
+    if (autoFetch && effectiveAddress) fetchData();
+  }, [fetchData, autoFetch, effectiveAddress]);
+
+  /* --------------------------- 返回值 ----------------------------- */
+  return {
+    data,
+    loading,
+    error,
+    refetch: fetchData,
+    setPageSize,
+    setPageIndex,
+  };
+}

@@ -8,6 +8,7 @@ import { formatDecimalValue, formatPortfolioNumber, formatTVL } from '@/lib/util
 import Decimal from 'decimal.js';
 import { ArrowUpRight, Router } from 'lucide-react';
 import Link from 'next/link';
+import EmptyData from '@/components/ui/empty';
 
 export const isExpired = (maturityTime: string) => {
     return dayjs().isAfter(dayjs(parseInt(maturityTime)));
@@ -20,7 +21,11 @@ export interface RankedPortfolioItem extends PortfolioItem {
 }
 
 
-const categories = ['ALL', 'PRINCIPLE TOKEN', 'YIELD TOKEN', 'LIQUIDITY'];
+const categories = [
+    { label: 'ALL', key: 'all' },
+    { label: 'PRINCIPLE TOKEN', key: 'pt' },
+    { label: 'YIELD TOKEN', key: 'yt' },
+    { label: 'LIQUIDITY', key: 'lp' }];
 
 interface AssetsParams {
     filteredLists: {
@@ -53,7 +58,7 @@ export default function Assets({
     const [activeTab, setActiveTab] = useState(categories[0]);
     const [list, setList] = useState<RankedPortfolioItem[]>([])
     const [loading, setLoading] = useState(true)
-
+    const [empty, setEmpty] = useState(false)
     useEffect(() => {
         const flat: RankedPortfolioItem[] = (['pt', 'yt', 'lp'] as ListOrigin[]).flatMap(
             (key) =>
@@ -91,7 +96,19 @@ export default function Assets({
         setLoading(false)
     }, [filteredLists, lpPositionsMap, pyPositionsMap])
 
+    useEffect(() => {
+        if (!list || list.length === 0) {
+            setEmpty(true);
+            return;
+        }
 
+        const shouldBeEmpty =
+            activeTab.key !== 'all' &&
+            list.every(item => item.listType !== activeTab.key);
+
+        console.log(list,shouldBeEmpty)
+        setEmpty(shouldBeEmpty);
+    }, [activeTab, list]);
 
     return (
         <div className="mt-6 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
@@ -101,23 +118,23 @@ export default function Assets({
                 <div className="flex space-x-2 text-[12px]">
                     {categories.map((category) => (
                         <button
-                            key={category}
+                            key={category.key}
                             onClick={() => setActiveTab(category)}
                             className={`h-8 px-2 cursor-pointer select-none rounded-[12px]
                         flex items-center justify-center font-[600]
 
-                        ${activeTab === category
+                        ${activeTab.key === category.key
                                     ? 'bg-gradient-to-r from-white/10 to-white/5 text-white'
                                     : 'text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5'}
                         `}
                         >
-                            {category}
+                            {category.label}
                         </button>
                     ))}
                 </div>
-            </div>Ï
+            </div>
             {/* Assets Table */}
-            <div className='w-full overflow-x-auto'>
+            <div className='w-full'>
                 <table className={`w-max min-w-[calc(100vw-128px)] border-collapse  border-separate ${loading ? 'border-spacing-y-4' : "border-spacing-y-0.5"}`}>
                     <thead className="text-white/60">
                         <tr>
@@ -133,13 +150,14 @@ export default function Assets({
                         </tr>
                     </thead>
                     <tbody className="bg-[#0f151c] ">
-                        {!loading && list.map((item, index) => {
 
+
+                        {!loading && list.map((item, index) => {
                             let totalReward = 0
-                            if (lpReward)
+                            if (lpReward){
                                 marketStates[item.marketStateId]?.rewardMetrics.forEach(rewardMetric => {
                                     totalReward = totalReward + Number(lpReward[item.id + rewardMetric.tokenName]) * Number(rewardMetric.tokenPrice)
-                                })
+                                })}
                             if ((activeTab == categories[0] || activeTab == categories[1]) && item.listType == 'pt') {
                                 return <tr key={index} className="">
                                     <td className="py-3  text-[20px] font-[500] text-[#FCFCFC] flex gap-x-2">
@@ -165,7 +183,7 @@ export default function Assets({
                                             {new Decimal(pyPositionsMap?.[item.id]?.ptBalance || 0).lt(0.01) && "<"}
                                             {formatPortfolioNumber(pyPositionsMap?.[item.id]?.ptBalance || 0)}
                                         </span>
-                                        <span className='text-[rgba(252,252,252,0.4)] ml-1'>
+                                        <span className='text-[rgba(252,252,252,0.4)] ml-2'>
                                             ~{new Decimal(pyPositionsMap?.[item.id]?.ptBalance || 0).mul(item.ptPrice).lt(0.01) && "<"}
                                             ${formatPortfolioNumber(new Decimal(pyPositionsMap?.[item.id]?.ptBalance || 0).mul(item.ptPrice))}
                                         </span>
@@ -205,12 +223,12 @@ export default function Assets({
                                         </div>
                                     </td>
                                     <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">{formatTVL(item.ytPrice)}</td>
-                                    <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
+                                    <td className="py-3 font-[500] text-[14px]  text-[#FCFCFC]">
                                         <span>
                                             {new Decimal(pyPositionsMap?.[item.id]?.ytBalance || 0).lt(0.01) && "<"}
                                             {formatPortfolioNumber(pyPositionsMap?.[item.id]?.ytBalance || 0)}
                                         </span>
-                                        <span className='text-[rgba(252,252,252,0.4)] ml-1'>
+                                        <span className='text-[rgba(252,252,252,0.4)] ml-2'>
                                             ~{new Decimal(pyPositionsMap?.[item.id]?.ytBalance || 0).mul(item.ytPrice).lt(0.01) && "<"}
                                             ${formatPortfolioNumber(new Decimal(pyPositionsMap?.[item.id]?.ytBalance || 0).mul(item.ytPrice))}
                                         </span>
@@ -221,7 +239,7 @@ export default function Assets({
                                             {new Decimal(ytReward?.[item.id] || 0).mul(item.conversionRate).lt(0.01) && "<"}
                                             {formatPortfolioNumber(new Decimal(ytReward?.[item.id] || 0).mul(item.conversionRate))}
                                         </span>
-                                        <span className='text-[rgba(252,252,252,0.4)] ml-1'>
+                                        <span className='text-[rgba(252,252,252,0.4)] ml-2'>
                                             ~{new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice).lt(0.01) && "<"}
                                             ${formatPortfolioNumber(new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice))}
                                         </span>
@@ -263,14 +281,14 @@ export default function Assets({
 
                                             {formatPortfolioNumber(lpPositionsMap?.[item.id]?.lpBalance || 0)}
                                         </span>
-                                        <span className='text-[rgba(252,252,252,0.4)] ml-1'>
+                                        <span className='text-[rgba(252,252,252,0.4)] ml-2'>
                                             ~{new Decimal(lpPositionsMap?.[item.id]?.lpBalance || 0).mul(item.lpPrice).lt(0.01) && "<"}
                                             ${formatPortfolioNumber(new Decimal(lpPositionsMap?.[item.id]?.lpBalance || 0).mul(item.lpPrice))}
                                         </span>
                                     </td>
                                     <td className="py-3 text-[#FCFCFC] relative group">
                                         <div>
-                                            <div className={`text-[12px] font-[600] py-1 px-1.5 rounded-[8px] cursor-pointer inline-flex 
+                                            <div className={`text-[12px] font-[600] py-1 gap-1 px-1.5 rounded-[8px] cursor-pointer inline-flex 
                                 ${totalReward > 1000 ? 'bg-[rgba(149,110,255,0.80)]' : 'bg-[rgba(76,200,119,0.80)]'}`}>
                                                 <Image
                                                     src={'/lpReward.svg'}
@@ -348,7 +366,6 @@ export default function Assets({
 
                                 </tr>
                             }
-
                         })}
                         {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
@@ -366,6 +383,7 @@ export default function Assets({
                     </tbody>
 
                 </table>
+                <div className='w-full flex items-center'>{empty && <EmptyData />}</div>
             </div>
         </div >
     );

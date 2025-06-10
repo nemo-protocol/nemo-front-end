@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import EmptyData from '@/components/ui/empty';
 
 
 const typeColor: Record<string, string> = {
@@ -55,19 +56,19 @@ export default function Transactions() {
     const isPage = pathname.startsWith('/portfolio/history');
     if (error) return <div className="text-center mt-8 text-red-500">{error.message}</div>;
 
-    const transactions = data?.data ?? [];
-
+    let transactions = data?.data ?? [];
+    transactions = isPage ? transactions : transactions.slice(0, 5)
     return (
-        <>{transactions.length !== 0 && <div className="mt-10 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <>{ <div className="mt-10 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
 
             {!isPage && <div className="flex gap-8 items-center justify-between mb-6">
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Latest transactions</div>
 
-                <Link href="/portfolio/history" className="ursor-pointer px-2.5 py-1.5 gap-2 items-center rounded-[16px]
+                {data && data.count > 5 && <Link href="/portfolio/history" className="ursor-pointer px-2.5 py-1.5 gap-2 items-center rounded-[16px]
                                     transition-colors duration-200 text-[14px] font-[500]
                                    text-[rgba(252,252,252,0.4)] hover:text-white hover:bg-[rgba(252,252,252,0.10)] cursor-pointer inline-flex">
                     <ArrowUpRight className='size-4' />View full history
-                </Link>
+                </Link>}
             </div>}
 
             <div className="w-full overflow-x-auto">
@@ -85,7 +86,7 @@ export default function Transactions() {
                     </thead>
 
                     <tbody className="text-[#FCFCFC]">
-                        {transactions.map(tx => (
+                        {transactions.map((tx, index) => (
                             <tr key={tx.id} className="">
                                 <td className="py-3 text-[14px] font-[500]">
                                     {dayjs(Number(tx.tradeTime)).format('YYYY-MM-DD HH:mm')}
@@ -96,7 +97,7 @@ export default function Transactions() {
                                         {dayjs(Number(tx.maturity)).format("YYYY-MM-DD")}
                                     </div>
                                 </td>
-                                <td className="py-3 text-[20px] font-[500]">
+                                <td className="py-3 text-[20px] flex gap-1 font-[500]">
                                     {tx.tokenLogo && <Image
                                         src={tx.tokenLogo || ""}
                                         alt={""}
@@ -144,7 +145,7 @@ export default function Transactions() {
                             </tr>
                         ))}
 
-                        {transactions.length == 0 && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
                                 <td></td>
                                 <td></td>
@@ -156,13 +157,15 @@ export default function Transactions() {
                                 <td></td>
                             </tr>
                         ))}
+
                     </tbody>
                 </table>
+                <div className='w-full flex items-center'>{transactions.length == 0 && <EmptyData />}</div>
             </div>
 
 
             {isPage && data && (
-                <div className="flex justify-end gap-3 mt-6">
+                <div className="flex justify-end gap-3 text-[12px] font-[600] mt-6 transition-all duration-200">
 
                     {(() => {
                         const pageIndex = data.page.pageIndex;
@@ -176,7 +179,7 @@ export default function Transactions() {
                             <>
                                 {/* FIRST */}
                                 <button
-                                    className="px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === 1) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === 1}
                                     onClick={() => setPageIndex(1)}
                                 >
@@ -185,7 +188,7 @@ export default function Transactions() {
 
                                 {/* < */}
                                 <button
-                                    className="w-8 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    className={`w-8  py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === 1) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === 1}
                                     onClick={() => setPageIndex(p => Math.max(1, p - 1))}
                                 >
@@ -193,13 +196,13 @@ export default function Transactions() {
                                 </button>
 
                                 {/* PAGE X OF Y */}
-                                <div className="px-4 py-1 rounded bg-[#1b1f25] opacity-30  text-[#FCFCFC]/60 select-none">
+                                <div className="px-4 py-1 rounded bg-[#1b1f25] opacity-60  text-[#FCFCFC]/60 select-none">
                                     PAGE&nbsp;{pageIndex}&nbsp;OF&nbsp;{totalPages}
                                 </div>
 
                                 {/* > */}
                                 <button
-                                    className="w-8 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    className={`w-8  py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === totalPages) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === totalPages}
                                     onClick={() => setPageIndex(p => Math.min(totalPages, p + 1))}
                                 >
@@ -208,7 +211,7 @@ export default function Transactions() {
 
                                 {/* LAST */}
                                 <button
-                                    className="px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-30"
+                                    className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === totalPages) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === totalPages}
                                     onClick={() => setPageIndex(totalPages)}
                                 >

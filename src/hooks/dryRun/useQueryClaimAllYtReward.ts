@@ -1,179 +1,131 @@
-import Decimal from "decimal.js"
-import { bcs } from "@mysten/sui/bcs"
-import { formatDecimalValue, isValidAmount } from "@/lib/utils"
-import { useQuery } from "@tanstack/react-query"
-import { Transaction } from "@mysten/sui/transactions"
-import type { CoinConfig, PortfolioItem } from "@/queries/types/market"
-import { redeemSyCoin } from "@/lib/txHelper"
-import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
-import { ContractError, type DebugInfo, type PyPosition } from "../types"
-import { getPriceVoucher } from "@/lib/txHelper/price"
+import Decimal from "decimal.js";
+import { bcs } from "@mysten/sui/bcs";
+import { formatDecimalValue } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { Transaction } from "@mysten/sui/transactions";
+import { redeemSyCoin } from "@/lib/txHelper";
+import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit";
+import { getPriceVoucher } from "@/lib/txHelper/price";
+import type { PortfolioItem } from "@/queries/types/market";
+import type { PyPosition, DebugInfo } from "../types";
+import { useSearchParams } from "next/navigation";   // ← NEW
 
 interface ClaimYtRewardParams {
-  filteredYTLists: PortfolioItem[]
-  pyPositionsMap?: Record<string, {
-    ptBalance: string;
-    ytBalance: string;
-    pyPositions: PyPosition[];
-  }>
+  filteredYTLists: PortfolioItem[];
+  pyPositionsMap?: Record<
+    string,
+    { ptBalance: string; ytBalance: string; pyPositions: PyPosition[] }
+  >;
 }
 
-export default function useQueryClaimAllYtReward(
-  params: ClaimYtRewardParams,
-) {
-  const client = useSuiClient()
-  const { address } = useWallet()
+export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
+  const client = useSuiClient();
+  const { address } = useWallet();
+
+  /* ------------ 计算最终地址 ------------ */
+  const searchParams   = useSearchParams();
+  const mockAddressRaw = searchParams.get("mockAddress");
+
+  const effectiveAddress =
+    process.env.NODE_ENV !== "production" && mockAddressRaw
+      ? mockAddressRaw
+      : address;
 
   return useQuery({
-    queryKey: ["claimYtReward", address],
-    enabled: !!address && params.filteredYTLists.length != 0,
-    refetchInterval: 60 * 1000, // 每分钟刷新一次
-    refetchIntervalInBackground: true, // 即使页面在后台也继续刷新
+    queryKey: ["claimYtReward", effectiveAddress],
+    enabled: !!effectiveAddress && params.filteredYTLists.length !== 0,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: true,
     queryFn: async () => {
-      if (!address) {
-        throw new Error("Please connect wallet first")
+      if (!effectiveAddress) {
+        throw new Error("Please connect wallet first");
       }
 
+      /* ---------- 构造 transaction ---------- */
+      const tx = new Transaction();
+      tx.setSender(effectiveAddress);
 
-      const tx = new Transaction()
-      tx.setSender(address)
-      params.filteredYTLists.map(item => {
-        const balance = params.pyPositionsMap?.[item.id]?.ytBalance
-        const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions
-        const coinConfig = item
+      params.filteredYTLists.forEach((item) => {
+        const balance     = params.pyPositionsMap?.[item.id]?.ytBalance;  // 目前 balance 未用，可留作以后
+        const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions;
+        const coinConfig  = item;
 
-        let pyPosition
-        let created = false
+        /* 1. 如果当前地址没有 py_position 则 init 一个 */
+        let pyPosition;
+        let created = false;
         if (!pyPositions?.length) {
-          created = true
-          const moveCall = {
-            target: `${coinConfig?.nemoContractId}::py::init_py_position`,
-            arguments: [coinConfig?.version, coinConfig?.pyStateId],
-            typeArguments: [coinConfig?.syCoinType],
-          }
-
-          pyPosition = tx.moveCall({
-            ...moveCall,
-            arguments: moveCall.arguments.map((arg) => tx.object(arg)),
-          })[0]
+          created = true;
+          const [pos] = tx.moveCall({
+            target: `${coinConfig.nemoContractId}::py::init_py_position`,
+            arguments: [
+              tx.object(coinConfig.version),
+              tx.object(coinConfig.pyStateId),
+            ],
+            typeArguments: [coinConfig.syCoinType],
+          });
+          pyPosition = pos;
         } else {
-          pyPosition = tx.object(pyPositions[0].id)
+          pyPosition = tx.object(pyPositions[0].id);
         }
 
-        const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
-          tx,
-          coinConfig,
-        )
+        /* 2. price_voucher & redeem_due_interest */
+        const [priceVoucher] = getPriceVoucher(tx, coinConfig);
 
-        const redeemDueInterestMoveCall = {
-          target: `${coinConfig?.nemoContractId}::yield_factory::redeem_due_interest`,
-          arguments: [
-            {
-              name: "version",
-              value: coinConfig.version,
-            },
-            {
-              name: "py_position",
-              value: pyPosition,
-            },
-            {
-              name: "pyStateId",
-              value: coinConfig?.pyStateId,
-            },
-            {
-              name: "price_voucher",
-              value: priceVoucher,
-            },
-            {
-              name: "yield_factory_config",
-              value: coinConfig?.yieldFactoryConfigId,
-            },
-            {
-              name: "clock",
-              value: "0x6",
-            },
-          ],
-          typeArguments: [coinConfig?.syCoinType],
-        }
         const [syCoin] = tx.moveCall({
-          target: redeemDueInterestMoveCall.target,
+          target: `${coinConfig.nemoContractId}::yield_factory::redeem_due_interest`,
           arguments: [
             tx.object(coinConfig.version),
             pyPosition,
-            tx.object(coinConfig?.pyStateId),
+            tx.object(coinConfig.pyStateId),
             priceVoucher,
-            tx.object(coinConfig?.yieldFactoryConfigId),
-            tx.object("0x6"),
+            tx.object(coinConfig.yieldFactoryConfigId),
+            tx.object("0x6"), // clock
           ],
-          typeArguments: redeemDueInterestMoveCall.typeArguments,
-        })
+          typeArguments: [coinConfig.syCoinType],
+        });
 
-        const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
+        /* 3. 把 syCoin 兑换为 yieldToken, 再查看面值 */
+        const yieldToken = redeemSyCoin(tx, coinConfig, syCoin);
 
         tx.moveCall({
           target: `0x2::coin::value`,
           arguments: [yieldToken],
           typeArguments: [coinConfig.coinType],
-        })
+        });
 
+        /* 4. 如果刚创建 py_position，要转回给用户（模拟）*/
         if (created) {
-          tx.transferObjects([pyPosition], address)
+          tx.transferObjects([pyPosition], effectiveAddress);
         }
-      })
+      });
 
-
-
-
+      /* ---------- dev-inspect ---------- */
       const result = await client.devInspectTransactionBlock({
-        sender: address,
+        sender: effectiveAddress,
         transactionBlock: await tx.build({
-          client: client,
+          client,
           onlyTransactionKind: true,
         }),
-      })
+      });
 
-      const pyReward: Record<string, string> = {}
-      // const pyReward:any = {}
-      params.filteredYTLists.map((item, index) => {
-        const decimal = Number(item.decimal)
+      /* ---------- 解析返回的 u64 ---------- */
+      const pyReward: Record<string, string> = {};
+
+      params.filteredYTLists.forEach((item, index) => {
+        const decimal  = Number(item.decimal);
         const syAmount = bcs.U64.parse(
           new Uint8Array(
-            result.results[((index + 1) * 4) - 1].returnValues[0][0],
+            result.results[index * 4 + 3].returnValues[0][0], // (index+1)*4-1 == index*4+3
           ),
-        )
+        );
 
         pyReward[item.id] = formatDecimalValue(
-            new Decimal(syAmount).div(10 ** decimal).toString(),
-            decimal,
-          )
+          new Decimal(syAmount).div(10 ** decimal).toString(),
+          decimal,
+        );
+      });
 
-
-        // params.pyPositionsMap?.[item.id]?.pyPositions.Ytreward = 
-      })
-
-      // const debugInfo: DebugInfo = {
-      //   moveCall: [priceVoucherMoveCall, redeemDueInterestMoveCall],
-      //   rawResult: {
-      //     error: result?.error,
-      //     results: result?.results,
-      //   },
-      // }
-
-      // if (
-      //   result.results[result.results.length - 1].returnValues[0][1] !== "u64"
-      // ) {
-      //   const message = "Failed to get output amount"
-      //   debugInfo.rawResult.error = message
-      //   throw new ContractError(message, debugInfo)
-      // }
-
-
-      return pyReward
-
-      // return formatDecimalValue(
-      //   new Decimal(syAmount).div(10 ** decimal).toString(),
-      //   decimal,
-      // )
+      return pyReward;
     },
-  })
+  });
 }
