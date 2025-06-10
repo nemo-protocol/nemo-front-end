@@ -1,3 +1,5 @@
+
+"use client"
 import { MarketStateMap } from '@/hooks/query/useMultiMarketState';
 import { PyPosition, LpPosition, MarketState } from '@/hooks/types';
 import { PortfolioItem } from '@/queries/types/market';
