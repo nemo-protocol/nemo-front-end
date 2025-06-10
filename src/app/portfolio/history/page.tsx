@@ -3,6 +3,7 @@
 import { ArrowDownToLine, ArrowLeft, Download, X } from "lucide-react"
 
 import Transactions from '../Transactions';
+import { Suspense } from "react";
 
 
 
@@ -13,7 +14,7 @@ export default function PortfolioPage() {
 
 
     return (
-        <>
+        <Suspense>
             <div className="py-4 min-h-screen bg-[#080d16]">
                 <div className="px-7.5">
                     <div
@@ -31,6 +32,6 @@ export default function PortfolioPage() {
 
             </div>
 
-        </>
+        </Suspense>
     );
 }
