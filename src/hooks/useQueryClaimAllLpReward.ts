@@ -131,7 +131,6 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
           );
         });
       });
-      console.log(result, lpReward, 'sixu')
 
       return lpReward;
     },

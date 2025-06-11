@@ -28,7 +28,7 @@ import {
 
 const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
   { label: "1m", granularity: "MINUTELY", seconds: 60 * 60 },
-  { label: "1H", granularity: "HOURLY", seconds: 60 * 60 * 60 },
+  { label: "1H", granularity: "HOURLY", seconds: 60 * 60 * 72 },
   { label: "1D", granularity: "DAILY", seconds: 60 * 60 * 24 * 60 },
   { label: "1M", granularity: "MONTHLY", seconds: 60 * 60 * 24 * 120 },
 ]

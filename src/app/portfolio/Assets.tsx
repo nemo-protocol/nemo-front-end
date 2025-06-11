@@ -3,7 +3,7 @@
 import { MarketStateMap } from '@/hooks/query/useMultiMarketState';
 import { PyPosition, LpPosition, MarketState } from '@/hooks/types';
 import { PortfolioItem } from '@/queries/types/market';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import dayjs from 'dayjs';
 import { formatDecimalValue, formatPortfolioNumber, formatTVL } from '@/lib/utils';
@@ -19,7 +19,9 @@ export const isExpired = (maturityTime: string) => {
 export type ListOrigin = 'pt' | 'yt' | 'lp'
 
 export interface RankedPortfolioItem extends PortfolioItem {
-    listType: ListOrigin
+    lpTotalReward: number;
+    listType: ListOrigin;
+    ytTotalReward: number;
 }
 
 
@@ -47,73 +49,168 @@ interface AssetsParams {
     marketStates: MarketStateMap;
     ytReward?: Record<string, string>
     lpReward?: Record<string, string>
+    loading: boolean
 }
+type SortKey =
+    | 'default'
+    | 'value'
+    | 'maturity'
+    | 'incentive'
+    | 'accruedYield'
 
+type SortOrder = 'asc' | 'desc'
 export default function Assets({
     filteredLists,
     pyPositionsMap,
     lpPositionsMap,
     marketStates,
     ytReward,
-    lpReward
+    lpReward,
+    loading
 }: AssetsParams) {
     const [activeTab, setActiveTab] = useState(categories[0]);
     const [list, setList] = useState<RankedPortfolioItem[]>([])
-    const [loading, setLoading] = useState(true)
     const [empty, setEmpty] = useState(false)
-    useEffect(() => {
-        const flat: RankedPortfolioItem[] = (['pt', 'yt', 'lp'] as ListOrigin[]).flatMap(
-            (key) =>
-                filteredLists[key].map((item) => ({
-                    ...item,
-                    listType: key
-                }))
+    const [sortKey, setSortKey] = useState<SortKey>('default')
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+
+    const toggleSort = (key: Exclude<SortKey, 'default'>) => {
+        if (sortKey !== key) {
+            setSortKey(key)
+            setSortOrder('desc')
+            return
+        }
+
+        if (sortOrder === 'desc') {
+            setSortOrder('asc')
+        } else {
+            setSortKey('default')
+            setSortOrder('desc')
+        }
+    }
+    const SortIcon = ({ column }: { column: Exclude<SortKey, 'default'> }) => {
+
+        if (sortKey !== column)
+            return (
+                <Image
+                    src="/sorter.svg"
+                    alt=""
+                    width={12}
+                    height={12}
+                    className="inline-block mb-1"
+                />
+            )
+        if (sortOrder === 'desc')
+            return (
+                ' ↓'
+            )
+        return (
+            ' ↑'
         )
+    }
 
-        const ranklist = flat.sort((a, b) => {
-            const aExpired = isExpired((a as any).maturity)
-            const bExpired = isExpired((b as any).maturity)
+    const sortedList = useMemo(() => {
+        const flat: RankedPortfolioItem[] = (['pt', 'yt', 'lp'] as ListOrigin[])
+            .flatMap((key) =>
+                filteredLists[key].map((item) => {
+                    let totalReward = 0
+                    if (lpReward && key == 'lp') {
+                        marketStates[item.marketStateId]?.rewardMetrics.forEach(rewardMetric => {
+                            totalReward = totalReward + Number(lpReward[item.id + rewardMetric.tokenName]) * Number(rewardMetric.tokenPrice)
+                        })
+                    }
+                    console.log(totalReward, Number(new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice)), 'sixu')
+                    return ({
+                        ...item,
+                        listType: key,
+                        lpTotalReward: totalReward,
+                        ytTotalReward: key == 'yt' ? Number(new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice)) : 0
+                    })
+                })
+            )
+        const calcValue = (p: RankedPortfolioItem) => {
+            if (p.listType === 'lp')
+                return new Decimal(lpPositionsMap?.[p.id]?.lpBalance || 0).mul(
+                    p.lpPrice
+                )
+            if (p.listType === 'yt')
+                return new Decimal(pyPositionsMap?.[p.id]?.ytBalance || 0).mul(
+                    p.ytPrice
+                )
+            return new Decimal(pyPositionsMap?.[p.id]?.ptBalance || 0).mul(p.ptPrice)
+        }
 
-            if (aExpired && !bExpired) return -1
-            if (!aExpired && bExpired) return 1
-            let aValue
-            let bValue
-            if (a.listType == 'lp')
-                aValue = new Decimal(lpPositionsMap?.[a.id]?.lpBalance || 0).mul(a.lpPrice)
-            else if (a.listType == 'yt')
-                aValue = new Decimal(pyPositionsMap?.[a.id]?.ytBalance || 0).mul(a.ytPrice)
-            else
-                aValue = new Decimal(pyPositionsMap?.[a.id]?.ptBalance || 0).mul(a.ptPrice)
 
-            if (b.listType == 'lp')
-                bValue = new Decimal(lpPositionsMap?.[b.id]?.lpBalance || 0).mul(b.lpPrice)
-            else if (b.listType == 'yt')
-                bValue = new Decimal(pyPositionsMap?.[b.id]?.ytBalance || 0).mul(b.ytPrice)
-            else
-                bValue = new Decimal(pyPositionsMap?.[b.id]?.ptBalance || 0).mul(b.ptPrice)
+        const cmp = (a: RankedPortfolioItem, b: RankedPortfolioItem) => {
+            // ---------- 默认：过期优先 → 价值降序 ----------
+            if (sortKey === 'default') {
+                const aExp = isExpired(a.maturity)
+                const bExp = isExpired(b.maturity)
+                if (aExp && !bExp) return -1
+                if (!aExp && bExp) return 1
+                return calcValue(b).comparedTo(calcValue(a))
+            }
 
-            return bValue.comparedTo(aValue) // 降序
-        })
-        setList(ranklist)
-        setLoading(false)
-    }, [filteredLists, lpPositionsMap, pyPositionsMap])
+            // ---------- 价值 ----------
+            if (sortKey === 'value') {
+                const res = calcValue(a).comparedTo(calcValue(b))
+                return sortOrder === 'asc' ? res : -res
+            }
+
+            // ---------- 到期 ----------
+            if (sortKey === 'maturity') {
+                const aExp = isExpired(a.maturity)
+                const bExp = isExpired(b.maturity)
+                if (aExp !== bExp)
+                    return sortOrder === 'asc' ? (aExp ? -1 : 1) : aExp ? 1 : -1
+
+                const res = Number(a.maturity) - Number(b.maturity)
+                return sortOrder === 'asc' ? res : -res
+            }
+
+            // ---------- INCENTIVE（LP 奖励） ----------
+            if (sortKey === 'incentive') {
+                const res = new Decimal(a.lpTotalReward)
+                    .comparedTo(new Decimal(b.lpTotalReward))
+                return sortOrder === 'asc' ? res : -res
+            }
+
+            // ---------- ACCRUED YIELD（YT 累计收益） ----------
+            if (sortKey === 'accruedYield') {
+                const res = new Decimal(a.ytTotalReward)
+                    .comparedTo(new Decimal(b.ytTotalReward))
+                return sortOrder === 'asc' ? res : -res
+            }
+
+            return 0
+        }
+
+        return flat.sort(cmp)
+    }, [
+        filteredLists,
+        lpPositionsMap,
+        pyPositionsMap,
+        sortKey,
+        sortOrder,
+        lpReward,
+        ytReward
+    ])
 
     useEffect(() => {
-        if (!list || list.length === 0) {
+        if ((!sortedList || sortedList.length === 0) && !loading) {
             setEmpty(true);
             return;
         }
 
         const shouldBeEmpty =
             activeTab.key !== 'all' &&
-            list.every(item => item.listType !== activeTab.key);
+            sortedList.every(item => item.listType !== activeTab.key);
 
-        console.log(list,shouldBeEmpty)
+        console.log(sortedList, shouldBeEmpty)
         setEmpty(shouldBeEmpty);
-    }, [activeTab, list]);
-
+    }, [activeTab, sortedList]);
     return (
-        <div className="mt-6 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <div className="mt-2 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
             {/* Tabs */}
             <div className="flex gap-8 items-center">
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Assets</div>
@@ -142,24 +239,32 @@ export default function Assets({
                         <tr>
                             <th className="py-2  w-[15%] text-left text-[12px] font-[600]">ASSET</th>
                             <th className="py-2  w-[15%] text-left text-[12px] font-[600]">TYPE</th>
-                            <th className="py-2  w-[13%] text-left text-[12px] font-[600]">MATURITY</th>
+                            <th className="py-2  w-[13%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                                onClick={() => toggleSort('maturity')}>
+                                MATURITY
+                                <SortIcon column="maturity" />
+                            </th>
                             <th className="py-2  w-[12%] text-left text-[12px] font-[600]">PRICE</th>
-                            <th className="py-2 w-[12%] text-left text-[12px] font-[600]">AMOUNT</th>
-                            <th className="py-2 w-[12%] text-left text-[12px] font-[600]">INCENTIVE</th>
-                            <th className="py-2 text-left text-[12px] font-[600]">ACCRUED YIELD</th>
+                            <th className="py-2 w-[12%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                                onClick={() => toggleSort('value')}>
+                                AMOUNT
+                                <SortIcon column="value" />
+                            </th>
+                            <th className="py-2 w-[12%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                                onClick={() => toggleSort('incentive')}>
+                                INCENTIVE
+                                <SortIcon column="incentive" /></th>
+                            <th className="py-2 text-left text-[12px] font-[600]  cursor-pointer select-none"
+                                onClick={() => toggleSort('accruedYield')}>
+                                ACCRUED YIELD
+                                <SortIcon column="accruedYield" /></th>
                             <th className="py-2 text-left text-[12px] font-[600]"></th>
 
                         </tr>
                     </thead>
                     <tbody className="bg-[#0f151c] ">
+                        {!loading && sortedList.map((item, index) => {
 
-
-                        {!loading && list.map((item, index) => {
-                            let totalReward = 0
-                            if (lpReward){
-                                marketStates[item.marketStateId]?.rewardMetrics.forEach(rewardMetric => {
-                                    totalReward = totalReward + Number(lpReward[item.id + rewardMetric.tokenName]) * Number(rewardMetric.tokenPrice)
-                                })}
                             if ((activeTab == categories[0] || activeTab == categories[1]) && item.listType == 'pt') {
                                 return <tr key={index} className="">
                                     <td className="py-3  text-[20px] font-[500] text-[#FCFCFC] flex gap-x-2">
@@ -291,7 +396,7 @@ export default function Assets({
                                     <td className="py-3 text-[#FCFCFC] relative group">
                                         <div>
                                             <div className={`text-[12px] font-[600] py-1 gap-1 px-1.5 rounded-[8px] cursor-pointer inline-flex 
-                                ${totalReward > 1000 ? 'bg-[rgba(149,110,255,0.80)]' : 'bg-[rgba(76,200,119,0.80)]'}`}>
+                                ${item.lpTotalReward > 1000 ? 'bg-[rgba(149,110,255,0.80)]' : 'bg-[rgba(76,200,119,0.80)]'}`}>
                                                 <Image
                                                     src={'/lpReward.svg'}
                                                     alt={""}
@@ -300,8 +405,8 @@ export default function Assets({
                                                     className="shrink-0"
                                                 />
                                                 <span>
-                                                    ~{new Decimal(totalReward).lt(0.01) && "<"}
-                                                    ${formatPortfolioNumber(new Decimal(totalReward))}
+                                                    ~{new Decimal(item.lpTotalReward).lt(0.01) && "<"}
+                                                    ${formatPortfolioNumber(new Decimal(item.lpTotalReward))}
                                                 </span>
                                             </div>
 
@@ -348,8 +453,8 @@ export default function Assets({
                                                 <div className='w-full h-[1px] bg-[rgba(252,252,252,0.10)] mt-4 mb-4'></div>
                                                 <div className='flex justify-between text-[14px] font-[500]'>
                                                     <div className='text-[rgba(252,252,252,0.50)]'>{"Total"}</div>
-                                                    <div className='text-[#956EFF]'>  ~{new Decimal(totalReward).lt(0.01) && "<"}
-                                                        ${formatPortfolioNumber(new Decimal(totalReward))}</div>
+                                                    <div className='text-[#956EFF]'>  ~{new Decimal(item.lpTotalReward).lt(0.01) && "<"}
+                                                        ${formatPortfolioNumber(new Decimal(item.lpTotalReward))}</div>
 
                                                 </div>
                                             </div>

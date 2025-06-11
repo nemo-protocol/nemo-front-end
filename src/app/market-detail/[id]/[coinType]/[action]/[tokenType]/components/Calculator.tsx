@@ -79,9 +79,9 @@ export default function Calculator({
     const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
     const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
-    const apr = (netProfitYT) * (365 / maturity) / inputYT * underlyingPrice
+    const apr = (netProfitYT) * (365 / maturity) / (inputYT * underlyingPrice)
     const effectiveApyYT = (Math.pow((1 + apr / (365 / maturity)), (365 / maturity)) - 1) * 100
-    console.log(outputYT, underlyingPrice, targetAPY, maturity, inputYT, netProfitYT, apr,(1 + apr / (365 / maturity)),(365 / maturity))
+    console.log(netProfitYT, maturity, inputYT, underlyingPrice, apr, (1 + apr / (365 / maturity)), (365 / maturity))
 
 
     const effectiveApyUA = targetAPY;

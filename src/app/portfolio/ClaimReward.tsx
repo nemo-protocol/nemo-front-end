@@ -31,6 +31,7 @@ interface Props {
     marketStates: MarketStateMap;
     ytReward?: Record<string, string>
     lpReward?: Record<string, string>
+    claimLoading: boolean
 }
 
 /**
@@ -50,6 +51,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
     lpReward,
     onClose,
     onClaimAll,
+    claimLoading
 }) => {
     // 禁用背景滚动
     useEffect(() => {
@@ -64,12 +66,12 @@ const UnclaimedRewardModal: React.FC<Props> = ({
         onClick={onClose}
     >
         <div
-            className="w-full max-w-3xl  rounded-xl p-6 text-white shadow-2xl border border-[#6D7177] bg-[#101722]"
+            className="w-full max-w-3xl  rounded-xl p-6 text-white shadow-2xl border border-[#6D7177] bg-[#0c0d0f]"
             onClick={(e) => e.stopPropagation()}
         >
             {/* 头部 */}
             <header className="mb-4 flex items-center justify-between">
-                <div className="text-[32px] font-[470] font-[#FCFCFC]">Unclaimed Reward</div>
+                <div className="text-[32px] font-[470] font-serif font-Medium  font-[#FCFCFC]">Unclaimed Reward</div>
                 <button
                     className="text-xl text-gray-400 transition-colors hover:text-gray-200"
                     onClick={onClose}
@@ -85,7 +87,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
             </header>
 
             {/* 表格 */}
-            <div className="scrollbar-thin scrollbar-track-transparent mt-4 scrollbar-thumb-gray-700 overflow-y-auto">
+            <div className="scrollbar-thin bg-[#141618] py-4 pl-6 rounded-xl scrollbar-track-transparent mt-4 scrollbar-thumb-gray-700 overflow-y-auto">
                 <table className="w-full  text-sm">
                     <thead>
                         <tr className="text-left text-[12px] font-[600] text-white/60">
@@ -195,11 +197,40 @@ const UnclaimedRewardModal: React.FC<Props> = ({
 
             {/* Claim All */}
             <button
-                className="mt-5 w-full rounded-[16px] bg-[#2b76e4] font-[500] text-[14px]   py-2 font-medium transition  disabled:cursor-not-allowed disabled:opacity-40"
-
+                className="mt-5 w-full rounded-[16px] bg-[#2b76e4] py-2 text-[14px] font-[500] transition disabled:cursor-not-allowed disabled:opacity-40 relative"
+                disabled={!claimLoading}
                 onClick={onClaimAll}
             >
-                Claim All
+                {!claimLoading ? (
+                    <span className="flex items-center justify-center space-x-2">
+                        <svg
+                            className="h-4 w-4 animate-spin text-white"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <circle
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="opacity-25"
+                            />
+
+                            <path
+                                d="M12 2 a 10 10 0 0 1 10 10"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                className="opacity-75"
+                            />
+                        </svg>
+                        <span>Claiming</span>
+                    </span>
+                ) : (
+                    'Claim All'
+                )}
             </button>
         </div>
     </div>

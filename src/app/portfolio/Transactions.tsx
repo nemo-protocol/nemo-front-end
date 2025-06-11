@@ -1,5 +1,5 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { useMarketTransactions } from '@/hooks/useMarketTransactions';
 import { isExpired } from './Assets';
@@ -47,6 +47,8 @@ function shortHash(hash: string, len = 10) {
 }
 
 export default function Transactions() {
+    const [totalloading, setTotalloading] = useState(true)
+
     const {
         data,
         loading,
@@ -55,12 +57,16 @@ export default function Transactions() {
     } = useMarketTransactions({ pageSize: 10 });
     const pathname = usePathname();
     const isPage = pathname.startsWith('/portfolio/history');
-    if (error) return <div className="text-center mt-8 text-red-500">{error.message}</div>;
-
     let transactions = data?.data ?? [];
     transactions = isPage ? transactions : transactions.slice(0, 5)
+
+    useEffect(() => {
+        if (loading == false && data?.data) { 
+            setTotalloading(loading)
+        }
+    }, [loading, data])
     return (
-        <>{ <div className="mt-10 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <>{<div className="mt-10 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
 
             {!isPage && <div className="flex gap-8 items-center justify-between mb-6">
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Latest transactions</div>
@@ -146,7 +152,7 @@ export default function Transactions() {
                             </tr>
                         ))}
 
-                        {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        {(totalloading && transactions.length == 0 ) && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
                                 <td></td>
                                 <td></td>
@@ -161,7 +167,7 @@ export default function Transactions() {
 
                     </tbody>
                 </table>
-                <div className='w-full flex items-center'>{transactions.length == 0 && <EmptyData />}</div>
+                <div className='w-full flex items-center'>{(transactions.length == 0 && !totalloading) && <EmptyData />}</div>
             </div>
 
 

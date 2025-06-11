@@ -30,6 +30,8 @@ export default function PortfolioPage() {
     const { type } = useParams()
     const { address } = useWallet()
     const [loading, setLoading] = useState(true)
+    const [claimLoading, setClaimLoading] = useState(true)
+
     const [balance, setBalance] = useState("0")
     const [totalClaim, setTotalClaim] = useState("0")
     const [open, setOpen] = useState(false);
@@ -42,7 +44,6 @@ export default function PortfolioPage() {
 
     const { data: pyPositionsMap = {}, isLoading: isPositionsLoading } =
         useAllPyPositions(list)
-
     const { data: lpPositionsMap = {}, isLoading: isLpPositionsLoading } =
         useAllLpPositions(list)
 
@@ -89,6 +90,7 @@ export default function PortfolioPage() {
     //             pyPositionsMap[key].ytBalance = ytReward[key];
     //         }
     //     }
+
     const {
         data: lpReward,
         refetch: refetchLpReward,
@@ -101,26 +103,33 @@ export default function PortfolioPage() {
     const { mutateAsync: claimAllReward } = useClaimAllReward()
 
     const claimAllandAddLiqudity = async () => {
-        if (ytReward) {
-            await claimAllReward({
-                filteredYTLists: filteredLists.yt,
-                filteredLPLists: filteredLists.lp,
-                pyPositionsMap,
-                addLiqudity: false,
-                ytReward,
-                lpPositionsMap,
-                marketStates
-            })
-            setOpen(false)
-            refetchYtReward()
-            refetchLpReward()
+        setClaimLoading(false)
+        try {
+            if (ytReward) {
+                await claimAllReward({
+                    filteredYTLists: filteredLists.yt,
+                    filteredLPLists: filteredLists.lp,
+                    pyPositionsMap,
+                    addLiqudity: false,
+                    ytReward,
+                    lpPositionsMap,
+                    marketStates
+                })
+                setClaimLoading(true)
+                setOpen(false)
+                refetchYtReward()
+                refetchLpReward()
+            }
+        } catch (error) {
+            setClaimLoading(true)
         }
+
 
     }
 
     useEffect(() => {
 
-        if (address && marketStates && pyPositionsMap && filteredLists ) {
+        if (address && marketStates && pyPositionsMap && filteredLists) {
 
             let _balance = new Decimal(0)
             let _totalClaim = new Decimal(0)
@@ -140,12 +149,12 @@ export default function PortfolioPage() {
             })
             setBalance(_balance.toString())
             setTotalClaim(_totalClaim.toString())
-            setLoading(false)
+            !isLoading && setLoading(false)
         }
         else if (!address) {
-            setLoading(false)
+            !isLoading && setLoading(false)
         }
-    }, [lpReward, ytReward])
+    }, [lpReward, ytReward,filteredLists])
 
     return (
         <>
@@ -186,6 +195,7 @@ export default function PortfolioPage() {
                     filteredLists={filteredLists}
                     ytReward={ytReward}
                     lpReward={lpReward}
+                    loading={isLpPositionsLoading||isMarketStatesLoading||isPositionsLoading||isLoading}
                 />
                 <Transactions />
                 <UnclaimedRewardModal
@@ -198,6 +208,7 @@ export default function PortfolioPage() {
                     lpReward={lpReward}
                     onClose={() => setOpen(false)}
                     onClaimAll={claimAllandAddLiqudity}
+                    claimLoading={claimLoading}
                 />
             </div>
 
