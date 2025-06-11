@@ -76,10 +76,10 @@ export default function Calculator({
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
     const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000) - 1)
-    const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - inputYT * underlyingPrice;
+    const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - inputYT ;
     const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
-    const apr = (netProfitYT) * (365 / maturity) / (inputYT * underlyingPrice)
+    const apr = (netProfitYT) * (365 / maturity) / (inputYT)
     const effectiveApyYT = (Math.pow((1 + apr / (365 / maturity)), (365 / maturity)) - 1) * 100
     console.log(netProfitYT, maturity, inputYT, underlyingPrice, apr, (1 + apr / (365 / maturity)), (365 / maturity))
 

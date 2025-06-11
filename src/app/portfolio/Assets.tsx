@@ -244,8 +244,8 @@ export default function Assets({
                                 MATURITY
                                 <SortIcon column="maturity" />
                             </th>
-                            <th className="py-2  w-[12%] text-left text-[12px] font-[600]">PRICE</th>
-                            <th className="py-2 w-[12%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                            <th className="py-2  w-[10%] text-left text-[12px] font-[600]">PRICE</th>
+                            <th className="py-2 w-[13%] text-left text-[12px] font-[600] cursor-pointer select-none"
                                 onClick={() => toggleSort('value')}>
                                 AMOUNT
                                 <SortIcon column="value" />
