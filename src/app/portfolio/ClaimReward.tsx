@@ -87,7 +87,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
             </header>
 
             {/* 表格 */}
-            <div className="scrollbar-thin bg-[#141618] py-4 pl-6 rounded-xl scrollbar-track-transparent mt-4 scrollbar-thumb-gray-700 overflow-y-auto">
+            <div className="scrollbar-thin bg-[#141618] max-h-[70vh] py-4 pl-6 rounded-xl scrollbar-track-transparent mt-4 scrollbar-thumb-gray-700  overflow-y-scroll">
                 <table className="w-full  text-sm">
                     <thead>
                         <tr className="text-left text-[12px] font-[600] text-white/60">

@@ -408,10 +408,13 @@ export default function Buy({ coinConfig }: Props) {
     <div className="flex flex-col gap-6">
       <Calculator
         open={open}
-        inputYT={Number(tradeValue)}
+        inputYT={tradeValue}
         outputYT={Number(ytValue)}
         coinConfig={coinConfig}
         onClose={() => setOpen(false)}
+        coinName={coinName}
+        rate={ptYtData?.ytPrice && price && formatDecimalValue(new Decimal(1).div(ptYtData.ytPrice).mul(price),6)}
+        setTradeValue = {setTradeValue}
       />
       <AmountInput
         title={"Trade".toUpperCase()}

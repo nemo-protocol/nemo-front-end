@@ -216,7 +216,7 @@ export default function MarketPage() {
           <div className="grid grid-cols-5 items-center">
             <div className="col-span-2 flex flex-col items-start gap-x-2">
               <span className="text-white text-sm font-medium">
-                {`${formatTimeDiff(maturity).toLocaleLowerCase()} left`}
+                {`${formatTimeDiff(maturity).toLocaleLowerCase()}`}
               </span>
               <span className="col-span-3 shrink-0 text-xs text-white/40 font-medium">
                 {dayjs(maturity).format("DD MMM YYYY")}

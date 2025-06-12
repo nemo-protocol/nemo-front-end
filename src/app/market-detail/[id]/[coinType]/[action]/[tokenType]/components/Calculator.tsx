@@ -10,9 +10,12 @@ type Props = {
   averageFutureAPY?: number;
   open: boolean;
   onClose: () => void;
-  inputYT: number;
+  inputYT: string;
   outputYT: number;
-  coinConfig: CoinConfig
+  coinName: string;
+  coinConfig: CoinConfig;
+  rate: string | undefined;
+  setTradeValue: (value: string) => void;
 };
 export interface CalcEffectiveApyParams {
   netProfit: number;
@@ -59,10 +62,12 @@ export default function Calculator({
   averageFutureAPY,
   onClose,
   inputYT,
+  coinName,
   outputYT,
-  coinConfig
+  coinConfig,
+  setTradeValue,
+  rate
 }: Props) {
-  const [tradeSize, setTradeSize] = useState<number>(inputYT);
   const [targetAPY, setTargetAPY] = useState<number>(20);
   const [calculatedResults, setCalculatedResults] = useState<any>(null); // State to hold calculation results
   const [showResults, setShowResults] = useState(false); // State to manage result visibility
@@ -76,10 +81,10 @@ export default function Calculator({
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
     const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000) - 1)
-    const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - inputYT ;
-    const netProfitUnderlying = (inputYT * underlyingPrice * targetAPY * maturity * 0.01) / 365;
+    const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - Number(inputYT);
+    const netProfitUnderlying = (Number(inputYT) * underlyingPrice * targetAPY * maturity * 0.01) / 365;
 
-    const apr = (netProfitYT) * (365 / maturity) / (inputYT)
+    const apr = (netProfitYT) * (365 / maturity) / Number(inputYT)
     const effectiveApyYT = (Math.pow((1 + apr / (365 / maturity)), (365 / maturity)) - 1) * 100
     console.log(netProfitYT, maturity, inputYT, underlyingPrice, apr, (1 + apr / (365 / maturity)), (365 / maturity))
 
@@ -133,11 +138,19 @@ export default function Calculator({
               <div>
                 <label className="text-[12px] font-[650] text-[#FCFCFC66] uppercase">Trade</label>
                 <div className="flex items-baseline gap-1.5 mt-0">
-                  <span className="text-[20px] text-[#FCFCFC]">{inputYT}</span>
+                  <span className="text-[20px] text-[#FCFCFC]">
+                    <input
+                    min={0}
+                    type="number"                        
+                    value={inputYT}
+                    onChange={(e) => setTradeValue(e.target.value)}
+                    placeholder={"0"}
+                    className="text-[20px] text-[#FCFCFC] bg-transparent outline-none border-none w-[58px] appearance-none"
+                  /></span>
                   <span className="text-[12px] text-[#FCFCFC66]">~ ${formatDecimalValue(Number(inputYT) * Number(coinConfig.underlyingPrice), 6)}</span>
                 </div>
               </div>
-              <div className="text-lg flex gap-2 items-center">{coinConfig.underlyingCoinName}
+              <div className="text-lg flex gap-2 items-center">{coinName}
                 <Image src={coinConfig.underlyingCoinLogo} alt={""} width={20} height={20} className="shrink-0" />
               </div>
             </div>
@@ -153,16 +166,25 @@ export default function Calculator({
             </div>
           </div>
           <p className="mt-6 text-sm text-[#FCFCFC66] font-[550]">
-            Average Future APY&nbsp;
-            <span className="text-[#FCFCFC] ml-2.5 font-[550]">{targetAPY}%</span>
+            <span>Average Future APY&nbsp;
+              <span className="text-[#FCFCFC] ml-2.5 font-[550]">{targetAPY}%</span></span>
+            {rate && <span className='ml-10'>YT Rates&nbsp;
+              <span className="text-[#FCFCFC] ml-2.5 font-[550]">
+                {`1 ${coinConfig.underlyingCoinName} = ${rate} YT-${coinConfig.coinName} `}
+              </span>
+            </span>}
           </p>
           <button
-            className="w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550]"
+            className={`w-full mt-6 h-[42px] rounded-[16px] cursor-pointer  flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550] 
+            ${inputYT
+                ? "bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition"
+                : "bg-[#0F60FF]/50 text-white/50 text-white cursor-not-allowed "}`
+            }
             onClick={handleCalculate}  // Call handleCalculate on button click
             disabled={!outputYT || !inputYT}
           >
-            <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />
-            Calculate
+
+            {inputYT ? <> <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />Calculate</> : "Please enter an amount"}
           </button>
           {showResults && calculatedResults && (  // Display results if calculatedResults is available
             <section className="mt-12">
