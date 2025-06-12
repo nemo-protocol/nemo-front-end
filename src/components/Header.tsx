@@ -112,7 +112,7 @@ export default function Header({ className }: { className?: string }) {
           ></span>
           {location === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
+              <DropdownMenuTrigger className="flex text-white/60 items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
                 {currentAccount?.address ? (
                   <div className="size-4 bg-[#F80] rounded-full"></div>
                 ) : (
@@ -124,7 +124,7 @@ export default function Header({ className }: { className?: string }) {
                     height={16}
                   />
                 )}
-                <span className="text-white">
+                <span className="text-white/60">
                   {truncateStr(currentAccount?.address || "", 4)}
                 </span>
                 <ChevronDown className="size-3" />

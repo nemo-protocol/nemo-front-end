@@ -3,14 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: var(
-    --gradient-highligh,
-    radial-gradient(
-      115.81% 150.28% at 0% -1.61%,
-      var(--white--white-20, rgba(252, 252, 252, 0.04)) 0%,
-      var(--white--white-0, rgba(252, 252, 252, 0)) 100%
-    )
-  );
+  --background: #080d16;
   --foreground: #171717;
 }
 @theme inline {

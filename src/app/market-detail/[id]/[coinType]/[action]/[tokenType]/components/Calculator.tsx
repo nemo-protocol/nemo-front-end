@@ -68,11 +68,23 @@ export default function Calculator({
   setTradeValue,
   rate
 }: Props) {
-  const [targetAPY, setTargetAPY] = useState<number>(20);
+  const [targetAPY, setTargetAPY] = useState<string>("20");
   const [calculatedResults, setCalculatedResults] = useState<any>(null); // State to hold calculation results
   const [showResults, setShowResults] = useState(false); // State to manage result visibility
 
-
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    if (raw === '') {
+      setTargetAPY('')
+      return
+    }
+  
+    const n = Number(raw)
+    if (isNaN(n)) return
+  
+    const clamped = Math.max(0, Math.min(100, n))
+    setTargetAPY(clamped.toString())
+  }
 
   if (!open) return null;
 
@@ -81,15 +93,15 @@ export default function Calculator({
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
     const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000) - 1)
-    const netProfitYT = (outputYT * targetAPY * 0.01) * (maturity / 365) - Number(inputYT);
-    const netProfitUnderlying = (Number(inputYT) * underlyingPrice * targetAPY * maturity * 0.01) / 365;
+    const netProfitYT = (outputYT * Number(targetAPY) * 0.01) * (maturity / 365) - Number(inputYT);
+    const netProfitUnderlying = (Number(inputYT) * underlyingPrice * Number(targetAPY) * maturity * 0.01) / 365;
 
     const apr = (netProfitYT) * (365 / maturity) / Number(inputYT)
     const effectiveApyYT = (Math.pow((1 + apr / (365 / maturity)), (365 / maturity)) - 1) * 100
     console.log(netProfitYT, maturity, inputYT, underlyingPrice, apr, (1 + apr / (365 / maturity)), (365 / maturity))
 
 
-    const effectiveApyUA = targetAPY;
+    const effectiveApyUA = Number(targetAPY);
 
     setCalculatedResults({
       netProfitYT,
@@ -158,11 +170,11 @@ export default function Calculator({
               <div className='px-4 '>
                 <label className="text-[12px] font-[650] text-[#FCFCFC66] uppercase">Target average future APY</label>
                 <div className="flex items-baseline gap-2 mt-0 mb-1">
-                  <input type="number" className="bg-transparent text-[20px] appearance-none text-[#FCFCFC] outline-none w-40" value={targetAPY} min={0} max={100} onChange={(e) => setTargetAPY(+e.target.value)} />
+                  <input type="number" className="bg-transparent text-[20px] appearance-none text-[#FCFCFC] outline-none w-40" value={targetAPY} min={0} max={100} onChange={handleChange} />
                   <span className="text-xl text-[#FCFCFC66]">%</span>
                 </div>
               </div>
-              <Slider value={targetAPY} min={0} max={100} step={0.5} onChange={setTargetAPY} />
+              <Slider value={Number(targetAPY)} min={0} max={100} step={0.5} onChange={setTargetAPY} />
             </div>
           </div>
           <p className="mt-6 text-sm text-[#FCFCFC66] font-[550]">

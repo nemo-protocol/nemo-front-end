@@ -10,7 +10,7 @@ import {
 
 type SliderProps = {
   value: number;
-  onChange: (v: number) => void;
+  onChange: (v: string) => void;
   min?: number;
   max?: number;
   step?: number;
@@ -57,12 +57,12 @@ export default function Slider({
     e.preventDefault();
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     setDragging(true);
-    onChange(pxToValue(e.clientX));
+    onChange(pxToValue(e.clientX).toString());
   };
 
   const handlePointerMove = (e: PointerEvent) => {
     if (!dragging) return;
-    onChange(pxToValue(e.clientX));
+    onChange(pxToValue(e.clientX).toString());
   };
 
   const handlePointerUp = () => setDragging(false);
@@ -70,7 +70,7 @@ export default function Slider({
   /* 点击轨道直接定位 ------------------------------- */
   const handleTrackClick = (e: PointerEvent) => {
     const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    onChange(pxToValue(e.clientX));
+    onChange(pxToValue(e.clientX).toString());
   };
 
   /* ------------------------------------------------- */
