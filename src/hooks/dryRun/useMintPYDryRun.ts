@@ -19,9 +19,13 @@ type MintResult = {
   ytAmount: string
 }
 
-export default function useMintPYDryRun(
+type DryRunResult<T extends boolean> = T extends true
+  ? [MintResult, DebugInfo]
+  : MintResult
+
+export default function useMintPYDryRun<T extends boolean = false>(
   coinConfig?: CoinConfig,
-  debug: boolean = false
+  debug: T = false as T
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
@@ -42,7 +46,7 @@ export default function useMintPYDryRun(
       tokenType: number
       coinData: CoinData[]
       pyPositions?: PyPosition[]
-    }): Promise<[MintResult] | [MintResult, DebugInfo]> => {
+    }): Promise<DryRunResult<T>> => {
       if (!address) {
         throw new Error("Please connect wallet first")
       }
@@ -137,8 +141,6 @@ export default function useMintPYDryRun(
         }),
       })
 
-      console.log("mint_py dry run result:", result)
-
       const dryRunDebugInfo: DebugInfo = {
         moveCall: [debugInfo],
         rawResult: {
@@ -151,7 +153,7 @@ export default function useMintPYDryRun(
         throw new ContractError(result.error, dryRunDebugInfo)
       }
 
-      if (!result?.events?.[1]?.parsedJson) {
+      if (!result?.events?.[result.events.length - 1]?.parsedJson) {
         const message = "Failed to get mint PY data"
         dryRunDebugInfo.rawResult = {
           error: message,
@@ -160,14 +162,16 @@ export default function useMintPYDryRun(
         throw new ContractError(message, dryRunDebugInfo)
       }
 
-      const ptAmount = result.events[1].parsedJson.amount_pt as string
-      const ytAmount = result.events[1].parsedJson.amount_yt as string
+      const ptAmount = result.events[result.events.length - 1].parsedJson
+        .amount_pt as string
+      const ytAmount = result.events[result.events.length - 1].parsedJson
+        .amount_yt as string
 
       dryRunDebugInfo.parsedOutput = JSON.stringify({ ptAmount, ytAmount })
 
       const returnValue = { ptAmount, ytAmount }
 
-      return debug ? [returnValue, dryRunDebugInfo] : [returnValue]
+      return (debug ? [returnValue, dryRunDebugInfo] : returnValue) as DryRunResult<T>
     },
   })
 }

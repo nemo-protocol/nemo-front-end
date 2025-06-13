@@ -6,7 +6,7 @@ import usePyPositionData from "@/hooks/usePyPositionData"
 import { ArrowUpDown } from "lucide-react"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
 import { parseErrorMessage } from "@/lib/errorMapping"
-import { initPyPosition, redeemPy, redeemSyCoin } from "@/lib/txHelper"
+import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
 import { debounce, formatDecimalValue } from "@/lib/utils"
@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectContent,
 } from "@/components/ui/select"
+import { initPyPosition } from "@/lib/txHelper/position"
 
 interface Props {
   coinConfig: CoinConfig
@@ -35,7 +36,7 @@ export default function Redeem({ coinConfig }: Props) {
   const [redeemValue, setRedeemValue] = useState("")
   const [isRedeeming, setIsRedeeming] = useState(false)
   const [isInputLoading, setIsInputLoading] = useState(false)
-  const [syAmount, setSyAmount] = useState("")
+  const [syValue, setSyValue] = useState("")
   const [tokenType, setTokenType] = useState<number>(0)
 
   const { address, signAndExecuteTransaction } = useWallet()
@@ -102,20 +103,24 @@ export default function Redeem({ coinConfig }: Props) {
         if (value && value !== "0" && decimal) {
           setIsInputLoading(true)
           try {
-            const [syAmount] = await redeemDryRun({
-              ptAmount: value,
-              ytAmount: value,
+            const amount = new Decimal(value)
+              .mul(new Decimal(10).pow(coinConfig.decimal))
+              .toString()
+
+            const { syValue } = await redeemDryRun({
+              ptAmount: amount,
+              ytAmount: amount,
               pyPositions: pyPositionData,
             })
-            setSyAmount(syAmount)
+            setSyValue(syValue)
           } catch (error) {
             console.error("Dry run error:", error)
-            setSyAmount("")
+            setSyValue("")
           } finally {
             setIsInputLoading(false)
           }
         } else {
-          setSyAmount("")
+          setSyValue("")
         }
       }, 500)
 
@@ -145,22 +150,23 @@ export default function Redeem({ coinConfig }: Props) {
         setIsRedeeming(true)
         const tx = new Transaction()
 
-        let pyPosition
-        let created = false
-        if (!pyPositionData?.length) {
-          created = true
-          pyPosition = initPyPosition(tx, coinConfig)
-        } else {
-          pyPosition = tx.object(pyPositionData[0].id)
-        }
+        const { pyPosition, created } = initPyPosition({
+          tx,
+          coinConfig,
+          pyPositions: pyPositionData,
+        })
 
         const [priceVoucher] = getPriceVoucher(tx, coinConfig)
+
+        const amount = new Decimal(redeemValue)
+          .mul(new Decimal(10).pow(coinConfig.decimal))
+          .toString()
 
         const syCoin = redeemPy(
           tx,
           coinConfig,
-          redeemValue,
-          redeemValue,
+          amount,
+          amount,
           priceVoucher,
           pyPosition
         )
@@ -250,12 +256,7 @@ export default function Redeem({ coinConfig }: Props) {
       <AmountOutput
         name={coinName}
         title={"Underlying asset".toUpperCase()}
-        value={
-          isInputLoading
-            ? undefined
-            : syAmount &&
-              new Decimal(syAmount).div(10 ** decimal).toFixed(decimal)
-        }
+        value={isInputLoading ? undefined : syValue}
         loading={isInputLoading}
         maturity={coinConfig.maturity}
         coinConfig={coinConfig}

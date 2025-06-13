@@ -180,7 +180,7 @@ export default function MarketPage() {
       accessorKey: "coinName",
       header: "MARKET",
       enableSorting: false,
-      width: 250,
+      width: 270,
       cell: ({ row }) => (
         <div className="flex items-center gap-2 flex-wrap">
           <Image

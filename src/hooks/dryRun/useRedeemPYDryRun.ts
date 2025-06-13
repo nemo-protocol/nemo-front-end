@@ -6,12 +6,23 @@ import type { DebugInfo } from "../types"
 import { ContractError } from "../types"
 import type { PyPosition } from "../types"
 import useFetchPyPosition from "../useFetchPyPosition"
-import { redeemPy, redeemSyCoin, initPyPosition } from "@/lib/txHelper"
+import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
+import { initPyPosition } from "@/lib/txHelper/position"
+import Decimal from "decimal.js"
 
-export default function useRedeemPYDryRun(
+type RedeemResult = {
+  syValue: string
+  syAmount: string
+}
+
+type DryRunResult<T extends boolean> = T extends true
+  ? [RedeemResult, DebugInfo]
+  : RedeemResult
+
+export default function useRedeemPYDryRun<T extends boolean = false>(
   coinConfig?: CoinConfig,
-  debug: boolean = false,
+  debug: T = false as T
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
@@ -26,7 +37,7 @@ export default function useRedeemPYDryRun(
       ptAmount: string
       ytAmount: string
       pyPositions?: PyPosition[]
-    }): Promise<[string] | [string, DebugInfo]> => {
+    }): Promise<DryRunResult<T>> => {
       if (!address) {
         throw new Error("Please connect wallet first")
       }
@@ -41,15 +52,11 @@ export default function useRedeemPYDryRun(
       const tx = new Transaction()
       tx.setSender(address)
 
-      // Handle py position creation
-      let pyPosition
-      let created = false
-      if (!pyPositions?.length) {
-        created = true
-        pyPosition = initPyPosition(tx, coinConfig)
-      } else {
-        pyPosition = tx.object(pyPositions[0].id)
-      }
+      const { pyPosition, created } = initPyPosition({
+        tx,
+        coinConfig,
+        pyPositions,
+      })
 
       const [priceVoucher] = getPriceVoucher(tx, coinConfig)
 
@@ -59,7 +66,7 @@ export default function useRedeemPYDryRun(
         ytAmount,
         ptAmount,
         priceVoucher,
-        pyPosition,
+        pyPosition
       )
 
       const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
@@ -124,11 +131,19 @@ export default function useRedeemPYDryRun(
 
       const syAmount = result.events[2].parsedJson.amount_out as string
 
+      const decimal = Number(coinConfig?.decimal) || 0
+
+      const syValue = new Decimal(syAmount)
+        .div(new Decimal(10).pow(decimal))
+        .toString()
+
       dryRunDebugInfo.parsedOutput = syAmount
 
-      const returnValue = syAmount
+      const returnValue = { syAmount, syValue }
 
-      return debug ? [syAmount, dryRunDebugInfo] : [returnValue]
+      return (
+        debug ? [returnValue, dryRunDebugInfo] : returnValue
+      ) as DryRunResult<T>
     },
   })
 }

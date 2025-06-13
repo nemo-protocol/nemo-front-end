@@ -15,6 +15,7 @@ interface AmountOutputProps {
     coinName?: string
   }
   coinNameComponent?: React.ReactNode
+  warningDetail?: string
 }
 
 export const AmountOutput = ({
@@ -26,6 +27,7 @@ export const AmountOutput = ({
   loading = false,
   title = "RECEIVE",
   coinNameComponent,
+  warningDetail,
 }: AmountOutputProps) => {
   return (
     <div
@@ -45,6 +47,9 @@ export const AmountOutput = ({
             value ?? "--"
           )}
         </span>
+        {warningDetail && (
+          <div className="mt-1 text-xs text-yellow-400 break-words">{warningDetail}</div>
+        )}
       </div>
 
       {/* 右侧：LP xSUI、图标和剩余天数 */}

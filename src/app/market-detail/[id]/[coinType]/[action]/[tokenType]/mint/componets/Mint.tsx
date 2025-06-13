@@ -6,12 +6,7 @@ import { Transaction } from "@mysten/sui/transactions"
 import { ArrowUpDown } from "lucide-react"
 import usePyPositionData from "@/hooks/usePyPositionData"
 import { parseErrorMessage } from "@/lib/errorMapping"
-import {
-  initPyPosition,
-  mintPY,
-  splitCoinHelper,
-  depositSyCoin,
-} from "@/lib/txHelper"
+import { mintPY, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { showTransactionDialog } from "@/lib/dialog"
 import useMintPYDryRun from "@/hooks/dryRun/useMintPYDryRun"
@@ -30,8 +25,10 @@ import {
   SelectTrigger,
   SelectContent,
 } from "@/components/ui/select"
-import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
+import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
 import SlippageSetting from "../../components/SlippageSetting"
+import { initPyPosition } from "@/lib/txHelper/position"
+import { mintMultiSCoin } from "@/lib/txHelper/coin"
 
 interface Props {
   coinConfig: CoinConfig
@@ -125,7 +122,7 @@ export default function Mint({ coinConfig }: Props) {
         if (value && value !== "0" && decimal && coinData?.length) {
           setIsInputLoading(true)
           try {
-            const [result] = await mintDryRun({
+            const { ptAmount, ytAmount } = await mintDryRun({
               vaultId,
               slippage,
               coinData,
@@ -133,8 +130,9 @@ export default function Mint({ coinConfig }: Props) {
               mintValue: value,
               pyPositions: pyPositionData,
             })
-            setPtAmount(result.ptAmount)
-            setYtAmount(result.ytAmount)
+
+            setPtAmount(ptAmount)
+            setYtAmount(ytAmount)
           } catch (error) {
             console.error("Dry run error:", error)
             setPtAmount("")
@@ -173,24 +171,46 @@ export default function Mint({ coinConfig }: Props) {
         setIsMinting(true)
         const tx = new Transaction()
 
-        let pyPosition
-        let created = false
-        if (!pyPositionData?.length) {
-          created = true
-          pyPosition = initPyPosition(tx, coinConfig)
-        } else {
-          pyPosition = tx.object(pyPositionData[0].id)
+        const { pyPosition, created } = initPyPosition({
+          tx,
+          coinConfig,
+          pyPositions: pyPositionData,
+        })
+
+        const limited =
+          tokenType === 0
+            ? NEED_MIN_VALUE_LIST.some(
+                (item) =>
+                  item.provider === coinConfig.provider ||
+                  item.coinType === coinConfig.coinType
+              )
+            : false
+
+        const amount = new Decimal(mintValue)
+          .mul(new Decimal(10).pow(coinConfig.decimal))
+          .toString()
+
+        const [splitCoin, sCoin] =
+          tokenType === 0
+            ? await mintMultiSCoin({
+                tx,
+                amount,
+                limited,
+                vaultId,
+                address,
+                slippage,
+                coinData,
+                coinConfig,
+                coinAmount: amount,
+                splitAmounts: [amount],
+              })
+            : splitCoinHelper(tx, coinData, [amount], coinConfig.coinType)
+
+        if (sCoin) {
+          tx.transferObjects([sCoin], address)
         }
 
-        const amount = new Decimal(mintValue).mul(10 ** decimal).toString()
-        const [splitCoin] = splitCoinHelper(
-          tx,
-          coinData,
-          [amount],
-          tokenType === 0 ? coinConfig.underlyingCoinType : coinConfig.id
-        )
-
-        const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinConfig.id)
+        const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinConfig.coinType)
 
         const [priceVoucher] = getPriceVoucher(tx, coinConfig)
 

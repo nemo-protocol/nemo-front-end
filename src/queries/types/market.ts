@@ -134,6 +134,7 @@ export interface CoinConfig extends BaseCoinInfo {
   feeRate: string
   yieldFactoryConfigId: string
   builtOn?: BuiltOn[]
+  tradeStatus: string
 }
 
 export interface PortfolioItem extends CoinConfig {
