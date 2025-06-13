@@ -281,13 +281,13 @@ export default function Remove({ coinConfig }: Props) {
         decimal={decimal}
         warning={warning}
         amount={lpValue}
-        coinName={`LP ${coinConfig?.coinName}`}
-        coinLogo={coinConfig?.coinLogo}
         isLoading={isLoading}
         setWarning={setWarning}
-        coinBalance={lpCoinBalance}
         isConnected={isConnected}
         errorDetail={errorDetail}
+        coinBalance={lpCoinBalance}
+        logo={coinConfig?.coinLogo}
+        name={`LP ${coinConfig?.coinName}`}
         title={"Remove Liquidity".toUpperCase()}
         onChange={setLpValue}
         coinNameComponent={
@@ -302,26 +302,19 @@ export default function Remove({ coinConfig }: Props) {
       <AmountOutput
         maturity={coinConfig?.maturity || "0"}
         loading={isInputLoading}
-        coinConfig={{
-          coinLogo:
-            receivingType === "underlying"
-              ? coinConfig?.underlyingCoinLogo
-              : coinConfig?.coinLogo,
-          coinName:
-            receivingType === "underlying"
-              ? coinConfig?.underlyingCoinName
-              : coinConfig?.coinName,
-        }}
         name={
           receivingType === "underlying"
             ? coinConfig?.underlyingCoinName || ""
             : coinConfig?.coinName || ""
         }
+        logo={
+          receivingType === "underlying"
+            ? coinConfig?.underlyingCoinLogo
+            : coinConfig?.coinLogo
+        }
         title={"RECEIVE"}
         value={
-          isInputLoading
-            ? undefined
-            : formatDecimalValue(targetValue, decimal)
+          isInputLoading ? undefined : formatDecimalValue(targetValue, decimal)
         }
         coinNameComponent={
           <div className="flex items-center gap-x-1">
@@ -393,10 +386,7 @@ export default function Remove({ coinConfig }: Props) {
                       )}
                     </div>
                   </SelectItem>
-                  <SelectItem
-                    value="sy"
-                    className="cursor-pointer text-white"
-                  >
+                  <SelectItem value="sy" className="cursor-pointer text-white">
                     <div className="flex items-center gap-x-1">
                       <span>{coinConfig?.coinName}</span>
                       {coinConfig?.coinLogo && (

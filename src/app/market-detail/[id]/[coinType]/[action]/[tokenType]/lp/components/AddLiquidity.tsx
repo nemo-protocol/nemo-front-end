@@ -34,6 +34,7 @@ import { mintSCoin } from "@/lib/txHelper/coin"
 import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
 import { initPyPosition } from "@/lib/txHelper/position"
 import Decimal from "decimal.js"
+import Image from "next/image"
 
 interface Props {
   coinConfig: CoinConfig
@@ -421,15 +422,14 @@ export default function LpForm({ coinConfig }: Props) {
         </button>
       </div>
 
-      {/* 直接渲染 AmountInput 及相关内容，不再加 subTab === "provide" 条件 */}
       <AmountInput
         error={error}
         price={price}
         decimal={decimal}
         warning={warning}
         amount={addValue}
-        coinName={coinName}
-        coinLogo={coinLogo}
+        name={coinName}
+        logo={coinLogo}
         isLoading={isLoading}
         setWarning={setWarning}
         coinBalance={coinBalance}
@@ -448,15 +448,71 @@ export default function LpForm({ coinConfig }: Props) {
             }}
           >
             <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-              <SelectValue placeholder="Select token type" />
+              <SelectValue>
+                <div className="flex items-center gap-x-1">
+                  <span
+                    className="max-w-20 truncate"
+                    title={
+                      tokenType === 0
+                        ? coinConfig?.underlyingCoinName
+                        : coinConfig?.coinName
+                    }
+                  >
+                    {tokenType === 0
+                      ? coinConfig?.underlyingCoinName
+                      : coinConfig?.coinName}
+                  </span>
+                  {(tokenType === 0
+                    ? coinConfig?.underlyingCoinLogo
+                    : coinConfig?.coinLogo) && (
+                    <Image
+                      src={
+                        tokenType === 0
+                          ? coinConfig?.underlyingCoinLogo
+                          : coinConfig?.coinLogo
+                      }
+                      alt={
+                        tokenType === 0
+                          ? coinConfig?.underlyingCoinName
+                          : coinConfig?.coinName
+                      }
+                      className="size-4 sm:size-5"
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                </div>
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-[#0E0F16]">
+            <SelectContent className="border-none outline-none bg-light-gray/10">
               <SelectGroup>
-                <SelectItem value={"0"} className="cursor-pointer text-white">
-                  {coinConfig?.underlyingCoinName}
+                <SelectItem value="0" className="cursor-pointer text-white ">
+                  <div className="flex items-center gap-x-1">
+                    <span>{coinConfig?.underlyingCoinName}</span>
+                    {coinConfig?.underlyingCoinLogo && (
+                      <Image
+                        src={coinConfig.underlyingCoinLogo}
+                        alt={coinConfig.underlyingCoinName}
+                        className="size-4 sm:size-5"
+                        width={20}
+                        height={20}
+                      />
+                    )}
+                  </div>
                 </SelectItem>
-                <SelectItem value={"1"} className="cursor-pointer text-white">
-                  {coinConfig?.coinName}
+                <SelectItem value="1" className="cursor-pointer text-white ">
+                  <div className="flex items-center gap-x-1">
+                    <span>{coinConfig?.coinName}</span>
+                    {coinConfig?.coinLogo && (
+                      <Image
+                        src={coinConfig.coinLogo}
+                        alt={coinConfig.coinName}
+                        className="size-4 sm:size-5"
+                        width={20}
+                        height={20}
+                      />
+                    )}
+                  </div>
                 </SelectItem>
               </SelectGroup>
             </SelectContent>
@@ -476,7 +532,7 @@ export default function LpForm({ coinConfig }: Props) {
       <AmountOutput
         maturity={maturity}
         loading={isCalculating}
-        coinConfig={coinConfig}
+        logo={coinConfig.lpTokenLogo}
         name={`LP ${coinConfig.coinName}`}
         title={"LP Position".toUpperCase()}
         value={

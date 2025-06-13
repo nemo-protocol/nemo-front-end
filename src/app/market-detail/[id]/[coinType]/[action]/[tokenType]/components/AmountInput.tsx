@@ -12,38 +12,38 @@ import {
 import Image from "next/image"
 
 interface AmountInputProps {
+  logo?: string
+  name?: string
   price?: string
   error?: string
   title?: string
-  warning?: string
   amount: string
+  warning?: string
   decimal?: number
-  coinName?: string
-  coinLogo?: string
+  maturity?: string
+  disabled?: boolean
   className?: string
   isLoading?: boolean
+  errorDetail?: string
   coinBalance?: string
   isConnected?: boolean
+  warningDetail?: string
   isConfigLoading?: boolean
   isBalanceLoading?: boolean
   onChange: (value: string) => void
-  setWarning: (value: string) => void
   coinNameComponent?: React.ReactNode
-  disabled?: boolean
-  maturity?: string
-  errorDetail?: string
-  warningDetail?: string
+  setWarning?: (value: string) => void
 }
 
 export default function AmountInput({
+  name,
+  logo,
   price,
   error,
   warning,
   amount,
   title,
   decimal = 0,
-  coinName,
-  coinLogo,
   isLoading,
   coinBalance,
   isConnected,
@@ -129,17 +129,21 @@ export default function AmountInput({
                     <Skeleton className="h-full w-10 sm:w-12 bg-[#2D2D48]" />
                   ) : (
                     <div className="flex items-center gap-x-1 sm:gap-x-2">
-                      {coinNameComponent ? coinNameComponent : coinName}
                       {isConfigLoading ? (
                         <Skeleton className="size-8 sm:size-12 rounded-full bg-[#2D2D48]" />
+                      ) : coinNameComponent ? (
+                        coinNameComponent
                       ) : (
-                        <Image
-                          src={coinLogo ?? ""}
-                          alt={coinName ?? ""}
-                          className="size-5"
-                          width={20}
-                          height={20}
-                        />
+                        <div className="flex items-center gap-x-1">
+                          <span>{name}</span>
+                          <Image
+                            src={logo ?? ""}
+                            alt={name ?? ""}
+                            className="size-5"
+                            width={20}
+                            height={20}
+                          />
+                        </div>
                       )}
                     </div>
                   )}
@@ -157,7 +161,7 @@ export default function AmountInput({
                       title={`${formatDecimalValue(
                         coinBalance,
                         decimal
-                      )} ${coinName}`}
+                      )} ${name}`}
                       disabled={disabled}
                       className={cn(
                         "flex items-center gap-x-1 text-xs sm:text-sm",
@@ -169,8 +173,8 @@ export default function AmountInput({
                         if (isConnected && coinBalance) {
                           let adjustedBalance = new Decimal(coinBalance)
                           // TODO: better way to handle this
-                          if (coinName === "SUI") {
-                            if (adjustedBalance.lt(0.1)) {
+                          if (name === "SUI") {
+                            if (adjustedBalance.lt(0.1) && setWarning) {
                               setWarning(
                                 "Insufficient SUI for gas fee. Minimum required: 0.1 SUI"
                               )
@@ -188,7 +192,7 @@ export default function AmountInput({
                           {`${formatDecimalValue(
                             coinBalance,
                             decimal
-                          )} ${coinName}`}
+                          )} ${name}`}
                         </span>
                       ) : (
                         "0"

@@ -135,6 +135,9 @@ export interface CoinConfig extends BaseCoinInfo {
   yieldFactoryConfigId: string
   builtOn?: BuiltOn[]
   tradeStatus: string
+  ptTokenLogo: string
+  ytTokenLogo: string
+  lpTokenLogo: string
 }
 
 export interface PortfolioItem extends CoinConfig {

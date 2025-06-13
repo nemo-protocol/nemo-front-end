@@ -355,17 +355,17 @@ export default function Sell({ coinConfig }: Props) {
         price={price}
         decimal={decimal}
         warning={warning}
-        title={"Trade".toUpperCase()}
-        coinName={`YT ${coinConfig?.coinName}`}
         amount={redeemValue}
         isLoading={isLoading}
+        coinBalance={ytBalance}
         setWarning={setWarning}
         isConnected={isConnected}
         errorDetail={errorDetail}
         onChange={handleInputChange}
+        title={"Trade".toUpperCase()}
+        logo={coinConfig?.ytTokenLogo}
         maturity={coinConfig?.maturity}
-        coinLogo={coinConfig?.coinLogo}
-        coinBalance={ytBalance}
+        name={`YT ${coinConfig?.coinName}`}
       />
 
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">

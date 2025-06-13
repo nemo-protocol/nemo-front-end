@@ -210,7 +210,12 @@ export default function Mint({ coinConfig }: Props) {
           tx.transferObjects([sCoin], address)
         }
 
-        const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinConfig.coinType)
+        const syCoin = depositSyCoin(
+          tx,
+          coinConfig,
+          splitCoin,
+          coinConfig.coinType
+        )
 
         const [priceVoucher] = getPriceVoucher(tx, coinConfig)
 
@@ -254,15 +259,15 @@ export default function Mint({ coinConfig }: Props) {
     <div className="flex flex-col items-center gap-y-6">
       <AmountInput
         amount={mintValue}
-        title={"Underlying asset".toUpperCase()}
         onChange={setMintValue}
+        price={price}
         setWarning={() => {}}
-        coinName={coinName}
-        coinLogo={coinLogo}
+        name={coinName}
+        logo={coinLogo}
         decimal={decimal}
         coinBalance={coinBalance}
         isConnected={isConnected}
-        price={price}
+        title={"Underlying asset".toUpperCase()}
         disabled={!isConnected}
         coinNameComponent={
           <Select
@@ -273,15 +278,65 @@ export default function Mint({ coinConfig }: Props) {
             }}
           >
             <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-              <SelectValue placeholder="Select token type" />
+              <SelectValue>
+                <div className="flex items-center gap-x-1">
+                  <span
+                    className="max-w-20 truncate"
+                    title={
+                      tokenType === 0
+                        ? coinConfig?.underlyingCoinName
+                        : coinConfig?.coinName
+                    }
+                  >
+                    {tokenType === 0
+                      ? coinConfig?.underlyingCoinName
+                      : coinConfig?.coinName}
+                  </span>
+                  {(tokenType === 0
+                    ? coinConfig?.underlyingCoinLogo
+                    : coinConfig?.coinLogo) && (
+                    <img
+                      src={
+                        tokenType === 0
+                          ? coinConfig?.underlyingCoinLogo
+                          : coinConfig?.coinLogo
+                      }
+                      alt={
+                        tokenType === 0
+                          ? coinConfig?.underlyingCoinName
+                          : coinConfig?.coinName
+                      }
+                      className="size-4 sm:size-5"
+                    />
+                  )}
+                </div>
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-[#0E0F16]">
+            <SelectContent className="border-none outline-none bg-light-gray/10">
               <SelectGroup>
-                <SelectItem value={"0"} className="cursor-pointer text-white">
-                  {coinConfig?.underlyingCoinName}
+                <SelectItem value="0" className="cursor-pointer text-white ">
+                  <div className="flex items-center gap-x-1">
+                    <span>{coinConfig?.underlyingCoinName}</span>
+                    {coinConfig?.underlyingCoinLogo && (
+                      <img
+                        src={coinConfig.underlyingCoinLogo}
+                        alt={coinConfig.underlyingCoinName}
+                        className="size-4 sm:size-5"
+                      />
+                    )}
+                  </div>
                 </SelectItem>
-                <SelectItem value={"1"} className="cursor-pointer text-white">
-                  {coinConfig?.coinName}
+                <SelectItem value="1" className="cursor-pointer text-white ">
+                  <div className="flex items-center gap-x-1">
+                    <span>{coinConfig?.coinName}</span>
+                    {coinConfig?.coinLogo && (
+                      <img
+                        src={coinConfig.coinLogo}
+                        alt={coinConfig.coinName}
+                        className="size-4 sm:size-5"
+                      />
+                    )}
+                  </div>
                 </SelectItem>
               </SelectGroup>
             </SelectContent>
@@ -295,35 +350,35 @@ export default function Mint({ coinConfig }: Props) {
 
       <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
         <AmountOutput
+          loading={isInputLoading}
+          logo={coinConfig.ptTokenLogo}
+          maturity={coinConfig.maturity}
+          name={`PT ${coinConfig.coinName}`}
           title={"Principle Token".toUpperCase()}
           className="bg-transparent rounded-none"
-          name={`PT ${coinConfig.coinName}`}
           value={
             isInputLoading
               ? undefined
               : ptAmount &&
                 new Decimal(ptAmount).div(10 ** decimal).toFixed(decimal)
           }
-          loading={isInputLoading}
-          maturity={coinConfig.maturity}
-          coinConfig={coinConfig}
         />
         <div className="px-4">
           <div className="border-t border-light-gray/10" />
         </div>
         <AmountOutput
+          loading={isInputLoading}
+          logo={coinConfig.ytTokenLogo}
+          maturity={coinConfig.maturity}
+          name={`YT ${coinConfig.coinName}`}
           title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"
-          name={`YT ${coinConfig.coinName}`}
           value={
             isInputLoading
               ? undefined
               : ytAmount &&
                 new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal)
           }
-          loading={isInputLoading}
-          maturity={coinConfig.maturity}
-          coinConfig={coinConfig}
         />
       </div>
       <div className="flex justify-between w-full">

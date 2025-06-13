@@ -413,15 +413,19 @@ export default function Buy({ coinConfig }: Props) {
         coinConfig={coinConfig}
         onClose={() => setOpen(false)}
         coinName={coinName}
-        rate={ptYtData?.ytPrice && price && formatDecimalValue(new Decimal(1).div(ptYtData.ytPrice).mul(price),6)}
-        setTradeValue = {setTradeValue}
+        rate={
+          ptYtData?.ytPrice &&
+          price &&
+          formatDecimalValue(new Decimal(1).div(ptYtData.ytPrice).mul(price), 6)
+        }
+        setTradeValue={setTradeValue}
       />
       <AmountInput
         title={"Trade".toUpperCase()}
         amount={tradeValue}
         onChange={setTradeValue}
-        coinName={coinName}
-        coinLogo={coinLogo}
+        name={coinName}
+        logo={coinLogo}
         price={price}
         decimal={decimal}
         coinBalance={coinBalance}
@@ -442,16 +446,72 @@ export default function Buy({ coinConfig }: Props) {
               setTokenType(Number(value))
             }}
           >
-            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-xl font-medium w-fit">
-              <SelectValue placeholder="Select token type" />
+            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
+              <SelectValue>
+                <div className="flex items-center gap-x-1">
+                  <span
+                    className="max-w-20 truncate"
+                    title={
+                      tokenType === 0
+                        ? coinConfig?.underlyingCoinName
+                        : coinConfig?.coinName
+                    }
+                  >
+                    {tokenType === 0
+                      ? coinConfig?.underlyingCoinName
+                      : coinConfig?.coinName}
+                  </span>
+                  {(tokenType === 0
+                    ? coinConfig?.underlyingCoinLogo
+                    : coinConfig?.coinLogo) && (
+                    <Image
+                      src={
+                        tokenType === 0
+                          ? coinConfig?.underlyingCoinLogo
+                          : coinConfig?.coinLogo
+                      }
+                      alt={
+                        tokenType === 0
+                          ? coinConfig?.underlyingCoinName
+                          : coinConfig?.coinName
+                      }
+                      className="size-4 sm:size-5"
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                </div>
+              </SelectValue>
             </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-[#0E0F16]">
+            <SelectContent className="border-none outline-none bg-light-gray/10">
               <SelectGroup>
-                <SelectItem value={"0"} className="cursor-pointer text-white">
-                  {coinConfig?.underlyingCoinName}
+                <SelectItem value="0" className="cursor-pointer text-white ">
+                  <div className="flex items-center gap-x-1">
+                    <span>{coinConfig?.underlyingCoinName}</span>
+                    {coinConfig?.underlyingCoinLogo && (
+                      <Image
+                        src={coinConfig.underlyingCoinLogo}
+                        alt={coinConfig.underlyingCoinName}
+                        className="size-4 sm:size-5"
+                        width={20}
+                        height={20}
+                      />
+                    )}
+                  </div>
                 </SelectItem>
-                <SelectItem value={"1"} className="cursor-pointer text-white">
-                  {coinConfig?.coinName}
+                <SelectItem value="1" className="cursor-pointer text-white ">
+                  <div className="flex items-center gap-x-1">
+                    <span>{coinConfig?.coinName}</span>
+                    {coinConfig?.ytTokenLogo && (
+                      <Image
+                        src={coinConfig.ytTokenLogo}
+                        alt={coinConfig.coinName}
+                        className="size-4 sm:size-5"
+                        width={20}
+                        height={20}
+                      />
+                    )}
+                  </div>
                 </SelectItem>
               </SelectGroup>
             </SelectContent>
@@ -464,13 +524,10 @@ export default function Buy({ coinConfig }: Props) {
       </div>
 
       <AmountOutput
-        name="YT xSUI"
         value={ytValue}
-        maturity={String(new Date("2026-02-19").getTime())}
-        coinConfig={{
-          coinLogo: coinConfig?.coinLogo,
-          coinName: coinConfig?.coinName,
-        }}
+        logo={coinConfig.ytTokenLogo}
+        maturity={coinConfig.maturity}
+        name={`YT ${coinConfig.coinName}`}
       />
 
       <div className="text-sm text-slate-400 flex flex-col gap-2">
