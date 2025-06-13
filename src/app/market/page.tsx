@@ -11,7 +11,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { Tab, type TabItem } from "@/components/ui/tab"
 import React, { useState, useMemo, useEffect } from "react"
 import { ChevronDown, Plus, Inbox, X } from "lucide-react"
-import { formatLargeNumber, formatTimeDiff } from "@/lib/utils"
+import { formatLargeNumber, formatTimeDiff, truncate } from "@/lib/utils"
 import type { ExtendedColumnDef } from "@/components/ui/data-table"
 import type {
   Action,
@@ -180,7 +180,7 @@ export default function MarketPage() {
       accessorKey: "coinName",
       header: "MARKET",
       enableSorting: false,
-      width: 270,
+      width: 210,
       cell: ({ row }) => (
         <div className="flex items-center gap-2 flex-wrap">
           <Image
@@ -189,7 +189,7 @@ export default function MarketPage() {
             src={row.original.coinLogo}
             alt={row.original.coinName}
           />
-          <span className="font-medium text-base">{row.original.coinName}</span>
+          <span className="text-[20px] font-[500]">{truncate(row.original.coinName, 7)}</span>
           {row.original.ptTokenType && (
             <span className="text-light-gray/40 bg-[#956EFF]/10 text-xs px-1.5 py-1 rounded-lg ml-1">
               V2 TOKEN
@@ -201,7 +201,7 @@ export default function MarketPage() {
     {
       accessorKey: "maturity",
       header: "MATURITY",
-      width: 300,
+      width: 340,
       cell: ({ row }) => {
         const maturity = parseInt(row.original.maturity)
         const startTime = parseInt(row.original.startTime)
@@ -215,10 +215,10 @@ export default function MarketPage() {
         return (
           <div className="grid grid-cols-5 items-center">
             <div className="col-span-2 flex flex-col items-start gap-x-2">
-              <span className="text-white text-sm font-medium">
+              <span className="text-white text-sm font-[500]">
                 {`${formatTimeDiff(maturity).toLocaleLowerCase()}`}
               </span>
-              <span className="col-span-3 shrink-0 text-xs text-white/40 font-medium">
+              <span className="col-span-3 shrink-0 text-xs text-white/40 font-[500]">
                 {dayjs(maturity).format("DD MMM YYYY")}
               </span>
             </div>
@@ -238,13 +238,13 @@ export default function MarketPage() {
     {
       accessorKey: "tvl",
       header: "TVL",
-      width: 200,
+      width: 160,
       cell: ({ row }) => (
         <div className="flex items-center gap-x-2">
-          <div className="text-white text-base font-medium">
+          <div className="text-white text-sm font-[500]">
             ${formatLargeNumber(row.original.tvl, 2)}
           </div>
-          <div className="text-xs text-white/40">10%</div>
+          <div className="text-sm text-white/40">10%</div>
         </div>
       ),
     },
@@ -252,7 +252,7 @@ export default function MarketPage() {
       accessorKey: "poolApy",
       header: "POOL APY",
       headerColor: "#956EFF",
-      width: 300,
+      width: 230,
       cell: ({ row }) => (
         <APYTooltip
           config={{
@@ -286,9 +286,9 @@ export default function MarketPage() {
                   "pool"
                 )
               }
-              className="flex items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] shadow-lg justify-center cursor-pointer hover:bg-[#956EFF]/30"
+              className="flex text-sm items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] transition-all duration-200 shadow-lg justify-center cursor-pointer hover:bg-[#956EFF]/30"
             >
-              <span className="text-white font-medium">
+              <span className="text-white font-[500]">
                 {formatLargeNumber(row.original.poolApy, 2)}%
               </span>
               {row.original.perPoints && (
@@ -318,7 +318,7 @@ export default function MarketPage() {
       header: "YEILD APY",
       subHeader: "YT PRICE",
       headerColor: "#1785B7",
-      width: 300,
+      width: 260,
       cell: ({ row }) => (
         <button
           onClick={() =>
@@ -329,7 +329,7 @@ export default function MarketPage() {
               "yield"
             )
           }
-          className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer hover:bg-[#1785B7]/30"
+          className="flex text-sm items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg  transition-all duration-200 justify-center cursor-pointer hover:bg-[#1785B7]/30"
         >
           <span className="text-white font-medium">
             {formatLargeNumber(row.original.ytApy, 2)}%
@@ -346,7 +346,7 @@ export default function MarketPage() {
       header: "FIXED APY",
       subHeader: "PT PRICE",
       headerColor: "#17B69B",
-      width: 300,
+      width: 260,
       cell: ({ row }) => (
         <button
           onClick={() =>
@@ -357,9 +357,9 @@ export default function MarketPage() {
               "fixed"
             )
           }
-          className="flex items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg justify-center cursor-pointer hover:bg-[#17B69B]/30"
+          className="flex text-sm items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] transition-all duration-200 shadow-lg justify-center cursor-pointer hover:bg-[#17B69B]/30"
         >
-          <span className="text-white font-medium">
+          <span className="text-white font-[500]">
             {formatLargeNumber(row.original.ptApy, 2)}%
           </span>
           <span className="text-[#FCFCFC]/40">
@@ -376,17 +376,17 @@ export default function MarketPage() {
     listMode === undefined ? (
       <div className="min-h-screen bg-[#080E16]"></div>
     ) : (
-      <div className="bg-[#080E16] min-h-screen text-white p-8">
-        <Tab items={tabItems} className="mb-2" />
+      <div className="bg-[#080E16] min-h-screen text-white py-2 px-7.5">
+        <Tab items={tabItems} className="mb-2 gap-16" />
         {tab === "all" ? (
           <div className="flex items-center justify-between">
             <p className="text-light-gray/40 mb-8 py-2">
               Dive into the yield trading market and maximize your profit
               potential.
             </p>
-            <div className="text-light-gray/40 flex items-center gap-8">
-              <span className="text-light-gray/40">LIST MODE:</span>
-              <Tab items={listModeItems} />
+            <div className="text-light-gray/40 flex items-center gap-4">
+              <span className="text-light-gray/40 text-[12px] font-[600]">LIST MODE:</span>
+              <Tab className="gap-4" items={listModeItems} />
             </div>
           </div>
         ) : (
@@ -396,7 +396,9 @@ export default function MarketPage() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 text-white border-none outline-none h-10 pr-10"
+              className="w-full rounded-full text-sm bg-light-gray/[0.03] px-4 py-2 
+              placeholder:text-white/40    
+              text-white border-none outline-none h-10 pr-10"
             />
             {searchQuery && (
               <button
@@ -410,13 +412,13 @@ export default function MarketPage() {
             )}
             {/* 搜索浮层结果列表 */}
             {searchQuery && filteredList.length > 0 && (
-              <div className="absolute left-0 w-full px-8 mt-2 z-30 backdrop-blur-md h-[800px] bg-transparent">
+              <div className="absolute left-0 w-full px-8 py-4 mt-2 z-30 backdrop-blur-[90px] h-[800px] bg-transparent">
                 <DataTable columns={columns} data={filteredList} />
               </div>
             )}
           </div>
         )}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {isLoading ? (
             listMode === "list" ? (
               Array.from({ length: 4 }).map((_, idx) => (
@@ -447,7 +449,7 @@ export default function MarketPage() {
                 <p className="text-white/40 text-lg">No data available</p>
               </div>
             ) : (
-              <div className="rounded-3xl bg-light-gray/[0.03] p-8">
+              <div className="rounded-3xl bg-light-gray/[0.03] py-6 px-2">
                 <div className="overflow-x-auto">
                   <DataTable columns={columns} data={filteredList} />
                 </div>
@@ -466,29 +468,28 @@ export default function MarketPage() {
                   className="rounded-3xl bg-light-gray/[0.03]"
                 >
                   <button
-                    className="w-full px-8 py-6 focus:outline-none select-none group grid grid-cols-4"
+                    className="w-full px-6 py-6 focus:outline-none select-none group grid grid-cols-4"
                     onClick={() => updateOpenState(groupName, !open[groupName])}
                     style={{ borderRadius: "24px 24px 0 0" }}
                   >
-                    <div className="flex items-center gap-3 text-2xl font-bold col-span-1">
+                    <div className="flex items-center gap-2 text-2xl font-bold col-span-1">
                       <Image
-                        width={32}
-                        height={32}
+                        width={24}
+                        height={24}
                         src={coinLogo}
                         alt={coinName}
                       />
-                      <span className="font-medium">{coinName}</span>
-                      <span className="text-white/60 text-lg font-normal ml-1">
+                      <span className="font-[500] text-[20px]">{coinName}</span>
+                      <span className="text-white/60 font-[500] text-[20px]">
                         {arr.length}
                       </span>
                       <ChevronDown
-                        className={`transition-transform duration-200 ml-2 ${
-                          open[groupName] ? "rotate-180" : ""
-                        } text-white/70`}
-                        size={28}
+                        className={`transition-transform duration-200  ${open[groupName] ? "rotate-180" : ""
+                          } text-white/70`}
+                        size={24}
                       />
                     </div>
-                    <div className="text-lg font-[550] flex items-center gap-x-4 col-span-1">
+                    <div className="text-[20px] font-[500] flex items-center gap-x-4 col-span-1">
                       <span className="text-[#FCFCFC]/40">Total TVL</span>
                       <span className="text-white">
                         ${totalTvl.toLocaleString()}
@@ -496,7 +497,7 @@ export default function MarketPage() {
                     </div>
                   </button>
                   {open[groupName] && (
-                    <div className="px-8 pb-8 pt-2">
+                    <div className="px-6 pb-8 pt-2">
                       <div className="overflow-x-auto border-l border-light-gray/10">
                         <DataTable columns={columns} data={arr} />
                       </div>

@@ -28,7 +28,7 @@ export function Tab({ items, className }: TabProps) {
                   "text-[32px] font-normal font-serif",
                   item.active
                     ? "text-white [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]"
-                    : "text-light-gray/40"
+                    : "text-[rgba(255,255,255,0.20)]"
                 )}
                 onClick={item.onChange}
               >
@@ -49,7 +49,7 @@ export function Tab({ items, className }: TabProps) {
             </button>
           )}
           {item.icon && (
-            <div className="absolute top-0 -right-4">{item.icon}</div>
+            <div className="absolute top-0 -right-5">{item.icon}</div>
           )}
         </div>
       ))}

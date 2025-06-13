@@ -125,7 +125,7 @@ export default function Header({ className }: { className?: string }) {
                   />
                 )}
                 <span className="text-white/60">
-                  {truncateStr(currentAccount?.address || "", 4)}
+                  {truncateStr(currentAccount?.address || "", 8)}
                 </span>
                 <ChevronDown className="size-3" />
               </DropdownMenuTrigger>

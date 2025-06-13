@@ -27,7 +27,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
         <Tooltip>
           <TooltipTrigger
             asChild
-            className="absolute top-0 -right-4 cursor-pointer"
+            className="absolute top-0 -right-5 cursor-pointer"
           >
             <Image
               alt="info"

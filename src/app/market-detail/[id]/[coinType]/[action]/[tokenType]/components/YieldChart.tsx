@@ -37,6 +37,12 @@ const METRICS = [
   { label: "APY", value: "apy" },
   { label: "Price", value: "price" },
 ] as const
+const tokenTypeMap = {
+  YIELD: 'YT',
+  FIXED: 'PT',
+  POOL: 'LP',
+  TVL: "LP"
+}
 
 function formatPercent(num?: string | number, digits = 2) {
   if (num == null) return "—"
@@ -147,7 +153,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
                 setActiveMetric(v as (typeof METRICS)[number]["value"])
               }
             >
-              <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-xs text-white/80 w-fit min-w-[60px]">
+              <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-xs text-[rgba(252,252,252,0.40)] w-fit min-w-[60px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="border-none outline-none bg-[#181C23]">
@@ -156,9 +162,9 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
                     <SelectItem
                       key={metric.value}
                       value={metric.value}
-                      className="cursor-pointer text-white text-xs"
+                      className="cursor-pointer text-[rgba(252,252,252,0.80)] text-xs"
                     >
-                      {`${tokenType} ${metric.label}`}
+                      {`${tokenTypeMap[tokenType]} ${metric.label}`}
                     </SelectItem>
                   ))}
                 </SelectGroup>
@@ -168,24 +174,22 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
               {/* <span className="text-xs text-white/40 font-medium">
                   {mainMetric.label}
                 </span> */}
-              <p className="text-[20px] font-[550]">{mainMetric.value}</p>
+              <p className="text-[20px] font-[500]">{mainMetric.value}</p>
               {!!mainMetric.delta && (
                 <span
                   className={`
-                  text-xs py-0.5 px-1.5 rounded-full flex items-center gap-1
-                  ${
-                    mainMetric.positive
+                  text-xs py-1 px-1.5 rounded-lg font-[600] flex items-center gap-1
+                  ${mainMetric.positive
                       ? "bg-[#4CC8771A] text-[#4CC877]"
                       : "bg-[#FF2E541A] text-[#FF2E54]"
-                  }
+                    }
                 `}
                 >
                   {mainMetric.positive ? "+" : ""}
                   {mainMetric.delta}
                   <Image
-                    src={`/arrow-${
-                      mainMetric.positive ? "up" : "down"
-                    }-right.svg`}
+                    src={`/arrow-${mainMetric.positive ? "up" : "down"
+                      }-right.svg`}
                     alt={""}
                     width={16}
                     height={16}
@@ -205,8 +209,8 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
               className={[
                 "py-1 px-2 cursor-pointer select-none rounded-md flex items-center justify-center",
                 activeTab === i
-                  ? "bg-gradient-to-r from-white/10 to-white/5 text-white"
-                  : "text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5",
+                  ? "bg-gradient-to-r from-white/5 to-white/1 text-white"
+                  : "text-white/60 hover:text-white transition-all duration-200 hover:bg-gradient-to-r hover:from-white/5 hover:to-white/1",
               ].join(" ")}
             >
               {t.label}

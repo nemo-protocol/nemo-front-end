@@ -190,7 +190,7 @@ export default function Calculator({
             className={`w-full mt-6 h-[42px] rounded-[16px] cursor-pointer  flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550] 
             ${inputYT
                 ? "bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition"
-                : "bg-[#0F60FF]/50 text-white/50 text-white cursor-not-allowed "}`
+                : "bg-[#2E81FCc5]/50 text-white/50 text-white cursor-not-allowed "}`
             }
             onClick={handleCalculate}  // Call handleCalculate on button click
             disabled={!outputYT || !inputYT}

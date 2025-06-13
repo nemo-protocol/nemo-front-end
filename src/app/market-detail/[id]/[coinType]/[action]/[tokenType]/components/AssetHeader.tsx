@@ -9,7 +9,7 @@ type Props = { coinConfig: CoinConfig }
 
 export default function AssetHeader({ coinConfig }: Props) {
   return (
-    <div className="flex items-center gap-2 relative mt-6">
+    <div className="flex items-center gap-2 relative mt-2">
       <Image
         src={coinConfig.coinLogo}
         alt={coinConfig.coinName}
@@ -23,7 +23,7 @@ export default function AssetHeader({ coinConfig }: Props) {
           <div className="relative">
             <div
               className="
-                  w-[480px] rounded-xl border
+                  w-[480px] rounded-xl 
                   border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm
                   z-10
                 "
@@ -46,7 +46,7 @@ export default function AssetHeader({ coinConfig }: Props) {
                       rel="noreferrer"
                       className="flex items-center gap-2"
                     >
-                      <Image
+                      <img
                         width={18}
                         height={18}
                         src={item.logo}

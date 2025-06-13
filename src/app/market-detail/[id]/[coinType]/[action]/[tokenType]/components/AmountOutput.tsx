@@ -38,11 +38,11 @@ export const AmountOutput = ({
     >
       {/* 左侧：LP POSITION 和数值 */}
       <div className="flex flex-col justify-center">
-        <span className="text-xs text-[#FCFCFC]/40 font-medium">{title}</span>
+        <span className="text-xs text-[#FCFCFC]/40 font-[600]">{title}</span>
 
         <span className="mt-2 text-xl font-medium text-white flex items-center gap-x-2">
           {loading ? (
-            <Skeleton className="h-7 sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
+            <Skeleton className="h-7  sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
           ) : (
             value ?? "--"
           )}

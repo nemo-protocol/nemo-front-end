@@ -19,7 +19,7 @@ export default function PortfolioPage() {
                 <div className="px-7.5">
                     <div
                         onClick={() => history.back()}
-                        className="text-light-gray bg-gradient-to-r from-white/10 to-white/5 hover:bg-gradient-to-r hover:from-white/15 hover:to-white/5 cursor-pointer inline-flex p-2 px-2.5 rounded-2xl gap-2 text-sm items-center"
+                        className="text-light-gray bg-gradient-to-r from-white/5 to-white/2 hover:bg-gradient-to-r  hover:from-white/8 transition-all duration-200 hover:to-white/4  cursor-pointer inline-flex p-1 px-2.5 rounded-2xl gap-2 text-sm items-center"
                     >
                         <ArrowLeft width={16} />
                         <span className="text-sm">Back</span>

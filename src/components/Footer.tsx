@@ -6,11 +6,8 @@ import Link from 'next/link';
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#080E16]">
-      {/* 横向分隔线（可不要） */}
-      <div className="h-px w-full bg-slate-600/20 mb-6" />
+    <footer className="w-full bg-[#080E16] mt-6">
 
-      {/* 主体 */}
       <div className="flex items-center justify-between px-6 pb-10">
         <a
           href="https://sui.io"

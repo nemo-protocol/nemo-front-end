@@ -563,6 +563,7 @@ export default function Sell({ coinConfig }: Props) {
         onClick={redeem}
         loading={isRedeeming}
         disabled={btnDisabled}
+        type="red"
       />
     </div>
   )

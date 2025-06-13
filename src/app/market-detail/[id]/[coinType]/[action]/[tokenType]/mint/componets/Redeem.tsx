@@ -223,7 +223,7 @@ export default function Redeem({ coinConfig }: Props) {
           className="bg-transparent rounded-none"
           amount={redeemValue}
           onChange={setRedeemValue}
-          setWarning={() => {}}
+          setWarning={() => { }}
           coinName={`PT ${coinConfig.coinName}`}
           coinLogo={coinConfig.coinLogo}
           decimal={decimal}
@@ -240,7 +240,7 @@ export default function Redeem({ coinConfig }: Props) {
           className="bg-transparent rounded-none"
           amount={redeemValue}
           onChange={setRedeemValue}
-          setWarning={() => {}}
+          setWarning={() => { }}
           coinName={`YT ${coinConfig.coinName}`}
           coinLogo={coinConfig.coinLogo}
           decimal={decimal}
@@ -290,9 +290,10 @@ export default function Redeem({ coinConfig }: Props) {
             insufficientPtBalance
               ? "Insufficient PT Balance"
               : insufficientYtBalance
-              ? "Insufficient YT Balance"
-              : "Redeem"
+                ? "Insufficient YT Balance"
+                : "Redeem"
           }
+          type="red"
           onClick={redeem}
           loading={isRedeeming}
           disabled={

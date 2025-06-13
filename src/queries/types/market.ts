@@ -142,6 +142,7 @@ export interface PortfolioItem extends CoinConfig {
   ytPrice: string
   ytTokenLogo: string;
   ptTokenLogo: string;
+  lpTokenLogo: string ;
   ytReward: string
   underlyingProtocol: string
   yieldFactoryConfigId: string

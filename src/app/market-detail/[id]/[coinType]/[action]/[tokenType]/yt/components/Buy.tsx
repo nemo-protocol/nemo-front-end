@@ -459,7 +459,7 @@ export default function Buy({ coinConfig }: Props) {
         }
       />
 
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-2 -my-10">
         <ArrowUpDown className="w-5 h-5" />
       </div>
 
@@ -515,7 +515,7 @@ export default function Buy({ coinConfig }: Props) {
           onClick={swap}
         />
         <div
-          className="px-4 sm:px-8 bg-[rgba(252,252,252,0.03)] text-white rounded-full w-full h-[42px] text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
+          className="px-4 sm:px-8 font-[500]  bg-[rgba(252,252,252,0.03)] transition hover:text-white/50 hover:bg-[rgba(252,252,252,0.01)] text-white rounded-full w-full h-[42px] text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
           onClick={() => {
             setOpen(true)
           }}

@@ -388,3 +388,9 @@ export function shortenAddress(
 
   return `${addr.slice(0, left)}…${addr.slice(-right)}`
 }
+
+
+export function truncate(str: string | undefined | null, len = 10): string {
+  if (!str) return ''                     // 处理 undefined / null
+  return str.length > len ? str.slice(0, len) + '…' : str
+}

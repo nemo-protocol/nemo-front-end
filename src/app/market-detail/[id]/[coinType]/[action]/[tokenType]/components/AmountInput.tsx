@@ -68,7 +68,7 @@ export default function AmountInput({
         <div className="flex items-center justify-between h-auto sm:h-12">
           <div className="grow space-y-0.5 sm:space-y-1 ml-2 sm:ml-0">
             {title && (
-              <span className="text-xs text-light-gray/40">{title}</span>
+              <span className="text-xs font-[600] text-light-gray/40">{title}</span>
             )}
             <input
               min={0}

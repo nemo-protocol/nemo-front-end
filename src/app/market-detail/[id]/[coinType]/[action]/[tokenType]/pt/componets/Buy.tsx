@@ -139,8 +139,8 @@ export default function Buy({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -304,6 +304,9 @@ export default function Buy({ coinConfig }: Props) {
     if (!hasLiquidity) {
       return "No liquidity available"
     }
+    if (insufficientBalance) {
+      return `Insufficient ${coinConfig.coinName} balance`
+    }
     if (swapValue === "") {
       return "Please enter an amount"
     }
@@ -387,16 +390,16 @@ export default function Buy({ coinConfig }: Props) {
         const [splitCoin] =
           tokenType === 0
             ? [
-                await mintSCoin({
-                  tx,
-                  vaultId,
-                  slippage,
-                  address,
-                  coinData,
-                  coinConfig,
-                  amount: actualSwapAmount,
-                }),
-              ]
+              await mintSCoin({
+                tx,
+                vaultId,
+                slippage,
+                address,
+                coinData,
+                coinConfig,
+                amount: actualSwapAmount,
+              }),
+            ]
             : splitCoinHelper(tx, coinData, [actualSwapAmount], coinType)
 
         const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinType)
@@ -551,43 +554,37 @@ export default function Buy({ coinConfig }: Props) {
           </span>
         </div>
         <div className="flex justify-between">
-          <span>Fixed Return</span>
+          <span>Fixed Return At Maturity</span>
           <span className="text-white">
-            {isValidAmount(ptValue) && ptValue && decimal && conversionRate
-              ? `+${formatDecimalValue(
-                  new Decimal(ptValue).minus(
-                    new Decimal(syValue).mul(conversionRate)
-                  ),
-                  decimal
-                )} ${coinConfig?.underlyingCoinName}`
-              : "--"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>
-            {`After ${dayjs(
-              parseInt(coinConfig?.maturity || Date.now().toString())
-            ).diff(dayjs(), "day")} days`}
-          </span>
-          <span className="text-white">
-            {!swapValue
-              ? "--"
-              : isCalcPtLoading
-              ? "--"
-              : decimal && conversionRate && coinConfig?.underlyingPrice
-              ? `≈ $${
-                  ptValue && decimal && ptValue && conversionRate
-                    ? formatDecimalValue(
+            <span className="text-white">
+              {!swapValue
+                ? "--"
+                : isCalcPtLoading
+                  ? "--"
+                  : decimal && conversionRate && coinConfig?.underlyingPrice
+                    ? `≈ $${ptValue && decimal && ptValue && conversionRate
+                      ? formatDecimalValue(
                         new Decimal(ptValue)
                           .minus(new Decimal(syValue).mul(conversionRate))
                           .mul(coinConfig.underlyingPrice),
                         decimal
                       )
-                    : "--"
-                }`
-              : "--"}
+                      : "--"
+                    }`
+                    : "--"}
+            </span>
+
+            {isValidAmount(ptValue) && ptValue && decimal && conversionRate
+              ? <span className="text-[#4CC877] ml-2">{`( +${formatDecimalValue(
+                new Decimal(ptValue).minus(
+                  new Decimal(syValue).mul(conversionRate)
+                ),
+                decimal
+              )} ${coinConfig?.underlyingCoinName} )`}</span>
+              : ""}
           </span>
         </div>
+
         <div className="border-b border-light-gray/10"></div>
         <div className="flex justify-between">
           <span>Price</span>
@@ -617,6 +614,7 @@ export default function Buy({ coinConfig }: Props) {
         btnText={btnText}
         disabled={btnDisabled}
         loading={isSwapping}
+        type="green"
       />
     </div>
   )

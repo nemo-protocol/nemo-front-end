@@ -336,6 +336,7 @@ export default function Mint({ coinConfig }: Props) {
         onClick={mint}
         loading={isMinting}
         disabled={mintValue === ""}
+        type="green"
       />
     </div>
   )
