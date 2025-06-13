@@ -393,7 +393,7 @@ export default function Sell({ coinConfig }: Props) {
         decimal={decimal}
         warning={warning}
         title={"Trade".toUpperCase()}
-        coinName={`PT ${coinConfig?.coinName}`}
+        name={`PT ${coinConfig?.coinName}`}
         amount={redeemValue}
         isLoading={isLoading}
         setWarning={setWarning}
@@ -401,7 +401,7 @@ export default function Sell({ coinConfig }: Props) {
         errorDetail={errorDetail}
         onChange={handleInputChange}
         maturity={coinConfig?.maturity}
-        coinLogo={coinConfig?.coinLogo}
+        logo={coinConfig?.coinLogo}
         isConfigLoading={false}
         coinBalance={
           coinConfig?.ptTokenType ? ptTokenBalance : ptPositionBalance

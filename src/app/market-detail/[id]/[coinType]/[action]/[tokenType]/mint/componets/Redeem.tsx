@@ -357,23 +357,21 @@ export default function Redeem({ coinConfig }: Props) {
           </Select>
         }
       />
-      <div className="mt-7.5 w-full">
-        <ActionButton
-          btnText={
-            insufficientPtBalance
-              ? "Insufficient PT Balance"
-              : insufficientYtBalance
-              ? "Insufficient YT Balance"
-              : "Redeem"
-          }
-          type="red"
-          onClick={redeem}
-          loading={isRedeeming}
-          disabled={
-            redeemValue === "" || insufficientPtBalance || insufficientYtBalance
-          }
-        />
-      </div>
+      <ActionButton
+        btnText={
+          insufficientPtBalance
+            ? "Insufficient PT Balance"
+            : insufficientYtBalance
+            ? "Insufficient YT Balance"
+            : "Redeem"
+        }
+        type="red"
+        onClick={redeem}
+        loading={isRedeeming}
+        disabled={
+          redeemValue === "" || insufficientPtBalance || insufficientYtBalance
+        }
+      />
     </div>
   )
 }
