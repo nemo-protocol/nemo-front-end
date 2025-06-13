@@ -12,13 +12,18 @@ import {
 } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 
-type SwapResult = {
+interface SwapResult {
   syAmount: string
 }
 
-export default function useSwapExactPtForSyDryRun(
-  coinConfig?: CoinConfig,
-  debug: boolean = false,
+type DryRunResult<T extends boolean> = T extends true
+  ? [SwapResult, DebugInfo]
+  : SwapResult
+
+export default function useSwapExactPtForSyDryRun<T extends boolean = false>(
+  { coinConfig, debug }: { coinConfig?: CoinConfig; debug: T } = {
+    debug: false as T,
+  },
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
@@ -30,7 +35,7 @@ export default function useSwapExactPtForSyDryRun(
   return useMutation({
     mutationFn: async (
       ptAmount: string,
-    ): Promise<[SwapResult] | [SwapResult, DebugInfo]> => {
+    ): Promise<DryRunResult<T>> => {
       if (!address) {
         throw new Error("Please connect wallet first")
       }
@@ -134,7 +139,7 @@ export default function useSwapExactPtForSyDryRun(
 
       const returnValue = { syAmount }
 
-      return debug ? [returnValue, debugInfo] : [returnValue]
+      return (debug ? [returnValue, debugInfo] : returnValue) as DryRunResult<T>
     },
   })
 }

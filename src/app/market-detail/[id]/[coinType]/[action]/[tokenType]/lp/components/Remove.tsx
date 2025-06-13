@@ -1,35 +1,27 @@
 import Decimal from "decimal.js"
-import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 import { network } from "@/config"
 import { ArrowUpDown } from "lucide-react"
-import AmountInput from "../../components/AmountInput"
-import { AmountOutput } from "../../components/AmountOutput"
-import ActionButton from "../../components/ActionButton"
-import SlippageSetting from "../../components/SlippageSetting"
-import {
-  Select,
-  SelectItem,
-  SelectValue,
-  SelectGroup,
-  SelectTrigger,
-  SelectContent,
-} from "@/components/ui/select"
+import { ContractError } from "@/hooks/types"
+import { CoinConfig } from "@/queries/types/market"
 import { useWallet } from "@nemoprotocol/wallet-kit"
+import { showTransactionDialog } from "@/lib/dialog"
+import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
 import useRedeemLp from "@/hooks/actions/useRedeemLp"
 import { parseErrorMessage } from "@/lib/errorMapping"
+import AmountInput from "../../components/AmountInput"
 import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
+import ActionButton from "../../components/ActionButton"
 import usePyPositionData from "@/hooks/usePyPositionData"
-import useInputLoadingState from "@/hooks/useInputLoadingState"
-import useBurnLpDryRun from "@/hooks/dryRun/useBurnLpDryRun"
-import { useMemo, useState, useEffect, useCallback } from "react"
-import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
-import { showTransactionDialog } from "@/lib/dialog"
 import useMarketStateData from "@/hooks/useMarketStateData"
-import { ContractError } from "@/hooks/types"
+import useBurnLpDryRun from "@/hooks/dryRun/useBurnLpDryRun"
+import { AmountOutput } from "../../components/AmountOutput"
+import SlippageSetting from "../../components/SlippageSetting"
 import useSellPtDryRun from "@/hooks/dryRun/pt/useSellPtDryRun"
-import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
-import { CoinConfig } from "@/queries/types/market"
-import Image from "next/image"
+import useInputLoadingState from "@/hooks/useInputLoadingState"
+import { useMemo, useState, useEffect, useCallback } from "react"
+import { TokenTypeSelect } from "../../components/TokenTypeSelect"
+import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
+import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 
 interface Props {
   coinConfig: CoinConfig
@@ -46,19 +38,24 @@ export default function Remove({ coinConfig }: Props) {
   const [isRemoving, setIsRemoving] = useState(false)
   const [errorDetail, setErrorDetail] = useState<string>()
   const [isInputLoading, setIsInputLoading] = useState(false)
+  const [action, setAction] = useState<"swap" | "redeem">("swap")
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
+  const [minSyOut, setMinSyOut] = useState("")
 
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
   const decimal = useMemo(() => Number(coinConfig?.decimal), [coinConfig])
   const { data: marketState } = useMarketStateData(coinConfig?.marketStateId)
+
   const { data: ptYtData, refresh: refreshPtYt } = useCalculatePtYt(
     coinConfig,
     marketState
   )
+
   const { mutateAsync: burnLpDryRun } = useBurnLpDryRun(coinConfig)
+
   const { data: lppMarketPositionData, refetch: refetchLpPosition } =
     useLpMarketPositionData(
       address,
@@ -66,6 +63,7 @@ export default function Remove({ coinConfig }: Props) {
       coinConfig?.maturity,
       coinConfig?.marketPositionTypeList
     )
+
   const { data: pyPositionData, refetch: refetchPyPosition } =
     usePyPositionData(
       address,
@@ -73,12 +71,15 @@ export default function Remove({ coinConfig }: Props) {
       coinConfig?.maturity,
       coinConfig?.pyPositionTypeList
     )
+
   const ytBalance = useMemo(() => {
     return pyPositionData
       ?.reduce((total, item) => total.add(item.ytBalance), new Decimal(0))
       .toString()
   }, [pyPositionData])
+
   const { isLoading } = useInputLoadingState(lpValue, false)
+
   const lpCoinBalance = useMemo(() => {
     if (lppMarketPositionData?.length) {
       return lppMarketPositionData
@@ -88,16 +89,19 @@ export default function Remove({ coinConfig }: Props) {
     }
     return "0"
   }, [decimal, lppMarketPositionData])
+
   const insufficientBalance = useMemo(
     () => new Decimal(lpCoinBalance).lt(new Decimal(lpValue || 0)),
     [lpCoinBalance, lpValue]
   )
+
   const lpPrice = useMemo(() => {
     if (ptYtData?.lpPrice) {
       return new Decimal(ptYtData.lpPrice).toString()
     }
     return "0"
   }, [ptYtData?.lpPrice])
+
   const vaultId = useMemo(
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
@@ -107,7 +111,9 @@ export default function Remove({ coinConfig }: Props) {
         : "",
     [coinConfig]
   )
+
   const { mutateAsync: sellPtDryRun } = useSellPtDryRun(coinConfig)
+
   const debouncedGetSyOut = useCallback(
     (value: string, decimal: number) => {
       const getSyOut = debounce(async () => {
@@ -123,26 +129,31 @@ export default function Remove({ coinConfig }: Props) {
               lpAmount,
               receivingType,
             })
-            try {
-              const { outputValue: swappedOutputValue } = await sellPtDryRun({
-                slippage,
-                vaultId,
-                ptAmount,
-                minSyOut: "0",
-                receivingType,
-                pyPositions: pyPositionData,
-              })
-              const targetValue = new Decimal(outputValue)
-                .add(swappedOutputValue)
-                .toFixed(decimal)
-              setTargetValue(targetValue)
-            } catch (error) {
-              setTargetValue(outputValue)
-              setWarning(`Returning ${ptValue} PT ${coinConfig?.coinName}.`)
-              setWarningDetail(
-                `PT could be sold at the market, or it could be redeemed after maturity with a fixed return.`
-              )
-              console.log("sellPtDryRun error", error)
+
+            if (action === "swap") {
+              try {
+                const { outputValue: swappedOutputValue, syAmount:minSyOut } =
+                  await sellPtDryRun({
+                    slippage,
+                    vaultId,
+                    ptAmount,
+                    minSyOut: "0",
+                    receivingType,
+                    pyPositions: pyPositionData,
+                  })
+                setMinSyOut(minSyOut)
+                const targetValue = new Decimal(outputValue)
+                  .add(swappedOutputValue)
+                  .toFixed(decimal)
+                setTargetValue(targetValue)
+              } catch (error) {
+                setTargetValue(outputValue)
+                setWarning(`Returning ${ptValue} PT ${coinConfig?.coinName}.`)
+                setWarningDetail(
+                  `PT could be sold at the market, or it could be redeemed after maturity with a fixed return.`
+                )
+                console.log("sellPtDryRun error", error)
+              }
             }
           } catch (errorMsg) {
             const { error: msg, detail } = parseErrorMessage(
@@ -220,6 +231,7 @@ export default function Remove({ coinConfig }: Props) {
     },
     [decimal, coinConfig]
   )
+
   async function remove() {
     if (
       decimal &&
@@ -236,6 +248,7 @@ export default function Remove({ coinConfig }: Props) {
         setIsRemoving(true)
         const lpAmount = new Decimal(lpValue).mul(10 ** decimal).toFixed(0)
         const { digest } = await redeemLp({
+          action,
           vaultId,
           slippage,
           lpAmount,
@@ -275,6 +288,28 @@ export default function Remove({ coinConfig }: Props) {
   // UI结构参考AddLiquidity
   return (
     <div className="flex flex-col items-center gap-y-6">
+      <div className="flex gap-2 w-full">
+        <button
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
+            action === "swap"
+              ? "bg-white/10 text-white"
+              : "bg-transparent text-white/40 hover:text-white/80"
+          }`}
+          onClick={() => setAction("swap")}
+        >
+          {`swap & remove`.toLocaleUpperCase()}
+        </button>
+        <button
+          onClick={() => setAction("redeem")}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
+            action === "redeem"
+              ? "bg-white/10 text-white"
+              : "bg-transparent text-white/40 hover:text-white/80"
+          }`}
+        >
+          {`redeem & remove`.toLocaleUpperCase()}
+        </button>
+      </div>
       <AmountInput
         error={error}
         price={lpPrice}
@@ -318,9 +353,21 @@ export default function Remove({ coinConfig }: Props) {
         }
         coinNameComponent={
           <div className="flex items-center gap-x-1">
-            <Select
+            <TokenTypeSelect
               value={receivingType}
-              onValueChange={(value) => {
+              options={[
+                {
+                  label: coinConfig?.underlyingCoinName || "",
+                  logo: coinConfig?.underlyingCoinLogo || "",
+                  value: "underlying",
+                },
+                {
+                  label: coinConfig?.coinName || "",
+                  logo: coinConfig?.coinLogo || "",
+                  value: "sy",
+                },
+              ]}
+              onChange={(value) => {
                 const newTargetValue = convertReceivingValue(
                   targetValue,
                   receivingType,
@@ -329,80 +376,7 @@ export default function Remove({ coinConfig }: Props) {
                 setReceivingType(value as "underlying" | "sy")
                 setTargetValue(newTargetValue)
               }}
-            >
-              <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-                <SelectValue>
-                  <div className="flex items-center gap-x-1">
-                    <span
-                      className=" max-w-20 truncate"
-                      title={
-                        receivingType === "underlying"
-                          ? coinConfig?.underlyingCoinName
-                          : coinConfig?.coinName
-                      }
-                    >
-                      {receivingType === "underlying"
-                        ? coinConfig?.underlyingCoinName
-                        : coinConfig?.coinName}
-                    </span>
-                    {(receivingType === "underlying"
-                      ? coinConfig?.underlyingCoinLogo
-                      : coinConfig?.coinLogo) && (
-                      <Image
-                        src={
-                          receivingType === "underlying"
-                            ? coinConfig?.underlyingCoinLogo
-                            : coinConfig?.coinLogo
-                        }
-                        alt={
-                          receivingType === "underlying"
-                            ? coinConfig?.underlyingCoinName
-                            : coinConfig?.coinName
-                        }
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="border-none outline-none bg-[#0E0F16]">
-                <SelectGroup>
-                  <SelectItem
-                    value="underlying"
-                    className="cursor-pointer text-white"
-                  >
-                    <div className="flex items-center gap-x-1">
-                      <span>{coinConfig?.underlyingCoinName}</span>
-                      {coinConfig?.underlyingCoinLogo && (
-                        <Image
-                          src={coinConfig.underlyingCoinLogo}
-                          alt={coinConfig.underlyingCoinName}
-                          className="size-4 sm:size-5"
-                          width={20}
-                          height={20}
-                        />
-                      )}
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="sy" className="cursor-pointer text-white">
-                    <div className="flex items-center gap-x-1">
-                      <span>{coinConfig?.coinName}</span>
-                      {coinConfig?.coinLogo && (
-                        <Image
-                          src={coinConfig.coinLogo}
-                          alt={coinConfig.coinName}
-                          className="size-4 sm:size-5"
-                          width={20}
-                          height={20}
-                        />
-                      )}
-                    </div>
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            />
           </div>
         }
         warningDetail={warningDetail}

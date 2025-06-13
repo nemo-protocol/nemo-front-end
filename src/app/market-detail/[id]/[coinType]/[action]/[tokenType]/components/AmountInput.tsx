@@ -135,7 +135,6 @@ export default function AmountInput({
                         coinNameComponent
                       ) : (
                         <div className="flex items-center gap-x-1">
-                          <span>{name}</span>
                           <Image
                             src={logo ?? ""}
                             alt={name ?? ""}
@@ -143,6 +142,7 @@ export default function AmountInput({
                             width={20}
                             height={20}
                           />
+                          <span className="text-xl">{name}</span>
                         </div>
                       )}
                     </div>

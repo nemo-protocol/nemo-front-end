@@ -1,22 +1,26 @@
 import Decimal from "decimal.js"
 import { network } from "@/config"
-import { useMemo, useState, useCallback, useEffect } from "react"
-import useCoinData from "@/hooks/query/useCoinData"
-import { Transaction } from "@mysten/sui/transactions"
+import { debounce } from "@/lib/utils"
 import { ArrowUpDown } from "lucide-react"
-import usePyPositionData from "@/hooks/usePyPositionData"
-import { parseErrorMessage } from "@/lib/errorMapping"
-import { mintPY, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
+import { ContractError } from "@/hooks/types"
+import { CoinConfig } from "@/queries/types/market"
+import useCoinData from "@/hooks/query/useCoinData"
 import { useWallet } from "@nemoprotocol/wallet-kit"
 import { showTransactionDialog } from "@/lib/dialog"
-import useMintPYDryRun from "@/hooks/dryRun/useMintPYDryRun"
-import { debounce } from "@/lib/utils"
-import { ContractError } from "@/hooks/types"
-import { getPriceVoucher } from "@/lib/txHelper/price"
-import { CoinConfig } from "@/queries/types/market"
+import { mintMultiSCoin } from "@/lib/txHelper/coin"
 import AmountInput from "../../components/AmountInput"
-import { AmountOutput } from "../../components/AmountOutput"
+import { parseErrorMessage } from "@/lib/errorMapping"
+import { Transaction } from "@mysten/sui/transactions"
+import { getPriceVoucher } from "@/lib/txHelper/price"
+import { initPyPosition } from "@/lib/txHelper/position"
 import ActionButton from "../../components/ActionButton"
+import usePyPositionData from "@/hooks/usePyPositionData"
+import useMintPYDryRun from "@/hooks/dryRun/useMintPYDryRun"
+import { AmountOutput } from "../../components/AmountOutput"
+import SlippageSetting from "../../components/SlippageSetting"
+import { useMemo, useState, useCallback, useEffect } from "react"
+import { mintPY, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
+import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
 import {
   Select,
   SelectItem,
@@ -25,10 +29,6 @@ import {
   SelectTrigger,
   SelectContent,
 } from "@/components/ui/select"
-import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
-import SlippageSetting from "../../components/SlippageSetting"
-import { initPyPosition } from "@/lib/txHelper/position"
-import { mintMultiSCoin } from "@/lib/txHelper/coin"
 
 interface Props {
   coinConfig: CoinConfig
@@ -281,7 +281,7 @@ export default function Mint({ coinConfig }: Props) {
               <SelectValue>
                 <div className="flex items-center gap-x-1">
                   <span
-                    className="max-w-20 truncate"
+                    className="max-w-20 truncate text-xl"
                     title={
                       tokenType === 0
                         ? coinConfig?.underlyingCoinName

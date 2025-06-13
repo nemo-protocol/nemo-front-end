@@ -1,6 +1,5 @@
 import React, { useMemo } from "react"
 import { ConnectModal, useWallet } from "@nemoprotocol/wallet-kit"
-import Image from 'next/image';
 
 interface ActionButtonProps {
   btnText: string
@@ -57,7 +56,6 @@ const ActionButton: React.FC<ActionButtonProps> = ({
 
   };
   const isConnected = useMemo(() => !!address, [address])
-  console.log(typeColor[type])
   return (
     <>
       {!isConnected ? (

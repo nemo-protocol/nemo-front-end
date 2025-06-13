@@ -58,8 +58,8 @@ export const AmountOutput = ({
             coinNameComponent
           ) : (
             <div className="flex items-center gap-x-1">
+              <span className="text-xl text-white">{name}</span>
               {logo && <Image src={logo} alt={name} width={20} height={20} />}
-              <span className="text-xl font-medium text-white">{name}</span>
             </div>
           )}
         </div>

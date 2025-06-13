@@ -460,7 +460,7 @@ export default function Sell({ coinConfig }: Props) {
                   <SelectValue>
                     <div className="flex items-center gap-x-2">
                       <span
-                        className="max-w-20 truncate"
+                        className="max-w-20 truncate text-xl"
                         title={
                           receivingType === "underlying"
                             ? coinConfig?.underlyingCoinName

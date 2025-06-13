@@ -514,7 +514,7 @@ export default function Buy({ coinConfig }: Props) {
               <SelectValue>
                 <div className="flex items-center gap-x-1">
                   <span
-                    className="max-w-20 truncate"
+                    className="max-w-20 truncate text-xl"
                     title={
                       tokenType === 0
                         ? coinConfig?.underlyingCoinName

@@ -29,18 +29,19 @@ interface CalculateLpAmountParams {
   inputAmount: string
   coinData: CoinData[]
   pyPositionData: PyPosition[]
+  action: "mint" | "add"
 }
 
 export function useCalculateLpAmount(
   coinConfig: CoinConfig | undefined,
-  marketState: MarketState | undefined,
+  marketState: MarketState | undefined
 ): UseMutationResult<CalculateLpAmountResult, Error, CalculateLpAmountParams> {
   const { mutateAsync: mintLpDryRun } = useMintLpDryRun(coinConfig, marketState)
   const { mutateAsync: seedLiquidityDryRun } =
     useSeedLiquidityDryRun(coinConfig)
   const { mutateAsync: estimateLpOut } = useEstimateLpOutDryRun(
     coinConfig,
-    marketState,
+    marketState
   )
   const { mutateAsync: addLiquiditySingleSyDryRun } =
     useAddLiquiditySingleSyDryRun(coinConfig)
@@ -54,6 +55,7 @@ export function useCalculateLpAmount(
       tokenType,
       inputAmount,
       pyPositionData,
+      action,
     }: CalculateLpAmountParams): Promise<CalculateLpAmountResult> => {
       if (!coinConfig) {
         throw new Error("Please select a pool")
@@ -67,12 +69,12 @@ export function useCalculateLpAmount(
         NEED_MIN_VALUE_LIST.find(
           (item) =>
             item.provider === coinConfig.provider ||
-            item.coinType === coinConfig.coinType,
+            item.coinType === coinConfig.coinType
         )?.minValue || 0
 
       const addValue = formatDecimalValue(
         new Decimal(inputAmount).div(10 ** decimal),
-        decimal,
+        decimal
       )
 
       try {
@@ -107,12 +109,7 @@ export function useCalculateLpAmount(
             ytAmount: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
             addType: "seed",
           }
-        } else if (
-          marketState &&
-          new Decimal(marketState.totalSy).mul(0.4).lt(inputAmount)
-        ) {
-          console.log("mintLpDryRun")
-
+        } else if (marketState && action === "mint") {
           const { lpAmount, ytAmount } = await mintLpDryRun({
             vaultId,
             slippage,
@@ -129,18 +126,8 @@ export function useCalculateLpAmount(
             lpAmount: new Decimal(lpAmount).div(10 ** decimal).toFixed(decimal),
             ytAmount: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
           }
-        } else {
+        } else if (action === "add") {
           try {
-            console.log("addLiquiditySingleSyDryRun")
-            if (
-              tokenType === 0 &&
-              new Decimal(addValue).lt(new Decimal(minValue))
-            ) {
-              return {
-                error: `Please enter at least ${minValue} ${coinConfig.underlyingCoinName}`,
-              }
-            }
-
             const { lpAmount, lpValue, tradeFee } =
               await addLiquiditySingleSyDryRun({
                 vaultId,
@@ -158,29 +145,7 @@ export function useCalculateLpAmount(
               ratio: new Decimal(lpAmount).div(inputAmount).toString(),
             }
           } catch (error) {
-            console.log("addLiquiditySingleSyDryRun error", error)
-            console.log("mintLpDryRun")
-
-            const { lpAmount, ytAmount } = await mintLpDryRun({
-              vaultId,
-              slippage,
-              coinData,
-              tokenType,
-              coinConfig,
-              amount: inputAmount,
-              pyPositions: pyPositionData,
-            })
-
-            return {
-              addType: "mint",
-              ratio: new Decimal(lpAmount).div(inputAmount).toString(),
-              lpAmount: new Decimal(lpAmount)
-                .div(10 ** decimal)
-                .toFixed(decimal),
-              ytAmount: new Decimal(ytAmount)
-                .div(10 ** decimal)
-                .toFixed(decimal),
-            }
+            throw error
           }
         }
       } catch (errorMsg) {
@@ -200,6 +165,10 @@ export function useCalculateLpAmount(
             errorDetail: detail,
           }
         }
+      }
+      
+      return {
+        error: "Unknown error occurred",
       }
     },
   })

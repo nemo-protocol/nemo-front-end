@@ -8,14 +8,6 @@ import AmountInput from "../../components/AmountInput"
 import { AmountOutput } from "../../components/AmountOutput"
 import ActionButton from "../../components/ActionButton"
 import SlippageSetting from "../../components/SlippageSetting"
-import {
-  Select,
-  SelectItem,
-  SelectValue,
-  SelectGroup,
-  SelectTrigger,
-  SelectContent,
-} from "@/components/ui/select"
 import useMarketStateData from "@/hooks/useMarketStateData"
 import useCoinData from "@/hooks/query/useCoinData"
 import usePyPositionData from "@/hooks/usePyPositionData"
@@ -34,30 +26,29 @@ import { mintSCoin } from "@/lib/txHelper/coin"
 import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
 import { initPyPosition } from "@/lib/txHelper/position"
 import Decimal from "decimal.js"
-import Image from "next/image"
+import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 
 interface Props {
   coinConfig: CoinConfig
 }
 
-export default function LpForm({ coinConfig }: Props) {
+export default function AddLiquidity({ coinConfig }: Props) {
   const [warning, setWarning] = useState("")
   const [error, setError] = useState<string>()
-  const [errorDetail, setErrorDetail] = useState<string>()
+  const [ratio, setRatio] = useState<string>()
   const [addValue, setAddValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
+  const [isAdding, setIsAdding] = useState(false)
   const [tokenType, setTokenType] = useState<number>(0)
   const [lpAmount, setLpAmount] = useState<string>()
   const [lpFeeAmount, setLpFeeAmount] = useState<string>()
-  const [isAdding, setIsAdding] = useState(false)
-  const [subTab, setSubTab] = useState("provide")
-  const { account: currentAccount, signAndExecuteTransaction } = useWallet()
+  const [errorDetail, setErrorDetail] = useState<string>()
   const [isCalculating, setIsCalculating] = useState(false)
-  const [ratio, setRatio] = useState<string>()
+  const [action, setAction] = useState<"mint" | "add">("mint")
   const [addType, setAddType] = useState<"mint" | "seed" | "add">()
+  const { account: currentAccount, signAndExecuteTransaction } = useWallet()
 
-  const coinType = coinConfig.coinType
-  const maturity = coinConfig.maturity
+  const { coinType, maturity } = coinConfig
 
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
@@ -264,10 +255,7 @@ export default function LpForm({ coinConfig }: Props) {
             address,
             minLpAmount
           )
-        } else if (
-          addType === "mint" ||
-          new Decimal(marketStateData.totalSy).mul(0.4).lt(addAmount)
-        ) {
+        } else if (action === "mint") {
           await handleMintLp({
             tx,
             vaultId,
@@ -280,7 +268,7 @@ export default function LpForm({ coinConfig }: Props) {
             pyPosition,
             minLpAmount,
           })
-        } else {
+        } else if (action === "add") {
           await handleAddLiquiditySingleSy({
             tx,
             address,
@@ -306,8 +294,8 @@ export default function LpForm({ coinConfig }: Props) {
         })
 
         showTransactionDialog({
-          status: "Success",
           network,
+          status: "Success",
           txId: res.digest,
           onClose: async () => {
             // Refresh data after transaction
@@ -355,6 +343,7 @@ export default function LpForm({ coinConfig }: Props) {
               tokenType,
               inputAmount,
               pyPositionData,
+              action,
             },
             {
               onSuccess: (result) => {
@@ -402,21 +391,22 @@ export default function LpForm({ coinConfig }: Props) {
       <div className="flex gap-2 w-full">
         <button
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            subTab === "provide"
+            action === "mint"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
           }`}
-          onClick={() => setSubTab("provide")}
+          onClick={() => setAction("mint")}
         >
           PROVIDE LIQUIDITY
         </button>
         <button
+          onClick={() => setAction("add")}
+          disabled={marketStateData?.lpSupply === "0"}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            subTab === "lp"
+            action === "add"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
-          }`}
-          onClick={() => setSubTab("lp")}
+          } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
         >
           LP POSITION
         </button>
@@ -440,94 +430,31 @@ export default function LpForm({ coinConfig }: Props) {
           setAddValue(value)
         }}
         coinNameComponent={
-          <Select
-            value={tokenType.toString()}
-            onValueChange={(value) => {
+          <TokenTypeSelect<number>
+            value={tokenType}
+            options={[
+              {
+                label: coinConfig.underlyingCoinName,
+                logo: coinConfig.underlyingCoinLogo,
+                value: 0,
+              },
+              {
+                label: coinConfig.coinName,
+                logo: coinConfig.coinLogo,
+                value: 1,
+              },
+            ]}
+            onChange={(value) => {
               setAddValue("")
-              setTokenType(Number(value))
+              setTokenType(value)
             }}
-          >
-            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-              <SelectValue>
-                <div className="flex items-center gap-x-1">
-                  <span
-                    className="max-w-20 truncate"
-                    title={
-                      tokenType === 0
-                        ? coinConfig?.underlyingCoinName
-                        : coinConfig?.coinName
-                    }
-                  >
-                    {tokenType === 0
-                      ? coinConfig?.underlyingCoinName
-                      : coinConfig?.coinName}
-                  </span>
-                  {(tokenType === 0
-                    ? coinConfig?.underlyingCoinLogo
-                    : coinConfig?.coinLogo) && (
-                    <Image
-                      src={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinLogo
-                          : coinConfig?.coinLogo
-                      }
-                      alt={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinName
-                          : coinConfig?.coinName
-                      }
-                      className="size-4 sm:size-5"
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-light-gray/10">
-              <SelectGroup>
-                <SelectItem value="0" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.underlyingCoinName}</span>
-                    {coinConfig?.underlyingCoinLogo && (
-                      <Image
-                        src={coinConfig.underlyingCoinLogo}
-                        alt={coinConfig.underlyingCoinName}
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="1" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.coinName}</span>
-                    {coinConfig?.coinLogo && (
-                      <Image
-                        src={coinConfig.coinLogo}
-                        alt={coinConfig.coinName}
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          />
         }
       />
 
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
         <ArrowUpDown className="w-5 h-5" />
       </div>
-
-      {/* subTab === "lp" 依然条件渲染 */}
-      {subTab === "lp" && (
-        <>{/* 这里可以放 LP POSITION 相关内容，暂时用 AmountOutput 占位 */}</>
-      )}
 
       <AmountOutput
         maturity={maturity}
