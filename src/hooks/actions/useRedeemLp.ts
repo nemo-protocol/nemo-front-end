@@ -226,9 +226,6 @@ export default function useRedeemLp(
             receivingType,
           })
 
-        // FIXME：burn pt
-
-        // Use coinValue from dry run instead of ytReward for the comparison
         if (
           new Decimal(syCoinFromPTValue).gt(minValue) &&
           receivingType === "underlying"

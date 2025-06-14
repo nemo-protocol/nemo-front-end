@@ -31,6 +31,7 @@ export default function Remove({ coinConfig }: Props) {
   const [lpValue, setLpValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
   const [error, setError] = useState<string>()
+  const [ptValue, setPtValue] = useState("")
   const { account: currentAccount } = useWallet()
   const [warning, setWarning] = useState<string>()
   const [warningDetail, setWarningDetail] = useState<string>()
@@ -42,7 +43,6 @@ export default function Remove({ coinConfig }: Props) {
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
-  const [minSyOut, setMinSyOut] = useState("")
 
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
@@ -132,16 +132,15 @@ export default function Remove({ coinConfig }: Props) {
 
             if (action === "swap") {
               try {
-                const { outputValue: swappedOutputValue, syAmount:minSyOut } =
-                  await sellPtDryRun({
-                    slippage,
-                    vaultId,
-                    ptAmount,
-                    minSyOut: "0",
-                    receivingType,
-                    pyPositions: pyPositionData,
-                  })
-                setMinSyOut(minSyOut)
+                const { outputValue: swappedOutputValue } = await sellPtDryRun({
+                  slippage,
+                  vaultId,
+                  ptAmount,
+                  minSyOut: "0",
+                  receivingType,
+                  pyPositions: pyPositionData,
+                })
+
                 const targetValue = new Decimal(outputValue)
                   .add(swappedOutputValue)
                   .toFixed(decimal)
@@ -154,6 +153,9 @@ export default function Remove({ coinConfig }: Props) {
                 )
                 console.log("sellPtDryRun error", error)
               }
+            } else {
+              setPtValue(ptValue)
+              setTargetValue(outputValue)
             }
           } catch (errorMsg) {
             const { error: msg, detail } = parseErrorMessage(
@@ -173,8 +175,9 @@ export default function Remove({ coinConfig }: Props) {
       return getSyOut.cancel
     },
     [
-      slippage,
+      action,
       vaultId,
+      slippage,
       burnLpDryRun,
       sellPtDryRun,
       receivingType,
@@ -285,7 +288,11 @@ export default function Remove({ coinConfig }: Props) {
       }
     }
   }
-  // UI结构参考AddLiquidity
+
+  useEffect(() => {
+    console.log("action", action)
+  }, [action])
+
   return (
     <div className="flex flex-col items-center gap-y-6">
       <div className="flex gap-2 w-full">
@@ -334,53 +341,116 @@ export default function Remove({ coinConfig }: Props) {
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
         <ArrowUpDown className="w-5 h-5" />
       </div>
-      <AmountOutput
-        maturity={coinConfig?.maturity || "0"}
-        loading={isInputLoading}
-        name={
-          receivingType === "underlying"
-            ? coinConfig?.underlyingCoinName || ""
-            : coinConfig?.coinName || ""
-        }
-        logo={
-          receivingType === "underlying"
-            ? coinConfig?.underlyingCoinLogo
-            : coinConfig?.coinLogo
-        }
-        title={"RECEIVE"}
-        value={
-          isInputLoading ? undefined : formatDecimalValue(targetValue, decimal)
-        }
-        coinNameComponent={
-          <div className="flex items-center gap-x-1">
-            <TokenTypeSelect
-              value={receivingType}
-              options={[
-                {
-                  label: coinConfig?.underlyingCoinName || "",
-                  logo: coinConfig?.underlyingCoinLogo || "",
-                  value: "underlying",
-                },
-                {
-                  label: coinConfig?.coinName || "",
-                  logo: coinConfig?.coinLogo || "",
-                  value: "sy",
-                },
-              ]}
-              onChange={(value) => {
-                const newTargetValue = convertReceivingValue(
-                  targetValue,
-                  receivingType,
-                  value
-                )
-                setReceivingType(value as "underlying" | "sy")
-                setTargetValue(newTargetValue)
-              }}
-            />
-          </div>
-        }
-        warningDetail={warningDetail}
-      />
+      {action === "swap" ? (
+        <AmountOutput
+          maturity={coinConfig.maturity}
+          loading={isInputLoading}
+          name={
+            receivingType === "underlying"
+              ? coinConfig?.underlyingCoinName || ""
+              : coinConfig?.coinName || ""
+          }
+          logo={
+            receivingType === "underlying"
+              ? coinConfig?.underlyingCoinLogo
+              : coinConfig?.coinLogo
+          }
+          title={"RECEIVE"}
+          value={
+            isInputLoading
+              ? undefined
+              : formatDecimalValue(targetValue, decimal)
+          }
+          coinNameComponent={
+            <div className="flex items-center gap-x-1">
+              <TokenTypeSelect
+                value={receivingType}
+                options={[
+                  {
+                    label: coinConfig?.underlyingCoinName || "",
+                    logo: coinConfig?.underlyingCoinLogo || "",
+                    value: "underlying",
+                  },
+                  {
+                    label: coinConfig?.coinName || "",
+                    logo: coinConfig?.coinLogo || "",
+                    value: "sy",
+                  },
+                ]}
+                onChange={(value) => {
+                  const newTargetValue = convertReceivingValue(
+                    targetValue,
+                    receivingType,
+                    value
+                  )
+                  setReceivingType(value as "underlying" | "sy")
+                  setTargetValue(newTargetValue)
+                }}
+              />
+            </div>
+          }
+          warningDetail={warningDetail}
+        />
+      ) : (
+        <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
+          <AmountOutput
+            loading={isInputLoading}
+            warningDetail={warningDetail}
+            maturity={coinConfig.maturity}
+            className="bg-transparent rounded-none"
+            name={
+              receivingType === "underlying"
+                ? coinConfig?.underlyingCoinName || ""
+                : coinConfig?.coinName || ""
+            }
+            logo={
+              receivingType === "underlying"
+                ? coinConfig?.underlyingCoinLogo
+                : coinConfig?.coinLogo
+            }
+            title={"Underlying asset".toLocaleUpperCase()}
+            value={targetValue && formatDecimalValue(targetValue, decimal)}
+            coinNameComponent={
+              <div className="flex items-center gap-x-1">
+                <TokenTypeSelect
+                  value={receivingType}
+                  options={[
+                    {
+                      label: coinConfig.underlyingCoinName,
+                      logo: coinConfig.underlyingCoinLogo,
+                      value: "underlying",
+                    },
+                    {
+                      label: coinConfig.coinName,
+                      logo: coinConfig.coinLogo,
+                      value: "sy",
+                    },
+                  ]}
+                  onChange={(value) => {
+                    const newTargetValue = convertReceivingValue(
+                      targetValue,
+                      receivingType,
+                      value
+                    )
+                    setReceivingType(value as "underlying" | "sy")
+                    setTargetValue(newTargetValue)
+                  }}
+                />
+              </div>
+            }
+          />
+          <AmountOutput
+            loading={isInputLoading}
+            maturity={coinConfig.maturity}
+            className="bg-transparent rounded-none"
+            name={`PT ${coinConfig.coinName}`}
+            logo={coinConfig.ptTokenLogo}
+            title={"PT asset".toLocaleUpperCase()}
+            value={ptValue && formatDecimalValue(ptValue, decimal)}
+          />
+        </div>
+      )}
+
       <div className="w-full divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
         <p className="flex justify-between text-sm pb-2">
           <span>Pool APY Change</span>
