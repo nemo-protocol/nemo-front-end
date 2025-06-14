@@ -19,16 +19,9 @@ import useMintPYDryRun from "@/hooks/dryRun/useMintPYDryRun"
 import { AmountOutput } from "../../components/AmountOutput"
 import SlippageSetting from "../../components/SlippageSetting"
 import { useMemo, useState, useCallback, useEffect } from "react"
+import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import { mintPY, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
-import {
-  Select,
-  SelectItem,
-  SelectValue,
-  SelectGroup,
-  SelectTrigger,
-  SelectContent,
-} from "@/components/ui/select"
 
 interface Props {
   coinConfig: CoinConfig
@@ -270,77 +263,25 @@ export default function Mint({ coinConfig }: Props) {
         title={"Underlying asset".toUpperCase()}
         disabled={!isConnected}
         coinNameComponent={
-          <Select
-            value={tokenType.toString()}
-            onValueChange={(value) => {
+          <TokenTypeSelect
+            value={tokenType}
+            onChange={(value) => {
               setMintValue("")
-              setTokenType(Number(value))
+              setTokenType(value)
             }}
-          >
-            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-              <SelectValue>
-                <div className="flex items-center gap-x-1">
-                  <span
-                    className="max-w-20 truncate text-xl"
-                    title={
-                      tokenType === 0
-                        ? coinConfig?.underlyingCoinName
-                        : coinConfig?.coinName
-                    }
-                  >
-                    {tokenType === 0
-                      ? coinConfig?.underlyingCoinName
-                      : coinConfig?.coinName}
-                  </span>
-                  {(tokenType === 0
-                    ? coinConfig?.underlyingCoinLogo
-                    : coinConfig?.coinLogo) && (
-                    <img
-                      src={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinLogo
-                          : coinConfig?.coinLogo
-                      }
-                      alt={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinName
-                          : coinConfig?.coinName
-                      }
-                      className="size-4 sm:size-5"
-                    />
-                  )}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-light-gray/10">
-              <SelectGroup>
-                <SelectItem value="0" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.underlyingCoinName}</span>
-                    {coinConfig?.underlyingCoinLogo && (
-                      <img
-                        src={coinConfig.underlyingCoinLogo}
-                        alt={coinConfig.underlyingCoinName}
-                        className="size-4 sm:size-5"
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="1" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.coinName}</span>
-                    {coinConfig?.coinLogo && (
-                      <img
-                        src={coinConfig.coinLogo}
-                        alt={coinConfig.coinName}
-                        className="size-4 sm:size-5"
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            options={[
+              {
+                label: coinConfig?.underlyingCoinName || "",
+                logo: coinConfig?.underlyingCoinLogo || "",
+                value: 0,
+              },
+              {
+                label: coinConfig?.coinName || "",
+                logo: coinConfig?.coinLogo || "",
+                value: 1,
+              },
+            ]}
+          />
         }
       />
 

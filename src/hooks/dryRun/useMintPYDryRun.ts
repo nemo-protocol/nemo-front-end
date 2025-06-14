@@ -1,18 +1,17 @@
-import { useMutation } from "@tanstack/react-query"
-import { Transaction } from "@mysten/sui/transactions"
-import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
-import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo, MoveCallInfo } from "../types"
-import { ContractError } from "../types"
 import Decimal from "decimal.js"
 import type { CoinData } from "@/types"
+import { ContractError } from "../types"
 import type { PyPosition } from "../types"
-import useFetchPyPosition from "../useFetchPyPosition"
-import { depositSyCoin, mintPY, splitCoinHelper } from "@/lib/txHelper"
-import { getPriceVoucher } from "@/lib/txHelper/price"
-import { initPyPosition } from "@/lib/txHelper/position"
+import { useMutation } from "@tanstack/react-query"
 import { mintMultiSCoin } from "@/lib/txHelper/coin"
 import { NEED_MIN_VALUE_LIST } from "@/lib/constants"
+import { Transaction } from "@mysten/sui/transactions"
+import { getPriceVoucher } from "@/lib/txHelper/price"
+import type { DebugInfo, MoveCallInfo } from "../types"
+import { initPyPosition } from "@/lib/txHelper/position"
+import type { CoinConfig } from "@/queries/types/market"
+import { depositSyCoin, mintPY, splitCoinHelper } from "@/lib/txHelper"
+import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 
 type MintResult = {
   ptAmount: string
@@ -29,16 +28,15 @@ export default function useMintPYDryRun<T extends boolean = false>(
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
-  const { mutateAsync: fetchPyPositionAsync } = useFetchPyPosition(coinConfig)
 
   return useMutation({
     mutationFn: async ({
-      tokenType,
-      mintValue,
-      coinData,
-      slippage,
       vaultId,
-      pyPositions: inputPyPositions,
+      slippage,
+      coinData,
+      mintValue,
+      tokenType,
+      pyPositions,
     }: {
       slippage: string
       vaultId?: string
@@ -56,10 +54,6 @@ export default function useMintPYDryRun<T extends boolean = false>(
       if (!coinData?.length) {
         throw new Error("No available coins")
       }
-
-      const [pyPositions] = !inputPyPositions
-        ? ((await fetchPyPositionAsync()) as [PyPosition[]])
-        : [inputPyPositions]
 
       const moveCallInfos: MoveCallInfo[] = []
 
@@ -171,7 +165,9 @@ export default function useMintPYDryRun<T extends boolean = false>(
 
       const returnValue = { ptAmount, ytAmount }
 
-      return (debug ? [returnValue, dryRunDebugInfo] : returnValue) as DryRunResult<T>
+      return (
+        debug ? [returnValue, dryRunDebugInfo] : returnValue
+      ) as DryRunResult<T>
     },
   })
 }

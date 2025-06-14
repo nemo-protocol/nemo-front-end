@@ -39,9 +39,11 @@ export const AmountOutput = ({
 
         <span className="mt-2 text-xl font-medium text-white flex items-center gap-x-2">
           {loading ? (
-            <Skeleton className="h-7  sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
+            <Skeleton className="h-7 sm:h-8 w-36 sm:w-48 bg-[#FCFCFC]/[0.03]" />
           ) : (
-            value ?? "--"
+            <span className={`${value ? "text-white" : "text-light-gray/40"}`}>
+              {value || "0"}
+            </span>
           )}
         </span>
         {warningDetail && (

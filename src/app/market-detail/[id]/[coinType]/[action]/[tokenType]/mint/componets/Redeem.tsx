@@ -1,25 +1,25 @@
 import Decimal from "decimal.js"
 import { network } from "@/config"
-import { useMemo, useState, useCallback, useEffect } from "react"
-import { Transaction } from "@mysten/sui/transactions"
-import usePyPositionData from "@/hooks/usePyPositionData"
 import { ArrowUpDown } from "lucide-react"
-import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
-import { parseErrorMessage } from "@/lib/errorMapping"
-import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
+import { ContractError } from "@/hooks/types"
+import { CoinConfig } from "@/queries/types/market"
 import { useWallet } from "@nemoprotocol/wallet-kit"
-import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
+import { showTransactionDialog } from "@/lib/dialog"
+import AmountInput from "../../components/AmountInput"
+import { Transaction } from "@mysten/sui/transactions"
+import { parseErrorMessage } from "@/lib/errorMapping"
+import { getPriceVoucher } from "@/lib/txHelper/price"
+import { useCalculatePtYt } from "@/hooks/usePtYtRatio"
+import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
+import ActionButton from "../../components/ActionButton"
+import { initPyPosition } from "@/lib/txHelper/position"
+import usePyPositionData from "@/hooks/usePyPositionData"
 import { debounce, formatDecimalValue } from "@/lib/utils"
 import useMarketStateData from "@/hooks/useMarketStateData"
-import { ContractError } from "@/hooks/types"
-import { showTransactionDialog } from "@/lib/dialog"
-import { getPriceVoucher } from "@/lib/txHelper/price"
-import { CoinConfig } from "@/queries/types/market"
-import AmountInput from "../../components/AmountInput"
 import { AmountOutput } from "../../components/AmountOutput"
-import ActionButton from "../../components/ActionButton"
+import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
+import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
-import { initPyPosition } from "@/lib/txHelper/position"
 
 interface Props {
   coinConfig: CoinConfig
@@ -107,7 +107,17 @@ export default function Redeem({ coinConfig }: Props) {
               ytAmount: amount,
               pyPositions: pyPositionData,
             })
-            setSyValue(syValue)
+
+            if (receivingType === "underlying") {
+              setSyValue(
+                new Decimal(syValue)
+                  .mul(coinConfig.conversionRate)
+                  .div(new Decimal(10).pow(coinConfig.decimal))
+                  .toFixed(decimal)
+              )
+            } else {
+              setSyValue(syValue)
+            }
           } catch (error) {
             console.error("Dry run error:", error)
             setSyValue("")

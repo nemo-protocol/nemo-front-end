@@ -1,15 +1,14 @@
+import Decimal from "decimal.js"
+import { ContractError } from "../types"
+import type { DebugInfo } from "../types"
+import type { PyPosition } from "../types"
 import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
-import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
-import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo } from "../types"
-import { ContractError } from "../types"
-import type { PyPosition } from "../types"
-import useFetchPyPosition from "../useFetchPyPosition"
-import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
 import { getPriceVoucher } from "@/lib/txHelper/price"
+import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
+import type { CoinConfig } from "@/queries/types/market"
 import { initPyPosition } from "@/lib/txHelper/position"
-import Decimal from "decimal.js"
+import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 
 type RedeemResult = {
   syValue: string
@@ -26,13 +25,12 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
-  const { mutateAsync: fetchPyPositionAsync } = useFetchPyPosition(coinConfig)
 
   return useMutation({
     mutationFn: async ({
       ptAmount,
       ytAmount,
-      pyPositions: inputPyPositions,
+      pyPositions,
     }: {
       ptAmount: string
       ytAmount: string
@@ -44,10 +42,6 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
       if (!coinConfig) {
         throw new Error("Please select a pool")
       }
-
-      const [pyPositions] = !inputPyPositions
-        ? ((await fetchPyPositionAsync()) as [PyPosition[]])
-        : [inputPyPositions]
 
       const tx = new Transaction()
       tx.setSender(address)
@@ -96,7 +90,7 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
           { name: "price_voucher", value: "priceVoucher" },
           {
             name: "py_position",
-            value: created ? "pyPosition" : pyPositions[0].id,
+            value: created ? "pyPosition" : pyPosition,
           },
           { name: "py_state", value: coinConfig.pyStateId },
           {
