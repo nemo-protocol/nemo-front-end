@@ -186,9 +186,9 @@ export function APYTooltip({
           </div>
 
           {/* Total APY 区块 */}
-          <div className="flex flex-row items-center justify-between pt-4">
-            <span className="font-bold text-base text-white">Total APY</span>
-            <span className="font-mono text-lg font-bold text-white">
+          <div className="flex flex-row items-center justify-between pt-4 text-sm text-white">
+            <span>Total APY</span>
+            <span>
               {config.poolApy
                 ? `${formatLargeNumber(config.poolApy, 6)}%`
                 : "--"}

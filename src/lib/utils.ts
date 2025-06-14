@@ -51,9 +51,10 @@ export const formatDecimalValue = (
 ): string => {
   try {
     const value = _value instanceof Decimal ? _value : new Decimal(_value || 0)
-    return value.decimalPlaces() > decimal
-      ? value.toFixed(Number(decimal))
-      : value.toFixed(value.decimalPlaces())
+    return value.toNumber().toLocaleString('en-US', {
+      minimumFractionDigits: decimal,
+      maximumFractionDigits: decimal
+    })
   } catch (error) {
     return "0"
   }
@@ -303,16 +304,20 @@ export const formatLargeNumber = (
     }
 
     if (abs.lessThan(1000000)) {
-      return formatDecimalValue(num, decimals)
+      return num.toNumber().toLocaleString('en-US', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      })
     }
 
     const suffixes = ["", "M", "B", "T"]
     const magnitude = Math.min(Math.floor(abs.log(1000000).toNumber()), 3)
+    const scaledValue = num.div(new Decimal(1000000).pow(magnitude))
 
-    return formatDecimalValue(
-      num.div(new Decimal(1000000).pow(magnitude)),
-      decimals
-    ).concat(suffixes[magnitude])
+    return scaledValue.toNumber().toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    }).concat(suffixes[magnitude])
   } catch {
     return "0"
   }
@@ -389,8 +394,7 @@ export function shortenAddress(
   return `${addr.slice(0, left)}…${addr.slice(-right)}`
 }
 
-
 export function truncate(str: string | undefined | null, len = 10): string {
-  if (!str) return ''                     // 处理 undefined / null
-  return str.length > len ? str.slice(0, len) + '…' : str
+  if (!str) return "" // 处理 undefined / null
+  return str.length > len ? str.slice(0, len) + "…" : str
 }

@@ -390,25 +390,25 @@ export default function AddLiquidity({ coinConfig }: Props) {
       {/* 二级Tab */}
       <div className="flex gap-2 w-full">
         <button
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            action === "mint"
-              ? "bg-white/10 text-white"
-              : "bg-transparent text-white/40 hover:text-white/80"
-          }`}
-          onClick={() => setAction("mint")}
-        >
-          PROVIDE LIQUIDITY
-        </button>
-        <button
           onClick={() => setAction("add")}
-          disabled={marketStateData?.lpSupply === "0"}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
             action === "add"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
-          } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
+          }`}
         >
-          LP POSITION
+          {`SWAP & SUPPLY`.toLocaleUpperCase()}
+        </button>
+        <button
+          disabled={marketStateData?.lpSupply === "0"}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
+            action === "mint"
+              ? "bg-white/10 text-white"
+              : "bg-transparent text-white/40 hover:text-white/80"
+          }  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
+          onClick={() => setAction("mint")}
+        >
+          {`MINT & SUPPLY`.toLocaleUpperCase()}
         </button>
       </div>
 
