@@ -5,7 +5,6 @@ import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
 import { ArrowUpDown } from "lucide-react"
-import dayjs from "dayjs"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
@@ -31,14 +30,7 @@ import AmountInput from "../../components/AmountInput"
 import ActionButton from "../../components/ActionButton"
 import { AmountOutput } from "../../components/AmountOutput"
 import SlippageSetting from "../../components/SlippageSetting"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 
 import {
   initPyPosition,
@@ -503,83 +495,25 @@ export default function Buy({ coinConfig }: Props) {
         errorDetail={errorDetail}
         onChange={(value) => setSwapValue(value)}
         coinNameComponent={
-          <Select
-            value={tokenType.toString()}
-            onValueChange={(value) => {
+          <TokenTypeSelect
+            value={tokenType}
+            options={[
+              {
+                label: coinConfig?.underlyingCoinName || "",
+                logo: coinConfig?.underlyingCoinLogo || "",
+                value: 0,
+              },
+              {
+                label: coinConfig?.coinName || "",
+                logo: coinConfig?.coinLogo || "",
+                value: 1,
+              },
+            ]}
+            onChange={(value) => {
               setSwapValue("")
-              setTokenType(Number(value))
+              setTokenType(value)
             }}
-          >
-            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-              <SelectValue>
-                <div className="flex items-center gap-x-1">
-                  <span
-                    className="max-w-20 truncate text-xl"
-                    title={
-                      tokenType === 0
-                        ? coinConfig?.underlyingCoinName
-                        : coinConfig?.coinName
-                    }
-                  >
-                    {tokenType === 0
-                      ? coinConfig?.underlyingCoinName
-                      : coinConfig?.coinName}
-                  </span>
-                  {(tokenType === 0
-                    ? coinConfig?.underlyingCoinLogo
-                    : coinConfig?.coinLogo) && (
-                    <Image
-                      src={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinLogo
-                          : coinConfig?.coinLogo
-                      }
-                      alt={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinName
-                          : coinConfig?.coinName
-                      }
-                      className="size-4 sm:size-5"
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-light-gray/10">
-              <SelectGroup>
-                <SelectItem value="0" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.underlyingCoinName}</span>
-                    {coinConfig?.underlyingCoinLogo && (
-                      <Image
-                        src={coinConfig.underlyingCoinLogo}
-                        alt={coinConfig.underlyingCoinName}
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="1" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.coinName}</span>
-                    {coinConfig?.coinLogo && (
-                      <Image
-                        src={coinConfig.coinLogo}
-                        alt={coinConfig.coinName}
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          />
         }
       />
 

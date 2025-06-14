@@ -18,16 +18,8 @@ import { CoinConfig } from "@/queries/types/market"
 import AmountInput from "../../components/AmountInput"
 import { AmountOutput } from "../../components/AmountOutput"
 import ActionButton from "../../components/ActionButton"
-import {
-  Select,
-  SelectItem,
-  SelectValue,
-  SelectGroup,
-  SelectTrigger,
-  SelectContent,
-} from "@/components/ui/select"
+import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import { initPyPosition } from "@/lib/txHelper/position"
-import Image from "next/image"
 
 interface Props {
   coinConfig: CoinConfig
@@ -240,7 +232,7 @@ export default function Redeem({ coinConfig }: Props) {
           isConnected={isConnected}
           price={ptYtData?.ptPrice}
           onChange={setRedeemValue}
-          logo={coinConfig.coinLogo}
+          logo={coinConfig.ptTokenLogo}
           name={`PT ${coinConfig.coinName}`}
           className="bg-transparent rounded-none"
           title={"Principle Token".toUpperCase()}
@@ -257,7 +249,7 @@ export default function Redeem({ coinConfig }: Props) {
           isConnected={isConnected}
           onChange={setRedeemValue}
           price={ptYtData?.ytPrice}
-          logo={coinConfig.coinLogo}
+          logo={coinConfig.ytTokenLogo}
           name={`YT ${coinConfig.coinName}`}
           title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"
@@ -278,83 +270,25 @@ export default function Redeem({ coinConfig }: Props) {
             : coinConfig.coinLogo
         }
         coinNameComponent={
-          <Select
-            value={receivingType.toString()}
-            onValueChange={(value) => {
+          <TokenTypeSelect
+            value={receivingType}
+            options={[
+              {
+                label: coinConfig?.underlyingCoinName || "",
+                logo: coinConfig?.underlyingCoinLogo || "",
+                value: "underlying",
+              },
+              {
+                label: coinConfig?.coinName || "",
+                logo: coinConfig?.coinLogo || "",
+                value: "sy",
+              },
+            ]}
+            onChange={(value) => {
               setRedeemValue("")
               setReceivingType(value as "underlying" | "sy")
             }}
-          >
-            <SelectTrigger className="border-none focus:ring-0 p-0 h-auto focus:outline-none bg-transparent text-sm sm:text-base w-fit">
-              <SelectValue>
-                <div className="flex items-center gap-x-1">
-                  <span
-                    className="max-w-20 truncate text-xl"
-                    title={
-                      receivingType === "underlying"
-                        ? coinConfig?.underlyingCoinName
-                        : coinConfig?.coinName
-                    }
-                  >
-                    {receivingType === "underlying"
-                      ? coinConfig?.underlyingCoinName
-                      : coinConfig?.coinName}
-                  </span>
-                  {(receivingType === "underlying"
-                    ? coinConfig?.underlyingCoinLogo
-                    : coinConfig?.coinLogo) && (
-                    <Image
-                      src={
-                        receivingType === "underlying"
-                          ? coinConfig?.underlyingCoinLogo
-                          : coinConfig?.coinLogo
-                      }
-                      alt={
-                        receivingType === "underlying"
-                          ? coinConfig?.underlyingCoinName
-                          : coinConfig?.coinName
-                      }
-                      className="size-4 sm:size-5"
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent className="border-none outline-none bg-light-gray/10">
-              <SelectGroup>
-                <SelectItem value="0" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.underlyingCoinName}</span>
-                    {coinConfig?.underlyingCoinLogo && (
-                      <Image
-                        src={coinConfig.underlyingCoinLogo}
-                        alt={coinConfig.underlyingCoinName}
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-                <SelectItem value="1" className="cursor-pointer text-white ">
-                  <div className="flex items-center gap-x-1">
-                    <span>{coinConfig?.coinName}</span>
-                    {coinConfig?.coinLogo && (
-                      <Image
-                        src={coinConfig.coinLogo}
-                        alt={coinConfig.coinName}
-                        className="size-4 sm:size-5"
-                        width={20}
-                        height={20}
-                      />
-                    )}
-                  </div>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          />
         }
       />
       <ActionButton

@@ -44,7 +44,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
   const [lpFeeAmount, setLpFeeAmount] = useState<string>()
   const [errorDetail, setErrorDetail] = useState<string>()
   const [isCalculating, setIsCalculating] = useState(false)
-  const [action, setAction] = useState<"mint" | "add">("mint")
+  const [action, setAction] = useState<"mint" | "add">("add")
   const [addType, setAddType] = useState<"mint" | "seed" | "add">()
   const { account: currentAccount, signAndExecuteTransaction } = useWallet()
 

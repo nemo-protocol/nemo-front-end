@@ -321,7 +321,7 @@ export default function Remove({ coinConfig }: Props) {
         isConnected={isConnected}
         errorDetail={errorDetail}
         coinBalance={lpCoinBalance}
-        logo={coinConfig?.coinLogo}
+        logo={coinConfig?.lpTokenLogo}
         name={`LP ${coinConfig?.coinName}`}
         title={"Remove Liquidity".toUpperCase()}
         onChange={setLpValue}
