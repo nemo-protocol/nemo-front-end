@@ -63,10 +63,13 @@ export function useEstimateLpOutDryRun(
           ? (Math.sqrt(Number(ptValue) * Number(syValue)) - 1000).toString()
           : (await queryLpOut({ ptValue, syValue }))[0]
 
+      const lpValue = new Decimal(lpAmount)
+        .div(10 ** Number(coinConfig?.decimal))
+        .toString()
+
       return {
-        lpAmount: new Decimal(lpAmount)
-          .div(10 ** Number(coinConfig?.decimal))
-          .toString(),
+        lpAmount,
+        lpValue,
         ptValue,
         syValue,
         syForPtValue,

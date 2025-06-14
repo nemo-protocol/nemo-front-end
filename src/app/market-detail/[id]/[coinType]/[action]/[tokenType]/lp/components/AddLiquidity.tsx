@@ -39,8 +39,9 @@ export default function AddLiquidity({ coinConfig }: Props) {
   const [addValue, setAddValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
   const [isAdding, setIsAdding] = useState(false)
+  const [ytValue, setYtValue] = useState<string>()
+  const [lpValue, setLpValue] = useState<string>()
   const [tokenType, setTokenType] = useState<number>(0)
-  const [lpAmount, setLpAmount] = useState<string>()
   const [lpFeeAmount, setLpFeeAmount] = useState<string>()
   const [errorDetail, setErrorDetail] = useState<string>()
   const [isCalculating, setIsCalculating] = useState(false)
@@ -219,7 +220,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
       addType &&
       address &&
       slippage &&
-      lpAmount &&
+      lpValue &&
       coinType &&
       coinConfig &&
       conversionRate &&
@@ -238,7 +239,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
           pyPositions: pyPositionData,
         })
 
-        const minLpAmount = new Decimal(lpAmount)
+        const minLpAmount = new Decimal(lpValue)
           .mul(10 ** decimal)
           .mul(1 - new Decimal(slippage).div(100).toNumber())
           .toFixed(0)
@@ -336,6 +337,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
         try {
           calculateLpAmount(
             {
+              action,
               vaultId,
               decimal,
               slippage,
@@ -343,7 +345,6 @@ export default function AddLiquidity({ coinConfig }: Props) {
               tokenType,
               inputAmount,
               pyPositionData,
-              action,
             },
             {
               onSuccess: (result) => {
@@ -351,9 +352,12 @@ export default function AddLiquidity({ coinConfig }: Props) {
                 setRatio(result.ratio)
                 setError(result.error)
                 setAddType(result.addType)
-                setLpAmount(result.lpAmount)
+                setLpValue(result.lpValue)
                 setLpFeeAmount(result.lpFeeAmount)
                 setErrorDetail(result.errorDetail)
+                if (result.ytValue) {
+                  setYtValue(result.ytValue)
+                }
               },
               onSettled: () => {
                 setIsCalculating(false)
@@ -364,7 +368,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
           setIsCalculating(false)
         }
       } else {
-        setLpAmount(undefined)
+        setLpValue(undefined)
       }
     }, 500)
 
@@ -384,6 +388,12 @@ export default function AddLiquidity({ coinConfig }: Props) {
     marketStateData,
     calculateLpAmount,
   ])
+
+  useEffect(() => {
+    if (marketStateData?.lpSupply === "0") {
+      setAction("mint")
+    }
+  }, [marketStateData?.lpSupply])
 
   return (
     <div className="flex flex-col items-center gap-y-6">
@@ -456,16 +466,46 @@ export default function AddLiquidity({ coinConfig }: Props) {
         <ArrowUpDown className="w-5 h-5" />
       </div>
 
-      <AmountOutput
-        maturity={maturity}
-        loading={isCalculating}
-        logo={coinConfig.lpTokenLogo}
-        name={`LP ${coinConfig.coinName}`}
-        title={"LP Position".toUpperCase()}
-        value={
-          !addValue || !decimal ? "--" : formatDecimalValue(lpAmount, decimal)
-        }
-      />
+      {action === "add" ? (
+        <AmountOutput
+          maturity={maturity}
+          loading={isCalculating}
+          logo={coinConfig.lpTokenLogo}
+          name={`LP ${coinConfig.coinName}`}
+          title={"LP Position".toUpperCase()}
+          value={
+            !lpValue || !decimal ? "" : formatDecimalValue(lpValue, decimal)
+          }
+        />
+      ) : (
+        <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
+          <AmountOutput
+            maturity={maturity}
+            loading={isCalculating}
+            logo={coinConfig.ytTokenLogo}
+            name={`Yield ${coinConfig.coinName}`}
+            title={"Yield bonus".toUpperCase()}
+            className="bg-transparent rounded-none"
+            value={
+              !ytValue || !decimal ? "" : formatDecimalValue(ytValue, decimal)
+            }
+          />
+          <div className="px-4">
+            <div className="border-t border-light-gray/10" />
+          </div>
+          <AmountOutput
+            maturity={maturity}
+            loading={isCalculating}
+            logo={coinConfig.lpTokenLogo}
+            name={`LP ${coinConfig.coinName}`}
+            title={"LP Position".toUpperCase()}
+            className="bg-transparent rounded-none"
+            value={
+              !lpValue || !decimal ? "" : formatDecimalValue(lpValue, decimal)
+            }
+          />
+        </div>
+      )}
 
       <div className="w-full divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
         <p className="flex justify-between text-sm pb-2">

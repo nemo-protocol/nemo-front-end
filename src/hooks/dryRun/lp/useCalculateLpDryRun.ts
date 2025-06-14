@@ -12,8 +12,8 @@ import { useMutation, UseMutationResult } from "@tanstack/react-query"
 import useAddLiquiditySingleSyDryRun from "./useAddLiquiditySingleSyDryRun"
 
 interface CalculateLpAmountResult {
-  lpAmount?: string
-  ytAmount?: string
+  lpValue?: string
+  ytValue?: string
   lpFeeAmount?: string
   ratio?: string
   error?: string
@@ -48,6 +48,7 @@ export function useCalculateLpAmount(
 
   return useMutation({
     mutationFn: async ({
+      action,
       vaultId,
       decimal,
       slippage,
@@ -55,7 +56,6 @@ export function useCalculateLpAmount(
       tokenType,
       inputAmount,
       pyPositionData,
-      action,
     }: CalculateLpAmountParams): Promise<CalculateLpAmountResult> => {
       if (!coinConfig) {
         throw new Error("Please select a pool")
@@ -105,8 +105,8 @@ export function useCalculateLpAmount(
             lpFeeAmount: undefined,
             errorDetail: undefined,
             ratio: new Decimal(lpAmount).div(inputAmount).toString(),
-            lpAmount: new Decimal(lpAmount).div(10 ** decimal).toFixed(decimal),
-            ytAmount: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
+            lpValue: new Decimal(lpAmount).div(10 ** decimal).toFixed(decimal),
+            ytValue: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
             addType: "seed",
           }
         } else if (marketState && action === "mint") {
@@ -123,8 +123,8 @@ export function useCalculateLpAmount(
           return {
             addType: "mint",
             ratio: new Decimal(lpAmount).div(inputAmount).toString(),
-            lpAmount: new Decimal(lpAmount).div(10 ** decimal).toFixed(decimal),
-            ytAmount: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
+            lpValue: new Decimal(lpAmount).div(10 ** decimal).toFixed(decimal),
+            ytValue: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
           }
         } else if (action === "add") {
           try {
@@ -139,8 +139,8 @@ export function useCalculateLpAmount(
               })
 
             return {
+              lpValue,
               addType: "add",
-              lpAmount: lpValue,
               lpFeeAmount: tradeFee,
               ratio: new Decimal(lpAmount).div(inputAmount).toString(),
             }
@@ -152,10 +152,10 @@ export function useCalculateLpAmount(
         console.log("errorMsg", errorMsg)
         try {
           const { error } = parseErrorMessage((errorMsg as Error).message)
-          const { lpAmount } = await estimateLpOut(inputAmount)
+          const { lpValue, lpAmount } = await estimateLpOut(inputAmount)
           return {
             error,
-            lpAmount,
+            lpValue,
             ratio: new Decimal(lpAmount).div(inputAmount).toString(),
           }
         } catch (errorMsg) {
@@ -166,7 +166,7 @@ export function useCalculateLpAmount(
           }
         }
       }
-      
+
       return {
         error: "Unknown error occurred",
       }
