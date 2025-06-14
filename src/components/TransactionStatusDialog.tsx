@@ -5,37 +5,38 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogContent,
-  AlertDialogDescription,
 } from "@/components/ui/alert-dialog"
+import Image from "next/image"
+import { ExternalLink } from "lucide-react"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import Image from "next/image"
 
 interface TransactionStatusDialogProps {
   open: boolean
-  status?: "Success" | "Failed"
-  network?: string
   txId: string
   message?: string
+  network?: string
   onClose: () => void
+  status?: "Success" | "Failed"
 }
 
 // TODO: T0: add global toast
 const TransactionStatusDialog: React.FC<TransactionStatusDialogProps> = ({
   open,
   status,
-  network = "mainnet",
   txId,
   message,
+  network,
   onClose,
 }) => {
   const ViewDetailsPopover = () => (
     <Popover>
-      <PopoverTrigger className="text-[#8FB5FF] underline">
-        View details
+      <PopoverTrigger className="flex items-center gap-1 text-light-gray/40 underline underline-offset-2 text-xs transition-colors">
+        REVIEW TX DETAILS
+        <ExternalLink size={18} className="ml-1" />
       </PopoverTrigger>
       <PopoverContent className="w-48 p-2 bg-[#1A1B23] border-none rounded-xl">
         <div className="flex flex-col gap-2">
@@ -80,49 +81,32 @@ const TransactionStatusDialog: React.FC<TransactionStatusDialogProps> = ({
 
   return (
     <AlertDialog open={open}>
-      <AlertDialogContent className="bg-[#0e0f15] border-none rounded-3xl">
+      <AlertDialogContent className="bg-light-gray/[0.03] border border-[#6D7177] rounded-3xl px-6 max-w-[480px] w-full shadow-2xl backdrop-blur-[25px]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-center text-white">
-            {status}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="flex flex-col items-center">
+          <div className="flex flex-col items-center w-full">
+            <div className="text-light-gray/40 text-xs  mb-6 text-center">
+              {status === "Success"
+                ? "THE FOLLOWING TRANSACTIONS HAVE BEEN COMPLETED:"
+                : "YOU MAY ENCOUNTER SOME ERRORS."}
+            </div>
+            <AlertDialogTitle className="text-white text-[56px] text-center mb-5 font-serif font-normal">
+              {status === "Success" ? "Successful!" : "Transaction Error."}
+            </AlertDialogTitle>
             {status === "Success" ? (
-              <Image
-                src="/assets/images/success.svg"
-                alt="success"
-                className="size-10"
-                width={40}
-                height={40}
-              />
+              <ViewDetailsPopover />
             ) : (
-              <Image
-                src="/assets/images/fail.svg"
-                alt="fail"
-                className="size-10"
-                width={40}
-                height={40}
-              />
+              <>
+                <span className="text-[#FF2E54] text-xs">
+                  Request Signature: {message}
+                </span>
+                {/* {txId && <ViewDetailsPopover />} */}
+              </>
             )}
-            {status === "Success" && (
-              <div className="py-2 flex flex-col gap-y-1 items-center">
-                <div className="text-white/50">Transaction submitted!</div>
-                <ViewDetailsPopover />
-              </div>
-            )}
-            {status === "Failed" && (
-              <div className="py-2 flex flex-col gap-y-1 items-center">
-                <div className="text-red-400">Transaction Error</div>
-                <div className="text-red-500 max-w-[446px] break-words whitespace-pre-wrap">
-                  {message}
-                </div>
-                {txId && <ViewDetailsPopover />}
-              </div>
-            )}
-          </AlertDialogDescription>
+          </div>
         </AlertDialogHeader>
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center mt-[46px]">
           <button
-            className="text-white w-36 rounded-3xl bg-[#0F60FF] py-1.5"
+            className="text-white w-full max-w-[400px] text-sm rounded-full bg-[#256DFF] py-4 hover:bg-[#1A4FCC] transition-colors"
             onClick={onClose}
           >
             OK
