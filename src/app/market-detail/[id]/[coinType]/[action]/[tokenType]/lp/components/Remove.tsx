@@ -252,7 +252,6 @@ export default function Remove({ coinConfig }: Props) {
         setIsRemoving(true)
         const lpAmount = new Decimal(lpValue).mul(10 ** decimal).toFixed(0)
         const { digest } = await redeemLp({
-          action,
           vaultId,
           slippage,
           lpAmount,
