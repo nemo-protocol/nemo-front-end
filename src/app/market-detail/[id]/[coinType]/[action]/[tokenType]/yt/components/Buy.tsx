@@ -504,7 +504,7 @@ export default function Buy({ coinConfig }: Props) {
                     <span>{coinConfig?.coinName}</span>
                     {coinConfig?.ytTokenLogo && (
                       <Image
-                        src={coinConfig.ytTokenLogo}
+                        src={coinConfig.coinLogo}
                         alt={coinConfig.coinName}
                         className="size-4 sm:size-5"
                         width={20}

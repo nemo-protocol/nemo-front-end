@@ -22,6 +22,7 @@ import { useMemo, useState, useEffect, useCallback } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
+import Image from "next/image"
 
 interface Props {
   coinConfig: CoinConfig
@@ -324,6 +325,7 @@ export default function Remove({ coinConfig }: Props) {
         warning={warning}
         amount={lpValue}
         isLoading={isLoading}
+        onChange={setLpValue}
         setWarning={setWarning}
         isConnected={isConnected}
         errorDetail={errorDetail}
@@ -331,12 +333,6 @@ export default function Remove({ coinConfig }: Props) {
         logo={coinConfig?.lpTokenLogo}
         name={`LP ${coinConfig?.coinName}`}
         title={"Remove Liquidity".toUpperCase()}
-        onChange={setLpValue}
-        coinNameComponent={
-          <span className="text-sm sm:text-base max-w-40 truncate">
-            LP {coinConfig?.coinName}
-          </span>
-        }
       />
       <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
         <ArrowUpDown className="w-5 h-5" />
