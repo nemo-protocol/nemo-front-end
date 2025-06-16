@@ -3,12 +3,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Decimal from 'decimal.js';
 import { BaseRowProps } from '@/types/PortfolioRows';
-import { LpPosition } from '@/hooks/types';
+import { LpPosition, PyPosition } from '@/hooks/types';
 import { MarketStateMap } from '@/hooks/query/useMultiMarketState';
 import { RankedPortfolioItem, categories, isExpired } from './Assets';
 import dayjs from 'dayjs';
 import { formatPortfolioNumber, formatTVL } from '@/lib/utils';
 import { ArrowUpRight } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from '@/lib/constants';
+import useRedeemLp from '@/hooks/actions/useRedeemLp';
 
 export default function LPRow({
     item,
@@ -16,6 +19,7 @@ export default function LPRow({
     lpPositionsMap,
     lpReward,
     marketStates,
+    pyPositionsMap
 }: {
     item: RankedPortfolioItem;
     activeTab: {
@@ -26,6 +30,11 @@ export default function LPRow({
         lpBalance: string;
         lpPositions: LpPosition[];
     }>;
+    pyPositionsMap?: Record<string, {
+        ptBalance: string;
+        ytBalance: string;
+        pyPositions: PyPosition[];
+    }>
     lpReward?: Record<string, string>
     marketStates: MarketStateMap;
 }) {
@@ -39,6 +48,67 @@ export default function LPRow({
 
     const balance = new Decimal(lpPositionsMap?.[item.id]?.lpBalance || 0);
     const totalRew = new Decimal(item.lpTotalReward);
+    const [redeemLoading, setRedeemLoading] = useState(false)
+    const { mutateAsync: redeemLp } = useRedeemLp(item, marketStates[item.marketStateId])
+
+
+    const vaultId = useMemo(
+        () =>
+            item?.underlyingProtocol === "Cetus"
+                ? CETUS_VAULT_ID_LIST.find(
+                    (item1) => item1.coinType === item?.coinType,
+                )?.vaultId
+                : "",
+        [item],
+    )
+    const [minValue, setMinValue] = useState(0)
+
+    useEffect(() => {
+        if (item) {
+            const minValue = NEED_MIN_VALUE_LIST.find(
+                (item1) =>
+                    item1.provider === item.provider ||
+                    item1.coinType === item.coinType,
+            )?.minValue
+            if (minValue) {
+                setMinValue(minValue)
+            }
+        }
+    }, [item])
+
+    async function redeemLP() {
+        if (item.tradeStatus === "0") {
+            return
+        }
+        if (!pyPositionsMap?.[item.id]?.pyPositions) {
+            throw new Error("No PY positions found")
+        }
+        try {
+            setRedeemLoading(true)
+            const lpAmount = new Decimal(balance).mul(10 ** Number(item?.decimal)).toFixed(0)
+            const { digest } = await redeemLp({
+                vaultId,
+                slippage: "0.5",
+                coinConfig: item,
+                lpPositions: lpPositionsMap?.[item.id]?.lpPositions,
+                pyPositions: pyPositionsMap?.[item.id]?.pyPositions,
+                minValue,
+                lpAmount,
+                ytBalance: pyPositionsMap?.[item.id]?.ytBalance,
+            })
+            //   if (digest) setTxId(digest)
+            //   setOpen(true)
+            //   setStatus("Success")
+            //   setLpRedeemed(true)
+            // await refreshData()
+        } catch (error) {
+            //   setOpen(true)
+            //   setStatus("Failed")
+            //   setMessage((error as Error)?.message ?? error)
+        } finally {
+            setRedeemLoading(false)
+        }
+    }
 
     return (
         <tr>
@@ -136,10 +206,44 @@ export default function LPRow({
                         }`}
                 >
                     {expired ? (
-                        <>
-                            <img src="/redeem.svg" alt="" className="w-4 h-4" />
-                            Redeem
-                        </>
+                        <button
+                            disabled={redeemLoading}
+                            onClick={redeemLP} className='flex items-center gap-1'>
+
+                            {redeemLoading ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <svg
+                                        className="h-4 w-4 animate-spin text-white"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            className="opacity-25"
+                                        />
+
+                                        <path
+                                            d="M12 2 a 10 10 0 0 1 10 10"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            className="opacity-75"
+                                        />
+                                    </svg>
+                                    <span>Redeeming</span>
+                                </span>
+                            ) : <>
+                                <img src="/redeem.svg" alt="" className="w-4 h-4" />
+                                Redeem
+                            </>
+
+                            }
+                        </button>
                     ) : (
                         <Link href={`/market-detail/${item.id}/${item.coinType}/provide/pool`} className="inline-flex gap-1 items-center">
                             <ArrowUpRight className="w-4 h-4" />

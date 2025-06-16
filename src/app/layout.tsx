@@ -16,12 +16,32 @@ import { useEffect } from "react"
 import TransactionStatusDialog from "@/components/TransactionStatusDialog"
 import { useDialogStore } from "@/lib/dialog"
 import { TooltipProvider } from "@/components/ui/tooltip"
-
 const queryClient = new QueryClient()
 
+type Rpc = { id: string; name: string; url: string }
+export const RPC_LIST: Rpc[] = [
+  { id: "sui", name: "Sui Official", url: "https://fullnode.mainnet.sui.io/" },
+  {
+    id: "blockvision",
+    name: "BlockVision",
+    url: "https://sui-mainnet-endpoint.blockvision.org/",
+  },
+  { id: "suiscan", name: "SuiScan", url: "https://rpc-mainnet.suiscan.xyz/" },
+  { id: "suiet", name: "Suiet", url: "https://mainnet.suiet.app/" },
+  {
+    id: "blast",
+    name: "Blast",
+    url: "https://sui-mainnet.blastapi.io/5e2b3e4f-dc83-432b-86d1-70fb73e88187",
+  },
+]
+
+const current =
+  typeof window === 'undefined'
+    ? RPC_LIST[0].url
+    : localStorage.getItem('RPC_ENDPOINT') || RPC_LIST[0].url;
 const { networkConfig } = createNetworkConfig({
   mainnet: {
-    url: getFullnodeUrl("mainnet"),
+    url: current,
   },
   testnet: {
     url: getFullnodeUrl("testnet"),

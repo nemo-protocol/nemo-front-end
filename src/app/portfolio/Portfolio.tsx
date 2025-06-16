@@ -142,7 +142,7 @@ export default function PortfolioPage() {
             })
             filteredLists.lp.forEach((item) => {
                 _balance = _balance.add(new Decimal(lpPositionsMap[item.id]?.lpBalance || 0).mul(item.lpPrice) || 0)
-                lpReward && (marketStates[item.marketStateId].rewardMetrics.forEach(rewardMetric => {
+                lpReward && (marketStates[item.marketStateId]?.rewardMetrics.forEach(rewardMetric => {
 
                     _totalClaim = _totalClaim.add(new Decimal(lpReward[item.id + rewardMetric.tokenName]).mul(rewardMetric.tokenPrice))
                 }))

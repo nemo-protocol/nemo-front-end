@@ -224,7 +224,7 @@ export default function Assets({
                             onClick={() => setActiveTab(category)}
                             className={`h-8 px-2 cursor-pointer select-none rounded-[12px]
                         flex items-center justify-center font-[600]
-
+                        transition-colors
                         ${activeTab.key === category.key
                                     ? 'bg-gradient-to-r from-white/10 to-white/5 text-white'
                                     : 'text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5'}
@@ -271,7 +271,7 @@ export default function Assets({
                                 case 'pt':
                                     return (
                                         <PTRow
-                                            key={index}
+                                            key={crypto.randomUUID()}
                                             activeTab={activeTab}
                                             item={item}
                                             pyPositionsMap={pyPositionsMap}
@@ -281,7 +281,7 @@ export default function Assets({
                                 case 'yt':
                                     return (
                                         <YTRow
-                                            key={index}
+                                            key={crypto.randomUUID()}
                                             activeTab={activeTab}
                                             item={item}
                                             pyPositionsMap={pyPositionsMap}
@@ -291,9 +291,10 @@ export default function Assets({
                                 case 'lp':
                                     return (
                                         <LPRow
-                                            key={index}
+                                            key={crypto.randomUUID()}
                                             activeTab={activeTab}
                                             item={item}
+                                            pyPositionsMap={pyPositionsMap}
                                             lpPositionsMap={lpPositionsMap}
                                             lpReward={lpReward}
                                             marketStates={marketStates}

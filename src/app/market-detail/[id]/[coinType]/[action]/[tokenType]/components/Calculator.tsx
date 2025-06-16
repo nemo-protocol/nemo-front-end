@@ -231,8 +231,8 @@ export default function Calculator({
                     className="
         hidden group-hover:block
         absolute top-0 left-0.5 ml-4 w-[480px]
-        rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur
-        px-2.5 py-3.5 text-sm z-10 animate-fade-in
+        rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur animate-fade-in
+        px-2.5 py-3.5 text-sm z-10 
       "
                   >
                     The results show the values under the expected APY.
