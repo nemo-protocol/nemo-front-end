@@ -467,6 +467,7 @@ export default function Remove({ coinConfig }: Props) {
         onClick={remove}
         btnText={btnText}
         loading={isRemoving}
+        type="red"
         disabled={btnDisabled}
       />
     </div>

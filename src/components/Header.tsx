@@ -112,7 +112,7 @@ export default function Header({ className }: { className?: string }) {
           ></span>
           {location === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex text-white/60 items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
+              <DropdownMenuTrigger className="flex text-white/60 hover:text-white  transition-colors duration-200 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full px-2.5 py-2">
                 {currentAccount?.address ? (
                   <div className="size-4 bg-[#F80] rounded-full"></div>
                 ) : (
@@ -125,7 +125,7 @@ export default function Header({ className }: { className?: string }) {
                   />
                 )}
                 <span className="text-white/60">
-                  {truncateStr(currentAccount?.address || "", 8)}
+                  {truncateStr(currentAccount?.address || "", 4)}
                 </span>
                 <ChevronDown className="size-3" />
               </DropdownMenuTrigger>

@@ -14,6 +14,7 @@ import EmptyData from '@/components/ui/empty';
 import PTRow from './PTRow';
 import YTRow from './YTRow';
 import LPRow from './LPRow';
+import { useWallet } from '@nemoprotocol/wallet-kit';
 
 export const isExpired = (maturityTime: string) => {
     return dayjs().isAfter(dayjs(parseInt(maturityTime)));
@@ -122,7 +123,6 @@ export default function Assets({
                             totalReward = totalReward + Number(lpReward[item.id + rewardMetric.tokenName]) * Number(rewardMetric.tokenPrice)
                         })
                     }
-                    console.log(totalReward, Number(new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice)), 'sixu')
                     return ({
                         ...item,
                         listType: key,
@@ -204,7 +204,6 @@ export default function Assets({
             setEmpty(true);
             return;
         }
-
         const shouldBeEmpty =
             activeTab.key !== 'all' &&
             sortedList.every(item => item.listType !== activeTab.key);
@@ -212,7 +211,7 @@ export default function Assets({
         console.log(sortedList, shouldBeEmpty)
         setEmpty(shouldBeEmpty);
     }, [activeTab, sortedList]);
-   
+
     return (
         <div className="mt-2 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
             {/* Tabs */}
@@ -276,6 +275,7 @@ export default function Assets({
                                             activeTab={activeTab}
                                             item={item}
                                             pyPositionsMap={pyPositionsMap}
+                                            marketStates={marketStates}
                                         />
                                     );
                                 case 'yt':
@@ -303,7 +303,7 @@ export default function Assets({
                                     return null;
                             }
                         })}
-                        {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        {(loading) && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
                                 <td></td>
                                 <td></td>
@@ -319,7 +319,7 @@ export default function Assets({
                     </tbody>
 
                 </table>
-                <div className='w-full flex items-center'>{empty && <EmptyData />}</div>
+                <div className='w-full flex items-center'>{(empty) && <EmptyData />}</div>
             </div>
         </div >
     );

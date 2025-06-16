@@ -42,6 +42,7 @@ import { initPyPosition, redeemSyCoin, swapExactYtForSy } from "@/lib/txHelper"
 import { burnSCoin } from "@/lib/txHelper/coin"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import Image from "next/image"
+import Calculator from "../../components/Calculator"
 
 interface Props {
   coinConfig: CoinConfig
@@ -78,8 +79,8 @@ export default function Sell({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -347,9 +348,29 @@ export default function Sell({ coinConfig }: Props) {
     coinConfig?.coinPrice,
     coinConfig?.underlyingPrice,
   ])
+  const [open, setOpen] = useState(false)
+  const [calculatorInput, setCalculatorInput] = useState(targetValue)
+  useEffect(() => {
+    setCalculatorInput(targetValue)
+  }, [targetValue])
 
+  
   return (
     <div className="flex flex-col gap-6">
+      <Calculator
+        open={open}
+        inputYT={calculatorInput}
+        outputYT={Number(redeemValue)}
+        coinConfig={coinConfig}
+        onClose={() => setOpen(false)}
+        coinName={coinConfig?.underlyingCoinName}
+        rate={
+          ptYtData?.ytPrice &&
+          price &&
+          formatDecimalValue(new Decimal(1).div(ptYtData.ytPrice).mul(coinConfig?.underlyingPrice), 6)
+        }
+        setTradeValue={setCalculatorInput}
+      />
       <AmountInput
         error={error}
         price={price}
@@ -434,22 +455,22 @@ export default function Sell({ coinConfig }: Props) {
                       {(receivingType === "underlying"
                         ? coinConfig?.underlyingCoinLogo
                         : coinConfig?.coinLogo) && (
-                        <Image
-                          width={20}
-                          height={20}
-                          src={
-                            receivingType === "underlying"
-                              ? coinConfig?.underlyingCoinLogo
-                              : coinConfig?.coinLogo
-                          }
-                          alt={
-                            receivingType === "underlying"
-                              ? coinConfig?.underlyingCoinName
-                              : coinConfig?.coinName
-                          }
-                          className="size-5"
-                        />
-                      )}
+                          <Image
+                            width={20}
+                            height={20}
+                            src={
+                              receivingType === "underlying"
+                                ? coinConfig?.underlyingCoinLogo
+                                : coinConfig?.coinLogo
+                            }
+                            alt={
+                              receivingType === "underlying"
+                                ? coinConfig?.underlyingCoinName
+                                : coinConfig?.coinName
+                            }
+                            className="size-5"
+                          />
+                        )}
                     </div>
                   </SelectValue>
                 </SelectTrigger>
@@ -521,13 +542,32 @@ export default function Sell({ coinConfig }: Props) {
         <SlippageSetting slippage={slippage} setSlippage={setSlippage} />
       </div>
 
-      <ActionButton
-        btnText="Sell"
-        onClick={redeem}
-        loading={isRedeeming}
-        disabled={btnDisabled}
-        type="red"
-      />
+
+      <div className="flex gap-4">
+        <ActionButton
+          btnText="Sell"
+          onClick={redeem}
+          loading={isRedeeming}
+          disabled={btnDisabled}
+          type="red"
+        />
+        <div
+          className="px-4 sm:px-8 font-[500]  bg-[rgba(252,252,252,0.03)] transition hover:text-white/50 hover:bg-[rgba(252,252,252,0.01)] text-white rounded-full w-full h-[42px] text-sm sm:text-base cursor-pointer flex items-center justify-center gap-2"
+          onClick={() => {
+            setOpen(true)
+          }}
+        >
+          <Image
+            src={"/calculator.svg"}
+            alt={""}
+            width={16}
+            height={16}
+            className="shrink-0"
+          />
+          Calculate
+        </div>
+      </div>
+
     </div>
   )
 }

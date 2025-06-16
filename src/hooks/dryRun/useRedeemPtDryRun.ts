@@ -1,16 +1,18 @@
-import { useMutation } from "@tanstack/react-query"
-import { Transaction } from "@mysten/sui/transactions"
-import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
-import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo, MoveCallInfo, PyPosition } from "../types"
-import { ContractError } from "../types"
-import useFetchPyPosition from "../useFetchPyPosition"
-import { initPyPosition, redeemPy, redeemSyCoin } from "@/lib/txHelper"
-import { getPriceVoucher } from "@/lib/txHelper/price"
 import Decimal from "decimal.js"
-import { bcs } from "@mysten/sui/bcs"
+import { CoinData } from "@/types"
 import { debugLog } from "@/config"
+import { bcs } from "@mysten/sui/bcs"
+import { ContractError } from "../types"
 import { getCoinValue } from "@/lib/txHelper/coin"
+import { useMutation } from "@tanstack/react-query"
+import { getPriceVoucher } from "@/lib/txHelper/price"
+import { Transaction } from "@mysten/sui/transactions"
+import { redeemPy, redeemSyCoin, splitCoinHelper } from "@/lib/txHelper"
+import { initPyPosition } from "@/lib/txHelper/position"
+import type { CoinConfig } from "@/queries/types/market"
+import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
+import type { DebugInfo, MoveCallInfo, PyPosition } from "../types"
+import { burnPt } from "@/lib/txHelper/pt"
 
 type Result = { coinValue: string; coinAmount: string }
 
@@ -28,12 +30,13 @@ export default function useRedeemPtDryRun<T extends boolean = false>(
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
-  const { mutateAsync: fetchPyPositionAsync } =
-    useFetchPyPosition(outerCoinConfig)
 
   return useMutation({
     mutationFn: async (
-      { ptAmount }: { ptAmount: string },
+      {
+        ptCoins,
+        pyPositions,
+      }: { ptCoins: CoinData[]; pyPositions: PyPosition[] },
       innerConfig?: CoinConfig,
     ): Promise<DryRunResult<T>> => {
       if (!address) {
@@ -45,23 +48,47 @@ export default function useRedeemPtDryRun<T extends boolean = false>(
         throw new Error("Please select a pool")
       }
 
-      // Get existing py positions or create a new one
-      const [pyPositions] = (await fetchPyPositionAsync()) as [PyPosition[]]
+      const moveCallInfos: MoveCallInfo[] = []
 
       const tx = new Transaction()
       tx.setSender(address)
 
-      // Handle py position creation
-      let pyPosition
-      let created = false
-      if (!pyPositions?.length) {
-        created = true
-        pyPosition = initPyPosition(tx, coinConfig)
-      } else {
-        pyPosition = tx.object(pyPositions[0].id)
+      const [{ pyPosition, created }, pyPositionMoveCall] = initPyPosition({
+        tx,
+        coinConfig,
+        pyPositions,
+        returnDebugInfo: true,
+      })
+      moveCallInfos.push(pyPositionMoveCall)
+
+      const ptTokenAmount = ptCoins?.reduce(
+        (total, coin) => total.add(coin.balance),
+        new Decimal(0),
+      )
+
+      if (coinConfig?.ptTokenType && ptCoins?.length) {
+        const [ptCoin] = splitCoinHelper(
+          tx,
+          ptCoins,
+          [new Decimal(ptTokenAmount).toFixed(0)],
+          coinConfig.ptTokenType,
+        )
+        const [, burnPtMoveCall] = burnPt({
+          tx,
+          ptCoin,
+          coinConfig,
+          pyPosition,
+          returnDebugInfo: true,
+        })
+        moveCallInfos.push(burnPtMoveCall)
       }
 
-      const moveCallInfos: MoveCallInfo[] = []
+      const ptPositionAmount = pyPositions.reduce(
+        (total, pyPosition) => total.add(pyPosition.ptBalance),
+        new Decimal(0),
+      )
+
+      const ptAllAmount = ptPositionAmount.add(ptTokenAmount).toFixed(0)
 
       // Get price voucher
       const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
@@ -77,7 +104,7 @@ export default function useRedeemPtDryRun<T extends boolean = false>(
         tx,
         coinConfig,
         "0", // ytAmount
-        ptAmount, // ptAmount
+        ptAllAmount, // ptAmount
         priceVoucher,
         pyPosition,
         true, // returnDebugInfo
@@ -86,7 +113,13 @@ export default function useRedeemPtDryRun<T extends boolean = false>(
       moveCallInfos.push(redeemPyMoveCall)
 
       // Redeem the syCoin to get the yield token
-      const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
+      const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
+        tx,
+        coinConfig,
+        syCoin,
+        true,
+      )
+      moveCallInfos.push(redeemSyCoinMoveCall)
 
       // Get the value of the yield token
       const [, getCoinValueMoveCallInfo] = getCoinValue(

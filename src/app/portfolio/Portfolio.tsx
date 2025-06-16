@@ -41,7 +41,6 @@ export default function PortfolioPage() {
         }
         return "pt"
     }, [type])
-
     const { data: pyPositionsMap = {}, isLoading: isPositionsLoading } =
         useAllPyPositions(list)
     const { data: lpPositionsMap = {}, isLoading: isLpPositionsLoading } =
@@ -61,7 +60,8 @@ export default function PortfolioPage() {
             pt: list.filter((item) => {
                 // FIXME: get multi pt coin info
                 return (
-                    (!!item.ptTokenType ||
+                    (
+                        // !!item.ptTokenType ||
                         isValidAmount(pyPositionsMap[item.id]?.ptBalance)) && address
                 )
             }),
@@ -154,7 +154,7 @@ export default function PortfolioPage() {
         else if (!address) {
             !isLoading && setLoading(false)
         }
-    }, [lpReward, ytReward,filteredLists])
+    }, [lpReward, ytReward, filteredLists,address])
 
     return (
         <>
@@ -171,11 +171,11 @@ export default function PortfolioPage() {
                     <div className="grid grid-cols-2">
                         <div className="flex flex-col h-[182px] items-center">
                             <div className="text-[12px] font-[600] text-[#FCFCFC66]">Balance</div>
-                            {loading ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{formatTVL(balance)}</div>}
+                            {(loading ) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{formatTVL(balance)}</div>}
                         </div>
                         <div className="flex flex-col h-[182px] items-center">
                             <div className="text-[12px] font-[600] text-[#FCFCFC66]">Total Claimable Yield</div>
-                            {loading ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <><div className="text-[56px] font-serif font-Medium text-[#FCFCFC]">{formatTVL(totalClaim)}</div>
+                            {(loading ) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <><div className="text-[56px] font-serif font-Medium text-[#FCFCFC]">{formatTVL(totalClaim)}</div>
                                 <div>
                                     <div className="text-[12px] font-[500] text-[#FCFCFC66] flex
                               transition-colors duration-200
@@ -195,7 +195,7 @@ export default function PortfolioPage() {
                     filteredLists={filteredLists}
                     ytReward={ytReward}
                     lpReward={lpReward}
-                    loading={isLpPositionsLoading||isMarketStatesLoading||isPositionsLoading||isLoading}
+                    loading={isLpPositionsLoading || isMarketStatesLoading || isPositionsLoading || isLoading }
                 />
                 <Transactions />
                 <UnclaimedRewardModal

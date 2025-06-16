@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import EmptyData from '@/components/ui/empty';
+import { useWallet } from '@nemoprotocol/wallet-kit';
 
 
 const typeColor: Record<string, string> = {
@@ -56,12 +57,13 @@ export default function Transactions() {
         setPageIndex,
     } = useMarketTransactions({ pageSize: 10 });
     const pathname = usePathname();
+    const { address } = useWallet();
     const isPage = pathname.startsWith('/portfolio/history');
     let transactions = data?.data ?? [];
     transactions = isPage ? transactions : transactions.slice(0, 5)
 
     useEffect(() => {
-        if (loading == false && data?.data) { 
+        if (loading == false && data?.data) {
             setTotalloading(loading)
         }
     }, [loading, data])
@@ -152,7 +154,7 @@ export default function Transactions() {
                             </tr>
                         ))}
 
-                        {(totalloading && transactions.length == 0 ) && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        {(totalloading && transactions.length == 0) && [0, 0, 0, 0, 0, 0].map((item, index) => (
                             <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
                                 <td></td>
                                 <td></td>
@@ -167,7 +169,7 @@ export default function Transactions() {
 
                     </tbody>
                 </table>
-                <div className='w-full flex items-center'>{(transactions.length == 0 && !totalloading) && <EmptyData />}</div>
+                <div className='w-full flex items-center'>{((transactions.length == 0 && !totalloading)) && <EmptyData />}</div>
             </div>
 
 

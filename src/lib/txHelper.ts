@@ -217,28 +217,37 @@ export const mintPY = <T extends boolean = false>(
     : TransactionResult
 }
 
-export const redeemSyCoin = (
+export const redeemSyCoin = <T extends boolean = false>(
   tx: Transaction,
   coinConfig: CoinConfig,
   syCoin: TransactionArgument,
-) => {
-  const redeemMoveCall = {
+  returnDebugInfo?: T,
+): T extends true ? [TransactionResult, MoveCallInfo] : TransactionResult => {
+  const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::sy::redeem`,
-    arguments: [coinConfig.version, "syCoin", coinConfig.syStateId],
+    arguments: [
+      { name: "version", value: coinConfig.version },
+      { name: "sy_coin", value: "syCoin" },
+      { name: "sy_state", value: coinConfig.syStateId },
+    ],
     typeArguments: [coinConfig.coinType, coinConfig.syCoinType],
   }
-  debugLog("sy::redeem move call:", redeemMoveCall)
 
-  const [yieldToken] = tx.moveCall({
-    ...redeemMoveCall,
+  debugLog("sy::redeem move call:", debugInfo)
+
+  const result = tx.moveCall({
+    target: debugInfo.target,
     arguments: [
       tx.object(coinConfig.version),
       syCoin,
       tx.object(coinConfig.syStateId),
     ],
+    typeArguments: debugInfo.typeArguments,
   })
 
-  return yieldToken
+  return (returnDebugInfo ? [result, debugInfo] : result) as T extends true
+    ? [TransactionResult, MoveCallInfo]
+    : TransactionResult
 }
 
 export const burnLp = (

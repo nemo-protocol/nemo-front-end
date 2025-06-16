@@ -43,7 +43,7 @@ export default function LPRow({
     return (
         <tr>
             <td className="py-3 text-[20px] font-[500] text-[#FCFCFC] flex gap-x-2">
-                <Image src={item.lpTokenLogo} alt="" width={24} height={24} className="shrink-0" />
+                {item.lpTokenLogo && <Image src={item.lpTokenLogo} alt="" width={24} height={24} className="shrink-0" />}
                 LP {item.coinName}
             </td>
 

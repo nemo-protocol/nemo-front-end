@@ -377,7 +377,7 @@ export default function MarketPage() {
       <div className="min-h-screen bg-[#080E16]"></div>
     ) : (
       <div className="bg-[#080E16] min-h-screen text-white py-2 px-7.5">
-        <Tab items={tabItems} className="mb-2 gap-16" />
+        <Tab items={tabItems} className="mb-2 gap-10" />
         {tab === "all" ? (
           <div className="flex items-center justify-between">
             <p className="text-light-gray/40 mb-8 py-2">

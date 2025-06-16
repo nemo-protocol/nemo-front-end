@@ -91,7 +91,6 @@ export function useMarketTransactions(
 
   /* --------------------------- 请求函数 --------------------------- */
   const fetchData = useCallback(async () => {
-    if (!effectiveAddress) return;           // 未连接钱包 & 无 mockAddress
 
     setLoading(true);
     setError(null);
@@ -130,7 +129,7 @@ export function useMarketTransactions(
   /* --------------------------- 副作用 ----------------------------- */
   useEffect(() => () => cancelRef.current?.cancel("unmount"), []);
   useEffect(() => {
-    if (autoFetch && effectiveAddress) fetchData();
+    if (autoFetch) fetchData();
   }, [fetchData, autoFetch, effectiveAddress]);
 
   /* --------------------------- 返回值 ----------------------------- */

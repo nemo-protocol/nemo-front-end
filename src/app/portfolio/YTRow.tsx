@@ -41,7 +41,7 @@ export default function YTRow({
     return (
         <tr>
             <td className="py-3 text-[20px] font-[500] text-[#FCFCFC] flex gap-x-2">
-                <Image src={item.ytTokenLogo} alt="" width={24} height={24} className="shrink-0" />
+                {item.ytTokenLogo && <Image src={item.ytTokenLogo} alt="" width={24} height={24} className="shrink-0" />}
                 YT {item.coinName}
             </td>
 
@@ -54,8 +54,8 @@ export default function YTRow({
             <td className="py-3">
                 <div
                     className={`text-[12px] font-[600] py-1 px-1.5 rounded-[8px] inline-flex ${expired
-                            ? 'text-[#4CC877] bg-[rgba(76,200,119,0.1)]'
-                            : 'text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]'
+                        ? 'text-[#4CC877] bg-[rgba(76,200,119,0.1)]'
+                        : 'text-[#FCFCFC66] bg-[rgba(23,133,183,0.10)]'
                         }`}
                 >
                     {dayjs(parseInt(item.maturity)).format('YYYY-MM-DD')}

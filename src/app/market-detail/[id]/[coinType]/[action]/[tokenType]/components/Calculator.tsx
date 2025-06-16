@@ -68,6 +68,8 @@ export default function Calculator({
   setTradeValue,
   rate
 }: Props) {
+  const [input, setInput] = useState(inputYT)
+
   const [targetAPY, setTargetAPY] = useState<string>("20");
   const [calculatedResults, setCalculatedResults] = useState<any>(null); // State to hold calculation results
   const [showResults, setShowResults] = useState(false); // State to manage result visibility
@@ -78,11 +80,11 @@ export default function Calculator({
       setTargetAPY('')
       return
     }
-  
+
     const n = Number(raw)
     if (isNaN(n)) return
-  
-    const clamped = Math.max(0, Math.min(100, n))
+
+    const clamped = Math.max(0, Math.min(10000, n))
     setTargetAPY(clamped.toString())
   }
 
@@ -93,7 +95,7 @@ export default function Calculator({
     const underlyingPrice = Number(coinConfig.underlyingPrice)
     const now = Date.now();
     const maturity = Math.max(0, Math.ceil((Number(coinConfig.maturity) - now) / 86_400_000) - 1)
-    const netProfitYT = (outputYT * Number(targetAPY) * 0.01) * (maturity / 365) - Number(inputYT);
+    const netProfitYT = (Number(inputYT) *Number(rate) * Number(targetAPY) * 0.01) * (maturity / 365) - Number(inputYT);
     const netProfitUnderlying = (Number(inputYT) * underlyingPrice * Number(targetAPY) * maturity * 0.01) / 365;
 
     const apr = (netProfitYT) * (365 / maturity) / Number(inputYT)
@@ -152,13 +154,15 @@ export default function Calculator({
                 <div className="flex items-baseline gap-1.5 mt-0">
                   <span className="text-[20px] text-[#FCFCFC]">
                     <input
-                    min={0}
-                    type="number"                        
-                    value={inputYT}
-                    onChange={(e) => setTradeValue(e.target.value)}
-                    placeholder={"0"}
-                    className="text-[20px] text-[#FCFCFC] bg-transparent outline-none border-none w-[58px] appearance-none"
-                  /></span>
+                      min={0}
+                      type="number"
+                      value={inputYT}
+                      onChange={(e) => {
+                        setTradeValue(e.target.value)
+                      }}
+                      placeholder={"0"}
+                      className="text-[20px] text-[#FCFCFC] bg-transparent outline-none border-none w-[58px] appearance-none"
+                    /></span>
                   <span className="text-[12px] text-[#FCFCFC66]">~ ${formatDecimalValue(Number(inputYT) * Number(coinConfig.underlyingPrice), 6)}</span>
                 </div>
               </div>
@@ -179,7 +183,7 @@ export default function Calculator({
           </div>
           <p className="mt-6 text-sm text-[#FCFCFC66] font-[550]">
             <span>Average Future APY&nbsp;
-              <span className="text-[#FCFCFC] ml-2.5 font-[550]">{targetAPY}%</span></span>
+              <span className="text-[#FCFCFC] ml-2.5 font-[550]">{Number(targetAPY)}%</span></span>
             {rate && <span className='ml-10'>YT Rates&nbsp;
               <span className="text-[#FCFCFC] ml-2.5 font-[550]">
                 {`1 ${coinConfig.underlyingCoinName} = ${rate} YT-${coinConfig.coinName} `}
@@ -187,13 +191,13 @@ export default function Calculator({
             </span>}
           </p>
           <button
-            className={`w-full mt-6 h-[42px] rounded-[16px] cursor-pointer  flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550] 
+            className={`w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5]  disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550] 
             ${inputYT
-                ? "bg-[#2E81FCE5] hover:bg-[#2E81FCc5] transition"
-                : "bg-[#2E81FCc5]/50 text-white/50 text-white cursor-not-allowed "}`
+                ? "hover:bg-[#2E81FCc5] transition"
+                : "opacity-40"}`
             }
             onClick={handleCalculate}  // Call handleCalculate on button click
-            disabled={!outputYT || !inputYT}
+            disabled={!rate || !inputYT}
           >
 
             {inputYT ? <> <Image src={"/calculator.svg"} alt={""} width={16} height={16} className="shrink-0" />Calculate</> : "Please enter an amount"}

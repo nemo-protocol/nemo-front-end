@@ -74,7 +74,8 @@ export default function Slider({
   };
 
   /* ------------------------------------------------- */
-  const percentage = ((value - min) / (max - min)) * 100;
+  const clampedValue = clamp(value, min, max);          // ← 新增
+  const percentage = ((clampedValue - min) / (max - min)) * 100;
 
   /* ⬇︎ 让 thumb 左移半径，使其中心对齐轨道百分比位置 */
   const thumbOffset = `calc(${percentage}% - ${THUMB_SIZE / 2}px)`;

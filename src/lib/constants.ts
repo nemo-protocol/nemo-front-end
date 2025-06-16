@@ -386,3 +386,30 @@ export const CETUS_VAULT_ID_LIST = [
       "0x5732b81e659bd2db47a5b55755743dde15be99490a39717abc80d62ec812bcb6",
   },
 ]
+
+export const NO_SUPPORT_UNDERLYING_COINS = [
+  {
+    coinType:
+      "0x790f258062909e3a0ffc78b3c53ac2f62d7084c3bab95644bdeb05add7250001::super_sui::SUPER_SUI",
+  },
+  {
+    coinType:
+      "0x790f258062909e3a0ffc78b3c53ac2f62d7084c3bab95644bdeb05add7250001::super_sui::SUPER_SUI",
+  },
+  {
+    coinType:
+      "0x828b452d2aa239d48e4120c24f4a59f451b8cd8ac76706129f4ac3bd78ac8809::lp_token::LP_TOKEN",
+  },
+  {
+    coinType:
+      "0xb490d6fa9ead588a9d72da07a02914da42f6b5b1339b8118a90011a42b67a44f::lp_token::LP_TOKEN",
+  },
+  {
+    coinType:
+      "0xb1b0650a8862e30e3f604fd6c5838bc25464b8d3d827fbd58af7cb9685b832bf::wwal::WWAL",
+  },
+  {
+    coinType:
+      "0x8b4d553839b219c3fd47608a0cc3d5fcc572cb25d41b7df3833208586a8d2470::hawal::HAWAL",
+  },
+]
