@@ -32,7 +32,7 @@ interface ClaimYtRewardParams {
     lpPositions: LpPosition[];
   }>
   ytReward: Record<string, string>
-  marketStates:MarketStateMap
+  marketStates: MarketStateMap
 }
 
 export default function useClaimAllReward<T extends boolean = false>(
@@ -41,38 +41,11 @@ export default function useClaimAllReward<T extends boolean = false>(
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
+
   const { mutateAsync: signAndExecuteTransaction } =
     useCustomSignAndExecuteTransaction()
 
-  // async function claimLPCall(tx: Transaction) {
-  //   if (
-  //     suiCoins &&
-  //     suiCoins.length &&
-  //     coinConfig?.coinType &&
-  //     address &&
-  //     lpBalance &&
-  //     lpPositions?.length &&
-  //     marketState?.rewardMetrics
-  //   ) {
 
-
-  //     // if (conversionRate && coinData)
-  //     //   await handleAddLiquiditySingleSy({
-  //     //     tx,
-  //     //     address,
-  //     //     vaultId,
-  //     //     slippage,
-  //     //     coinType: coinConfig.coinPrice,
-  //     //     coinData,
-  //     //     addAmount: "100",
-  //     //     tokenType: 0,
-  //     //     pyPosition,
-  //     //     coinConfig,
-  //     //     minLpAmount: "0",
-  //     //     conversionRate,
-  //     //   })
-  //   }
-  // }
 
 
   async function claimAll(tx: Transaction, addLiqudity: boolean, params: ClaimYtRewardParams) {
@@ -91,12 +64,7 @@ export default function useClaimAllReward<T extends boolean = false>(
           item.coinType === coinConfig.coinType,
       )?.minValue || 0
 
-      // const { data: coinData } = useCoinData(
-      //   address,
-      //   coinConfig?.underlyingCoinType,
-      // )
-      // const { mutateAsync: handleAddLiquiditySingleSy } =
-      // useAddLiquiditySingleSy(coinConfig)
+
       const decimal = Number(coinConfig?.decimal || 0)
 
       if (coinConfig?.coinType && address && ytBalance && ytReward) {
@@ -169,44 +137,9 @@ export default function useClaimAllReward<T extends boolean = false>(
             .mul(10 ** decimal)
             .toFixed(0)
 
-          // console.log(
-          //   {
-          //     tx,
-          //     address,
-          //     vaultId,
-          //     slippage: "0.5",
-          //     coinType: coinConfig.coinType,
-          //     coinData,
-          //     addAmount,
-          //     tokenType: 0,
-          //     pyPosition,
-          //     coinConfig,
-          //     minLpAmount: "0",
-          //     conversionRate,
-          //     syCoinParam: syCoin,
-          //   },
-          //   minAddLpValue.lt(0.01),
-          //   "claimAllandAddLiqudity",
-          // )
-          // if (conversionRate && coinData) {
-          //   await handleAddLiquiditySingleSy({
-          //     tx,
-          //     address,
-          //     vaultId,
-          //     slippage: "0.5",
-          //     coinType: coinConfig.coinType,
-          //     coinData,
-          //     addAmount,
-          //     tokenType: 0,
-          //     pyPosition,
-          //     coinConfig,
-          //     minLpAmount: "0",
-          //     conversionRate,
-          //     syCoinParam: syCoin,
-          //   })
-          // }
+
         }
-     
+
 
       }
     })
@@ -236,7 +169,7 @@ export default function useClaimAllReward<T extends boolean = false>(
           ],
           typeArguments: claimRewardMoveCall.typeArguments,
         })
-        
+
         address && tx.transferObjects([coin], address)
 
       })
@@ -244,31 +177,29 @@ export default function useClaimAllReward<T extends boolean = false>(
   }
 
   return useMutation({
-    mutationFn: async (params: ClaimYtRewardParams): Promise<DryRunResult<T>> => {
+    mutationFn: async (params: ClaimYtRewardParams): Promise<string> => {
       let tx = new Transaction()
       await claimAll(tx, params.addLiqudity, params)
-      if (params.addLiqudity) {
-        const result = await client.devInspectTransactionBlock({
-          sender: address,
-          transactionBlock: await tx.build({
-            client: client,
-            onlyTransactionKind: true,
-          }),
-        })
-        if (result?.error) {
-          tx = new Transaction()
-          await claimAll(tx, false, params)
-        }
-      }
+
+      // const result = await client.devInspectTransactionBlock({
+      //   sender: address,
+      //   transactionBlock: await tx.build({
+      //     client: client,
+      //     onlyTransactionKind: true,
+      //   }),
+      // })
+      // console.log(result,'sixu')
+      // if (result?.error) {
+      //   tx = new Transaction()
+      //   await claimAll(tx, false, params)
+      // }
+
       const { digest } = await signAndExecuteTransaction({
         transaction: tx,
       })
 
-      const debugInfo: DebugInfo = {
-        moveCall: [],
-        rawResult: {},
-      }
-      return (debug ? debugInfo : undefined) as DryRunResult<T>
+     
+      return digest
     }
   })
 

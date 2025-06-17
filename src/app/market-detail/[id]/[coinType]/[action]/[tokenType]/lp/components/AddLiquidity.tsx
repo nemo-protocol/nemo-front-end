@@ -483,8 +483,8 @@ export default function AddLiquidity({ coinConfig }: Props) {
             maturity={maturity}
             loading={isCalculating}
             logo={coinConfig.ytTokenLogo}
-            name={`Yield ${coinConfig.coinName}`}
-            title={"Yield bonus".toUpperCase()}
+            name={`YT ${coinConfig.coinName}`}
+            title={"YT POSITION".toUpperCase()}
             className="bg-transparent rounded-none"
             value={
               !ytValue || !decimal ? "" : formatDecimalValue(ytValue, decimal)

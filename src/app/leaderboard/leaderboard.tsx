@@ -23,20 +23,20 @@ export default function LeaderboardPage() {
     setPageIndex,
   } = useLeaderboard({ pageSize: 10 });
 
-  const rows         = listData?.data ?? [];
-  const totalUsers   = listData?.count ?? 0;
-  const pageIndex    = listData?.page.pageIndex ?? 1;
-  const pageSize     = listData?.page.pageSize ?? 10;
-  const totalPages   = Math.max(1, Math.ceil(totalUsers / pageSize));
+  const rows = listData?.data ?? [];
+  const totalUsers = listData?.count ?? 0;
+  const pageIndex = listData?.page.pageIndex ?? 1;
+  const pageSize = listData?.page.pageSize ?? 10;
+  const totalPages = Math.max(1, Math.ceil(totalUsers / pageSize));
   const showSkeleton = (loadingMy || loadingList) && rows.length === 0;
 
   /* ───── 顶部 3 卡片 ───── */
   const Summary = () => (
-    <div className="grid grid-cols-3 gap-6 text-center mb-12">
+    <div className="grid grid-cols-3 gap-6 text-center mt-12">
       <SummaryCard
         title="MY TOTAL POINTS"
         loading={loadingMy}
-        value={myRank?.totalPoints?.toLocaleString() ?? '--'}
+        value={myRank?.totalPoints?.toLocaleString() ?? '0'}
       />
       <SummaryCard
         title="POINTS PER DAY"
@@ -44,7 +44,7 @@ export default function LeaderboardPage() {
         value={
           myRank
             ? myRank.pointsPerDay.toLocaleString(undefined, { maximumFractionDigits: 2 })
-            : '--'
+            : '0'
         }
       />
       <SummaryCard
@@ -53,13 +53,13 @@ export default function LeaderboardPage() {
         value={
           myRank
             ? (
-                <>
-                  #{myRank.rank.toLocaleString()}
-                  <span className="opacity-50 text-[24px]">
-                    &nbsp;/&nbsp;{totalUsers.toLocaleString()}
-                  </span>
-                </>
-              )
+              <>
+                #{myRank.rank.toLocaleString()}
+                <span className="opacity-50 text-[24px]">
+                  &nbsp;/&nbsp;{totalUsers.toLocaleString()}
+                </span>
+              </>
+            )
             : '--'
         }
       />
@@ -67,15 +67,22 @@ export default function LeaderboardPage() {
   );
 
   return (
-    <div className=" px-6 py-8 bg-[#080d16]">
+    <div className="py-4 bg-[#080d16]">
+      <h1 className="text-[32px] w-full flex justify-center gap-2 items-start font-normal font-serif font-[470] text-[#FCFCFC]">Leaderboard
+        <Image
+          src={"/laurel-leafs.svg"}
+          alt={""}
+          width={16}
+          height={16}
+          className="shrink-0 mt-1.5"
+        /></h1>
       <Summary />
 
       {/* ───── 排行榜表格 ───── */}
       <div className="w-full overflow-x-auto">
         <table
-          className={`w-max min-w-[calc(100vw-128px)] border-collapse border-separate ${
-            rows.length === 0 ? 'border-spacing-y-4' : 'border-spacing-y-0.5'
-          }`}
+          className={`w-max min-w-[calc(100vw-128px)] border-collapse border-separate ${rows.length === 0 ? 'border-spacing-y-4' : 'border-spacing-y-0.5'
+            }`}
         >
           <thead className="text-white/60">
             <tr>
@@ -160,10 +167,10 @@ function SummaryCard({
   loading?: boolean;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className="text-[14px] tracking-widest text-[#FCFCFC]/60 font-[600]">{title}</div>
+    <div className="flex flex-col h-[182px] items-center">
+      <div className="text-[12px] font-[600] text-[#FCFCFC66]">{title}</div>
+      {(loading ) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{value}</div>}
       <div className="text-[48px] font-serif font-[470] text-[#FCFCFC]">
-        {loading ? '— —' : value}
       </div>
     </div>
   );
@@ -199,9 +206,8 @@ function PaginateButton({
 }) {
   return (
     <button
-      className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${
-        !disabled && 'hover:bg-[rgba(23,133,183,0.30)]'
-      }`}
+      className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!disabled && 'hover:bg-[rgba(23,133,183,0.30)]'
+        }`}
       disabled={disabled}
       onClick={onClick}
     >

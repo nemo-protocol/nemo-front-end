@@ -29,20 +29,21 @@ export default function YTRow({
     ytReward?: Record<string, string>;
 }) {
     const expired = isExpired(item.maturity);
+    const reward = new Decimal(ytReward?.[item.id] || 0);
+
     const canShow =
         (activeTab === categories[0] || activeTab === categories[2]) &&
-        item.listType === 'yt';
+        item.listType === 'yt' && (Number(reward) != 0 || !expired);
 
     if (!canShow) return null;
 
     const balance = new Decimal(pyPositionsMap?.[item.id]?.ytBalance || 0);
-    const reward = new Decimal(ytReward?.[item.id] || 0);
 
     return (
         <tr>
             <td className="py-3 text-[20px] font-[500] text-[#FCFCFC] flex gap-x-2">
                 {item.ytTokenLogo && <Image src={item.ytTokenLogo} alt="" width={24} height={24} className="shrink-0" />}
-                YT {item.coinName}
+                YT {item.coinName}{item.id}
             </td>
 
             <td className="py-3">

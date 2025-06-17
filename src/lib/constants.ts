@@ -413,3 +413,11 @@ export const NO_SUPPORT_UNDERLYING_COINS = [
       "0x8b4d553839b219c3fd47608a0cc3d5fcc572cb25d41b7df3833208586a8d2470::hawal::HAWAL",
   },
 ]
+
+
+export const NO_SUPPORT_YT_COINS = [
+
+  "0x622345b3f80ea5947567760eec7b9639d0582adcfd6ab9fccb85437aeda7c0d0::scallop_wal::SCALLOP_WAL",
+  "0xb490d6fa9ead588a9d72da07a02914da42f6b5b1339b8118a90011a42b67a44f::lp_token::LP_TOKEN",
+
+]

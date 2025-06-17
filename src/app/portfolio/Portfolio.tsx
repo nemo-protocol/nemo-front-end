@@ -1,10 +1,11 @@
 "use client"
 import { ArrowDownToLine, Download, X } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { network } from "@/config"
 
-import { Suspense, useEffect, useMemo, useState } from 'react';;
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';;
 import Image from 'next/image';
-import Assets from './Assets';
+import Assets, { isExpired } from './Assets';
 import Transactions from './Transactions';
 import { usePortfolioList } from '@/queries';
 import useAllPyPositions from '@/hooks/fetch/useAllPyPositions';
@@ -22,6 +23,8 @@ import { signAndExecuteTransaction } from "@mysten/wallet-standard";
 import useClaimAllReward from "@/hooks/dryRun/useClaimAllReward";
 import Decimal from "decimal.js";
 import UnclaimedRewardModal from "./ClaimReward";
+import { NO_SUPPORT_YT_COINS } from "@/lib/constants";
+import { showTransactionDialog } from "@/lib/dialog";
 
 
 export default function PortfolioPage() {
@@ -65,8 +68,9 @@ export default function PortfolioPage() {
                         isValidAmount(pyPositionsMap[item.id]?.ptBalance)) && address
                 )
             }),
-            yt: list.filter((item) =>
-                isValidAmount(pyPositionsMap[item.id]?.ytBalance),
+            yt: list.filter((item) => {
+                return (isValidAmount(pyPositionsMap[item.id]?.ytBalance) && (!NO_SUPPORT_YT_COINS.includes(item?.coinType) || !isExpired(item.maturity)))
+            },
             ),
             lp: list.filter((item) =>
                 isValidAmount(lpPositionsMap[item.id]?.lpBalance),
@@ -105,8 +109,10 @@ export default function PortfolioPage() {
     const claimAllandAddLiqudity = async () => {
         setClaimLoading(false)
         try {
+            console.log(ytReward, 'sixu1')
+
             if (ytReward) {
-                await claimAllReward({
+                const digest = await claimAllReward({
                     filteredYTLists: filteredLists.yt,
                     filteredLPLists: filteredLists.lp,
                     pyPositionsMap,
@@ -115,10 +121,19 @@ export default function PortfolioPage() {
                     lpPositionsMap,
                     marketStates
                 })
-                setClaimLoading(true)
                 setOpen(false)
-                refetchYtReward()
-                refetchLpReward()
+
+                showTransactionDialog({
+                    status: "Success",
+                    network,
+                    txId: digest,
+                    onClose: async () => {
+                        refetchYtReward()
+                        refetchLpReward()
+                    },
+                })
+                setClaimLoading(true)
+
             }
         } catch (error) {
             setClaimLoading(true)
@@ -138,7 +153,7 @@ export default function PortfolioPage() {
             })
             filteredLists.yt.forEach((item) => {
                 _balance = _balance.add(new Decimal(pyPositionsMap[item.id]?.ytBalance || 0).mul(item.ytPrice) || 0)
-                ytReward && (_totalClaim = _totalClaim.add(new Decimal(ytReward[item.id]).mul(item.underlyingPrice)))
+                ytReward && (_totalClaim = _totalClaim.add(new Decimal(ytReward?.[item.id] || 0).mul(item.underlyingPrice)))
             })
             filteredLists.lp.forEach((item) => {
                 _balance = _balance.add(new Decimal(lpPositionsMap[item.id]?.lpBalance || 0).mul(item.lpPrice) || 0)
@@ -153,8 +168,10 @@ export default function PortfolioPage() {
         }
         else if (!address) {
             !isLoading && setLoading(false)
+            setBalance("0")
+            setTotalClaim("0")
         }
-    }, [lpReward, ytReward, filteredLists,address])
+    }, [lpReward, ytReward, filteredLists, address])
 
     return (
         <>
@@ -171,11 +188,11 @@ export default function PortfolioPage() {
                     <div className="grid grid-cols-2">
                         <div className="flex flex-col h-[182px] items-center">
                             <div className="text-[12px] font-[600] text-[#FCFCFC66]">Balance</div>
-                            {(loading ) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{formatTVL(balance)}</div>}
+                            {(loading) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{formatTVL(balance)}</div>}
                         </div>
                         <div className="flex flex-col h-[182px] items-center">
                             <div className="text-[12px] font-[600] text-[#FCFCFC66]">Total Claimable Yield</div>
-                            {(loading ) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <><div className="text-[56px] font-serif font-Medium text-[#FCFCFC]">{formatTVL(totalClaim)}</div>
+                            {(loading) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <><div className="text-[56px] font-serif font-Medium text-[#FCFCFC]">{formatTVL(totalClaim)}</div>
                                 <div>
                                     <div className="text-[12px] font-[500] text-[#FCFCFC66] flex
                               transition-colors duration-200
@@ -195,7 +212,7 @@ export default function PortfolioPage() {
                     filteredLists={filteredLists}
                     ytReward={ytReward}
                     lpReward={lpReward}
-                    loading={isLpPositionsLoading || isMarketStatesLoading || isPositionsLoading || isLoading }
+                    loading={isLpPositionsLoading || isMarketStatesLoading || isPositionsLoading || isLoading}
                 />
                 <Transactions />
                 <UnclaimedRewardModal

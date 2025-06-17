@@ -46,7 +46,7 @@ export function APYTooltip({
       >
         <div className="flex flex-col gap-y-2.5">
           {/* Nemo Points 区块 */}
-          {config.perPoints && (
+          {!!config.perPoints && (
             <div className="flex items-center justify-between border-b border-line-gray/10 pb-2.5">
               <div className="flex flex-row items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -77,7 +77,6 @@ export function APYTooltip({
               </div>
             </div>
           )}
-
           {/* Incentive APY 区块 */}
           {config.incentives && config.incentives.length > 0 && (
             <div className="flex items-center justify-between border-b border-line-gray/10 pb-2.5">

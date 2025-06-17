@@ -9,6 +9,8 @@ import { getPriceVoucher } from "@/lib/txHelper/price";
 import type { PortfolioItem } from "@/queries/types/market";
 import type { PyPosition, DebugInfo } from "../types";
 import { useSearchParams } from "next/navigation";   // ← NEW
+import { isExpired } from "@/app/portfolio/Assets";
+import { NO_SUPPORT_YT_COINS } from "@/lib/constants";
 
 interface ClaimYtRewardParams {
   filteredYTLists: PortfolioItem[];
@@ -23,7 +25,7 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
   const { address } = useWallet();
 
   /* ------------ 计算最终地址 ------------ */
-  const searchParams   = useSearchParams();
+  const searchParams = useSearchParams();
   const mockAddressRaw = searchParams.get("mockAddress");
 
   const effectiveAddress =
@@ -44,13 +46,14 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
       /* ---------- 构造 transaction ---------- */
       const tx = new Transaction();
       tx.setSender(effectiveAddress);
+      console.log(params.filteredYTLists, 'sixu')
+      params.filteredYTLists.forEach((item, index) => {
+      
 
-      params.filteredYTLists.forEach((item) => {
-        const balance     = params.pyPositionsMap?.[item.id]?.ytBalance;  // 目前 balance 未用，可留作以后
+        const balance = params.pyPositionsMap?.[item.id]?.ytBalance;
         const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions;
-        const coinConfig  = item;
+        const coinConfig = item;
 
-        /* 1. 如果当前地址没有 py_position 则 init 一个 */
         let pyPosition;
         let created = false;
         if (!pyPositions?.length) {
@@ -110,9 +113,9 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
 
       /* ---------- 解析返回的 u64 ---------- */
       const pyReward: Record<string, string> = {};
-
       params.filteredYTLists.forEach((item, index) => {
-        const decimal  = Number(item.decimal);
+       
+        const decimal = Number(item.decimal);
         const syAmount = bcs.U64.parse(
           new Uint8Array(
             result.results[index * 4 + 3].returnValues[0][0], // (index+1)*4-1 == index*4+3
