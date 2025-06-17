@@ -43,7 +43,7 @@ export default function YTRow({
         <tr>
             <td className="py-3 text-[20px] font-[500] text-[#FCFCFC] flex gap-x-2">
                 {item.ytTokenLogo && <Image src={item.ytTokenLogo} alt="" width={24} height={24} className="shrink-0" />}
-                YT {item.coinName}{item.id}
+                YT {item.coinName}
             </td>
 
             <td className="py-3">
