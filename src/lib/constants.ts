@@ -219,6 +219,11 @@ export const SPRING_SUI_STAKING_INFO_LIST = [
   },
   {
     coinType:
+      "0xb2d912e4f100e03b7de58d874835e358dc2802f2fb8559f56a70a7c900f8fc78::jug_sui::JUG_SUI",
+    value: "0x14347e46d48e39a33c8d4e63d5e95d513014ceced519d96ce1510b0dfadd6cd6",
+  },
+  {
+    coinType:
       "0xc5c4bc11427315926cf0cc284504d8e5693a10da75500a5198bdee23f47f4254::lofi_sui::LOFI_SUI",
     value: "0xeb784ecfc02515248b71f45b069310592e07f934107a0377cc5919200288e513",
   },
@@ -420,5 +425,4 @@ export const NO_SUPPORT_YT_COINS = [
   "0x622345b3f80ea5947567760eec7b9639d0582adcfd6ab9fccb85437aeda7c0d0::scallop_wal::SCALLOP_WAL",
   "0xb490d6fa9ead588a9d72da07a02914da42f6b5b1339b8118a90011a42b67a44f::lp_token::LP_TOKEN",
   "0x0c8a5fcbe32b9fc88fe1d758d33dd32586143998f68656f43f3a6ced95ea4dc3::lp_token::LP_TOKEN"
-
 ]

@@ -47,7 +47,7 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
       const tx = new Transaction();
       tx.setSender(effectiveAddress);
       params.filteredYTLists.forEach((item, index) => {
-
+       
         const balance = params.pyPositionsMap?.[item.id]?.ytBalance;
         const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions;
         const coinConfig = item;
@@ -84,7 +84,6 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
           ],
           typeArguments: [coinConfig.syCoinType],
         });
-
         /* 3. 把 syCoin 兑换为 yieldToken, 再查看面值 */
         const yieldToken = redeemSyCoin(tx, coinConfig, syCoin);
 
