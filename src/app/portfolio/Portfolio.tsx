@@ -111,7 +111,7 @@ export default function PortfolioPage() {
         try {
             console.log(ytReward, 'sixu1')
 
-            if (ytReward) {
+            if (ytReward || filteredLists.yt.length == 0) {
                 const digest = await claimAllReward({
                     filteredYTLists: filteredLists.yt,
                     filteredLPLists: filteredLists.lp,

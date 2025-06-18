@@ -46,9 +46,7 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
       /* ---------- 构造 transaction ---------- */
       const tx = new Transaction();
       tx.setSender(effectiveAddress);
-      console.log(params.filteredYTLists, 'sixu')
       params.filteredYTLists.forEach((item, index) => {
-      
 
         const balance = params.pyPositionsMap?.[item.id]?.ytBalance;
         const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions;
@@ -110,11 +108,11 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
           onlyTransactionKind: true,
         }),
       });
-
+      console.log(result, 'sixu')
       /* ---------- 解析返回的 u64 ---------- */
       const pyReward: Record<string, string> = {};
       params.filteredYTLists.forEach((item, index) => {
-       
+
         const decimal = Number(item.decimal);
         const syAmount = bcs.U64.parse(
           new Uint8Array(

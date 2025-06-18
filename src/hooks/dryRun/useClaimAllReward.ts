@@ -31,7 +31,7 @@ interface ClaimYtRewardParams {
     lpBalance: string;
     lpPositions: LpPosition[];
   }>
-  ytReward: Record<string, string>
+  ytReward?: Record<string, string>
   marketStates: MarketStateMap
 }
 
