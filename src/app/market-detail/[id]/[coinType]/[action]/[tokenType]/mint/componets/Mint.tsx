@@ -292,12 +292,13 @@ export default function Mint({ coinConfig }: Props) {
       <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
         <AmountOutput
           loading={isInputLoading}
+          price={coinConfig.ptPrice}
           logo={coinConfig.ptTokenLogo}
           maturity={coinConfig.maturity}
           name={`PT ${coinConfig.coinName}`}
           title={"Principle Token".toUpperCase()}
           className="bg-transparent rounded-none"
-          value={
+          amount={
             isInputLoading
               ? undefined
               : ptAmount &&
@@ -309,12 +310,13 @@ export default function Mint({ coinConfig }: Props) {
         </div>
         <AmountOutput
           loading={isInputLoading}
+          price={coinConfig.ytPrice}
           logo={coinConfig.ytTokenLogo}
           maturity={coinConfig.maturity}
           name={`YT ${coinConfig.coinName}`}
           title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"
-          value={
+          amount={
             isInputLoading
               ? undefined
               : ytAmount &&

@@ -22,7 +22,6 @@ import { useMemo, useState, useEffect, useCallback } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
-import Image from "next/image"
 
 interface Props {
   coinConfig: CoinConfig
@@ -44,6 +43,17 @@ export default function Remove({ coinConfig }: Props) {
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
+
+  const handleActionChange = (newAction: "swap" | "redeem") => {
+    setAction(newAction)
+    setLpValue("")
+    setTargetValue("")
+    setPtValue("")
+    setError(undefined)
+    setWarning(undefined)
+    setWarningDetail(undefined)
+    setErrorDetail(undefined)
+  }
 
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
@@ -302,12 +312,12 @@ export default function Remove({ coinConfig }: Props) {
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
           }`}
-          onClick={() => setAction("swap")}
+          onClick={() => handleActionChange("swap")}
         >
           {`swap & remove`.toLocaleUpperCase()}
         </button>
         <button
-          onClick={() => setAction("redeem")}
+          onClick={() => handleActionChange("redeem")}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
             action === "redeem"
               ? "bg-white/10 text-white"
@@ -340,6 +350,7 @@ export default function Remove({ coinConfig }: Props) {
         <AmountOutput
           maturity={coinConfig.maturity}
           loading={isInputLoading}
+          price={coinConfig.underlyingPrice}
           name={
             receivingType === "underlying"
               ? coinConfig?.underlyingCoinName || ""
@@ -351,11 +362,7 @@ export default function Remove({ coinConfig }: Props) {
               : coinConfig?.coinLogo
           }
           title={"RECEIVE"}
-          value={
-            isInputLoading
-              ? undefined
-              : formatDecimalValue(targetValue, decimal)
-          }
+          amount={targetValue && formatDecimalValue(targetValue, decimal)}
           coinNameComponent={
             <div className="flex items-center gap-x-1">
               <TokenTypeSelect
@@ -392,6 +399,7 @@ export default function Remove({ coinConfig }: Props) {
             loading={isInputLoading}
             warningDetail={warningDetail}
             maturity={coinConfig.maturity}
+            price={coinConfig.underlyingPrice}
             className="bg-transparent rounded-none"
             name={
               receivingType === "underlying"
@@ -404,7 +412,7 @@ export default function Remove({ coinConfig }: Props) {
                 : coinConfig?.coinLogo
             }
             title={"Underlying asset".toLocaleUpperCase()}
-            value={targetValue && formatDecimalValue(targetValue, decimal)}
+            amount={targetValue && formatDecimalValue(targetValue, decimal)}
             coinNameComponent={
               <div className="flex items-center gap-x-1">
                 <TokenTypeSelect
@@ -436,12 +444,13 @@ export default function Remove({ coinConfig }: Props) {
           />
           <AmountOutput
             loading={isInputLoading}
-            maturity={coinConfig.maturity}
-            className="bg-transparent rounded-none"
-            name={`PT ${coinConfig.coinName}`}
+            price={coinConfig.ptPrice}
             logo={coinConfig.ptTokenLogo}
+            maturity={coinConfig.maturity}
+            name={`PT ${coinConfig.coinName}`}
             title={"PT asset".toLocaleUpperCase()}
-            value={ptValue && formatDecimalValue(ptValue, decimal)}
+            className="bg-transparent rounded-none"
+            amount={ptValue && formatDecimalValue(ptValue, decimal)}
           />
         </div>
       )}

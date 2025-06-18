@@ -112,7 +112,6 @@ export default function Redeem({ coinConfig }: Props) {
               setSyValue(
                 new Decimal(syValue)
                   .mul(coinConfig.conversionRate)
-                  .div(new Decimal(10).pow(coinConfig.decimal))
                   .toFixed(decimal)
               )
             } else {
@@ -132,7 +131,7 @@ export default function Redeem({ coinConfig }: Props) {
       getRedeemOut()
       return getRedeemOut.cancel
     },
-    [redeemDryRun, pyPositionData]
+    [redeemDryRun, pyPositionData, receivingType]
   )
 
   useEffect(() => {
@@ -270,10 +269,10 @@ export default function Redeem({ coinConfig }: Props) {
       </div>
       <AmountOutput
         name={coinName}
-        title={"Underlying asset".toUpperCase()}
-        value={isInputLoading ? undefined : syValue}
+        amount={syValue}
         loading={isInputLoading}
         maturity={coinConfig.maturity}
+        title={"Underlying asset".toUpperCase()}
         logo={
           receivingType === "underlying"
             ? coinConfig.underlyingCoinLogo

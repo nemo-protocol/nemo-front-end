@@ -60,6 +60,9 @@ export interface BaseCoinInfo {
   scaledPtApy: string
   scaledUnderlyingApy: string
   feeApy: string
+  sevenAvgUnderlyingApy: string
+  sevenAvgUnderlyingApyRateChange: string
+  ytPrice: string
 }
 
 export interface Incentive {
@@ -121,7 +124,7 @@ export interface CoinConfig extends BaseCoinInfo {
   marketPositionType: string
   marketPositionTypeList: string[]
   nemoContractIdList: string[]
-  // lpPrice: string
+  lpPrice: string
   coinPrice: string
   sevenAvgUnderlyingPtApy: string
   sevenAvgUnderlyingYtApy: string
@@ -138,14 +141,17 @@ export interface CoinConfig extends BaseCoinInfo {
   ptTokenLogo: string
   ytTokenLogo: string
   lpTokenLogo: string
+  lpPriceRateChange: string
+  ptPriceRateChange: string
+  ytPriceRateChange: string
 }
 
 export interface PortfolioItem extends CoinConfig {
   lpPrice: string
   ytPrice: string
-  ytTokenLogo: string;
-  ptTokenLogo: string;
-  lpTokenLogo: string ;
+  ytTokenLogo: string
+  ptTokenLogo: string
+  lpTokenLogo: string
   ytReward: string
   underlyingProtocol: string
   yieldFactoryConfigId: string

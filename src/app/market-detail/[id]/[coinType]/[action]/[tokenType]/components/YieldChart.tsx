@@ -65,32 +65,61 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
   // const [open, setOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
   const mainMetric = useMemo(() => {
-    switch (tokenType) {
-      case "FIXED":
-        return {
-          label: "FIXED APY",
-          value: formatPercent(coinConfig.fixedApy),
-          delta: formatPercent(coinConfig.fixedApyRateChange),
-          positive: +coinConfig.fixedApyRateChange >= 0,
-        }
-      case "YIELD":
-        return {
-          label: "YIELD APY",
-          value: formatPercent(coinConfig.yieldApy),
-          delta: formatPercent(coinConfig.yieldApyRateChange),
-          positive: +coinConfig.yieldApyRateChange >= 0,
-        }
-      case "POOL":
-        return {
-          label: "POOL APY",
-          value: formatPercent(coinConfig.poolApy),
-          delta: formatPercent(coinConfig.poolApyRateChange),
-          positive: +coinConfig.poolApyRateChange >= 0,
-        }
-      default:
-        return { label: "", value: "—", delta: "", positive: true }
+    if (activeMetric === "apy") {
+      switch (tokenType) {
+        case "FIXED":
+          return {
+            label: "FIXED APY",
+            value: formatPercent(coinConfig.fixedApy),
+            delta: formatPercent(coinConfig.fixedApyRateChange),
+            positive: Number(coinConfig.fixedApyRateChange) >= 0,
+          }
+        case "YIELD":
+          return {
+            label: "YIELD APY",
+            value: formatPercent(coinConfig.yieldApy),
+            delta: formatPercent(coinConfig.yieldApyRateChange),
+            positive: Number(coinConfig.yieldApyRateChange) >= 0,
+          }
+        case "POOL":
+          return {
+            label: "POOL APY",
+            value: formatPercent(coinConfig.poolApy),
+            delta: formatPercent(coinConfig.poolApyRateChange),
+            positive: Number(coinConfig.poolApyRateChange) >= 0,
+          }
+        default:
+          return { label: "", value: "—", delta: "", positive: true }
+      }
+    } else if (activeMetric === "price") {
+      switch (tokenType) {
+        case "FIXED":
+          return {
+            label: "FIXED Price",
+            value: coinConfig.coinPrice ? Number(coinConfig.coinPrice).toFixed(4) : "—",
+            delta: formatPercent(coinConfig.ptPriceRateChange),
+            positive: true,
+          }
+        case "YIELD":
+          return {
+            label: "YIELD Price",
+            value: coinConfig.ytPrice ? Number(coinConfig.ytPrice).toFixed(4) : "—",
+            delta: formatPercent(coinConfig.ytPriceRateChange),
+            positive: true,
+          }
+        case "POOL":
+          return {
+            label: "POOL Price",
+            value: coinConfig.lpPrice ? Number(coinConfig.lpPrice).toFixed(4) : "—",
+            delta: formatPercent(coinConfig.lpPriceRateChange),
+            positive: true,
+          }
+        default:
+          return { label: "", value: "—", delta: "", positive: true }
+      }
     }
-  }, [tokenType, coinConfig])
+    return { label: "", value: "—", delta: "", positive: true }
+  }, [tokenType, coinConfig, activeMetric])
 
   const { granularity } = TABS[activeTab]
 

@@ -27,7 +27,6 @@ import { Progress } from "@/components/ui/progress"
 import { APYTooltip } from "@/components/APYTooltip"
 import Image from "next/image"
 import PageLoader from "@/components/PageLoader"
-import { getMaturityStat } from "./components/StatCard"
 
 export default function MarketDetailPage() {
   const params = useParams()
@@ -81,8 +80,12 @@ export default function MarketDetailPage() {
   )
 
   if (isConfigLoading) {
-    return <div className="text-white p-8"> <PageLoader />
-    </div>
+    return (
+      <div className="text-white p-8">
+        {" "}
+        <PageLoader />
+      </div>
+    )
   }
 
   if (!coinConfig) {
@@ -195,45 +198,36 @@ export default function MarketDetailPage() {
       {/* TOOD */}
       {/* 统计信息卡片区域 */}
       <div className="grid grid-cols-8 gap-8 mt-8 mb-0 border-b border-b-[rgba(252,252,252,0.10)] pb-6">
-        {/* LIQUIDITY */}
+        {/* TVL */}
         <div className="flex flex-col">
-          <span className="text-xs font-[600] mb-4 text-[#FCFCFC]/40">
-            LIQUIDITY
-          </span>
+          <span className="text-xs font-[600] mb-4 text-[#FCFCFC]/40">TVL</span>
           <span className="text-[20px] font-[500] text-white">
-            {formatTVL(coinConfig.liquidity)}
+            ${formatLargeNumber(coinConfig.tvl)}
           </span>
           <span
             className={[
-              "text-xs font-[600] rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
-              isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
-                new Decimal(coinConfig.liquidityRateChange).gt(0)
-                ? "text-[#4CC877] bg-[#4CC877]/10"
+              "text-xs rounded-lg  font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
+              isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
+              new Decimal(coinConfig.tvlRateChange).gt(0)
+                ? "text-[#4CC877] bg-[#4cc877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
           >
-            <span
-              className={[
-                "text-xs",
-                isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
-                  new Decimal(coinConfig.liquidityRateChange).gt(0)
-                  ? "text-[#4CC877]"
-                  : "text-[#FF2E54]",
-              ].join(" ")}
-            >
-              {isValidAmountWithoutZero(coinConfig.liquidityRateChange)
-                ? new Decimal(coinConfig.liquidityRateChange).toFixed(2)
+            <span>
+              {isValidAmountWithoutZero(coinConfig.tvlRateChange)
+                ? new Decimal(coinConfig.tvlRateChange).toFixed(2)
                 : "--"}
               %
             </span>
-            {isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
-              new Decimal(coinConfig.liquidityRateChange).gt(0) ? (
+            {isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
+            new Decimal(coinConfig.tvlRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
             )}
           </span>
         </div>
+
         {/* 24H VOLUME */}
         <div className="flex flex-col">
           <span className="text-xs font-[600] mb-4 text-[#FCFCFC]/40">
@@ -246,7 +240,7 @@ export default function MarketDetailPage() {
             className={[
               "text-xs font-[600] rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
               isValidAmountWithoutZero(coinConfig.volumeRateChange) &&
-                new Decimal(coinConfig.volumeRateChange).gt(0)
+              new Decimal(coinConfig.volumeRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
@@ -258,7 +252,7 @@ export default function MarketDetailPage() {
               %
             </span>
             {isValidAmountWithoutZero(coinConfig.volumeRateChange) &&
-              new Decimal(coinConfig.volumeRateChange).gt(0) ? (
+            new Decimal(coinConfig.volumeRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -277,31 +271,39 @@ export default function MarketDetailPage() {
             {dayjs(parseInt(coinConfig.maturity)).format("DD MMM YYYY")}
           </span>
         </div>
-        {/* TVL */}
+
         <div className="flex flex-col">
           <span className="text-xs font-[600] mb-4 text-[#FCFCFC]/40">
-            TVL
+            {`Underlying Apy(7D)`.toLocaleUpperCase()}
           </span>
           <span className="text-[20px] font-[500] text-white">
-            ${formatLargeNumber(coinConfig.tvl)}
+            {formatTVL(coinConfig.sevenAvgUnderlyingApyRateChange)}
           </span>
           <span
             className={[
-              "text-xs rounded-lg  font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
-              isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
-                new Decimal(coinConfig.tvlRateChange).gt(0)
-                ? "text-[#4CC877] bg-[#4cc877]/10"
+              "text-xs font-[600] rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
+              isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
+              new Decimal(coinConfig.liquidityRateChange).gt(0)
+                ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
           >
-            <span>
-              {isValidAmountWithoutZero(coinConfig.tvlRateChange)
-                ? new Decimal(coinConfig.tvlRateChange).toFixed(2)
+            <span
+              className={[
+                "text-xs",
+                isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
+                new Decimal(coinConfig.liquidityRateChange).gt(0)
+                  ? "text-[#4CC877]"
+                  : "text-[#FF2E54]",
+              ].join(" ")}
+            >
+              {isValidAmountWithoutZero(coinConfig.liquidityRateChange)
+                ? new Decimal(coinConfig.liquidityRateChange).toFixed(2)
                 : "--"}
               %
             </span>
-            {isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
-              new Decimal(coinConfig.tvlRateChange).gt(0) ? (
+            {isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
+            new Decimal(coinConfig.liquidityRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -320,7 +322,7 @@ export default function MarketDetailPage() {
             className={[
               "text-xs rounded-lg font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
               isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
-                new Decimal(coinConfig.yieldApyRateChange).gt(0)
+              new Decimal(coinConfig.yieldApyRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
@@ -332,7 +334,7 @@ export default function MarketDetailPage() {
               %
             </span>
             {isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
-              new Decimal(coinConfig.yieldApyRateChange).gt(0) ? (
+            new Decimal(coinConfig.yieldApyRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -449,7 +451,9 @@ export default function MarketDetailPage() {
                 <div className="space-y-2 cursor-pointer">
                   <div className="flex justify-between items-end text-xs">
                     <span className="text-[20px] font-[500]">{ptRatio}%</span>
-                    <span className="text-light-gray/40  font-[600]">{syRatio}%</span>
+                    <span className="text-light-gray/40  font-[600]">
+                      {syRatio}%
+                    </span>
                   </div>
                   <Progress
                     value={Number(ptRatio)}
@@ -473,22 +477,22 @@ export default function MarketDetailPage() {
                     <span className="text-light-gray/40">
                       {coinConfig.marketState.totalPt && coinConfig.decimal
                         ? `${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalPt).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalPt).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                       PT {coinConfig?.coinName}:
                     </span>
                     <span>
                       {coinConfig.marketState?.totalPt && coinConfig.decimal
                         ? `$${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalPt).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalPt).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                     </span>
                   </div>
@@ -496,22 +500,22 @@ export default function MarketDetailPage() {
                     <span className="text-light-gray/40">
                       {coinConfig.marketState.totalSy && coinConfig.decimal
                         ? `${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalSy).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                       {coinConfig?.coinName}:
                     </span>
                     <span>
                       {coinConfig.marketState?.totalSy && coinConfig.decimal
                         ? `$${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalSy).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                     </span>
                   </div>

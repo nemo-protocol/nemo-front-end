@@ -204,12 +204,10 @@ export default function MarketPage() {
       width: 340,
       cell: ({ row }) => {
         const maturity = parseInt(row.original.maturity)
-        const startTime = parseInt(row.original.startTime)
         const now = Date.now()
-        const total = maturity - startTime
-        const passed = Math.max(0, Math.min(now - startTime, total))
         const count = 30
-        let activeCount = Math.round((passed / total) * count)
+        const remainingDays = Math.max(0, Math.ceil((maturity - now) / (1000 * 60 * 60 * 24)))
+        let activeCount = Math.round((remainingDays / 365) * count)
         if (activeCount > count) activeCount = count
         if (activeCount < 0) activeCount = 0
         return (
@@ -244,7 +242,7 @@ export default function MarketPage() {
           <div className="text-white text-sm font-[500]">
             ${formatLargeNumber(row.original.tvl, 2)}
           </div>
-          <div className="text-sm text-white/40">10%</div>
+          {/* <div className="text-sm text-white/40">10%</div> */}
         </div>
       ),
     },

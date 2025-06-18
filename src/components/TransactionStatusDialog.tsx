@@ -84,12 +84,16 @@ const TransactionStatusDialog: React.FC<TransactionStatusDialogProps> = ({
       <AlertDialogContent className="bg-light-gray/[0.03] border border-[#6D7177] rounded-3xl px-6 max-w-[480px] w-full shadow-2xl backdrop-blur-[25px]">
         <AlertDialogHeader>
           <div className="flex flex-col items-center w-full">
-            <div className="text-light-gray/40 text-xs  mb-6 text-center">
+            <div className="text-light-gray/40 text-xs  mb-6 text-center mt-6">
               {status === "Success"
                 ? "THE FOLLOWING TRANSACTIONS HAVE BEEN COMPLETED:"
                 : "YOU MAY ENCOUNTER SOME ERRORS."}
             </div>
-            <AlertDialogTitle className="text-white text-[56px] text-center mb-5 font-serif font-normal">
+            <AlertDialogTitle
+              className={`text-white text-center mb-5 font-serif font-normal ${
+                status === "Success" ? "text-[56px]" : "text-[32px]"
+              }`}
+            >
               {status === "Success" ? "Successful!" : "Transaction Error."}
             </AlertDialogTitle>
             {status === "Success" ? (

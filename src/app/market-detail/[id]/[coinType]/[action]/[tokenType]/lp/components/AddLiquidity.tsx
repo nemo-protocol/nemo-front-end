@@ -151,6 +151,16 @@ export default function AddLiquidity({ coinConfig }: Props) {
     [coinConfig]
   )
 
+  const handleActionChange = (newAction: "mint" | "add") => {
+    setAction(newAction)
+    setAddValue("")
+    setLpValue("")
+    setYtValue("")
+    setError("")
+    setWarning("")
+    setErrorDetail("")
+  }
+
   async function handleSeedLiquidity(
     tx: Transaction,
     addAmount: string,
@@ -400,7 +410,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
       {/* 二级Tab */}
       <div className="flex gap-2 w-full">
         <button
-          onClick={() => setAction("add")}
+          onClick={() => handleActionChange("add")}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
             action === "add"
               ? "bg-white/10 text-white"
@@ -416,7 +426,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
           }  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
-          onClick={() => setAction("mint")}
+          onClick={() => handleActionChange("mint")}
         >
           {`MINT & SUPPLY`.toLocaleUpperCase()}
         </button>
@@ -470,10 +480,11 @@ export default function AddLiquidity({ coinConfig }: Props) {
         <AmountOutput
           maturity={maturity}
           loading={isCalculating}
+          price={coinConfig.lpPrice}
           logo={coinConfig.lpTokenLogo}
           name={`LP ${coinConfig.coinName}`}
           title={"LP Position".toUpperCase()}
-          value={
+          amount={
             !lpValue || !decimal ? "" : formatDecimalValue(lpValue, decimal)
           }
         />
@@ -482,11 +493,12 @@ export default function AddLiquidity({ coinConfig }: Props) {
           <AmountOutput
             maturity={maturity}
             loading={isCalculating}
+            price={coinConfig.ytPrice}
             logo={coinConfig.ytTokenLogo}
             name={`YT ${coinConfig.coinName}`}
             title={"YT POSITION".toUpperCase()}
             className="bg-transparent rounded-none"
-            value={
+            amount={
               !ytValue || !decimal ? "" : formatDecimalValue(ytValue, decimal)
             }
           />
@@ -496,11 +508,12 @@ export default function AddLiquidity({ coinConfig }: Props) {
           <AmountOutput
             maturity={maturity}
             loading={isCalculating}
+            price={coinConfig.lpPrice}
             logo={coinConfig.lpTokenLogo}
             name={`LP ${coinConfig.coinName}`}
             title={"LP Position".toUpperCase()}
             className="bg-transparent rounded-none"
-            value={
+            amount={
               !lpValue || !decimal ? "" : formatDecimalValue(lpValue, decimal)
             }
           />

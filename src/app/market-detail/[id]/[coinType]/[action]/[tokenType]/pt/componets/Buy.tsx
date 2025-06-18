@@ -524,7 +524,7 @@ export default function Buy({ coinConfig }: Props) {
 
       {/* RECEIVE 输出区 用AmountOutput组件 */}
       <AmountOutput
-        value={ptValue}
+        amount={ptValue}
         loading={isCalcPtLoading}
         logo={coinConfig.ptTokenLogo}
         maturity={coinConfig.maturity}

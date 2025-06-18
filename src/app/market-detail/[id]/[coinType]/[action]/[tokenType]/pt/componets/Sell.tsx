@@ -404,11 +404,11 @@ export default function Sell({ coinConfig }: Props) {
       </div>
 
       <AmountOutput
-        value={isLoading ? undefined : isValidAmount(targetValue) ? formatDecimalValue(targetValue, decimal) : undefined}
+        amount={isLoading ? undefined : isValidAmount(targetValue) ? formatDecimalValue(targetValue, decimal) : undefined}
         loading={isLoading}
         maturity={coinConfig?.maturity}
         title="RECEIVE"
-        name={receivingType === "underlying" ? coinConfig?.underlyingCoinName || "" : coinConfig?.coinName || ""}
+        name={receivingType === "underlying" ? coinConfig.underlyingCoinName : coinConfig.coinName}
         coinNameComponent={
           <TokenTypeSelect
             value={receivingType}
