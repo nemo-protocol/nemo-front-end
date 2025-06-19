@@ -132,7 +132,7 @@ export default function LeaderboardPage() {
                     </span>
                   </td>
                   <td className="py-3 text-[14px] font-[500] h-[60px]  flex items-center gap-2 border-t border-b border-[#3F3F3F]">
-                    <div className='w-52 whitespace-nowrap overflow-hidden text-ellipsis'>{myRank.address}</div>
+                    <div className='w-56 whitespace-nowrap overflow-hidden text-ellipsis'>{myRank.address}</div>
                     <Image src={`/copy.svg`} alt="" width={16} height={16} onClick={() => copyToClipboard(myRank.address)} className="shrink-0  cursor-pointer" />
                   </td>
                   <td className="py-3 text-[14px] text-right font-[500] border-t border-b border-[#3F3F3F]">
@@ -147,8 +147,8 @@ export default function LeaderboardPage() {
                   <td className="py-3 text-[14px] font-[500]">
                     <RankCell rank={item.rank} />
                   </td>
-                  <td className="py-3 text-[14px] font-[500] flex items-center gap-2">
-                    <div className='w-52 whitespace-nowrap overflow-hidden text-ellipsis'>{item.address}</div>
+                  <td className="py-3 text-[14px]  h-[54px] font-[500] flex items-center gap-2">
+                    <div className='w-56 whitespace-nowrap overflow-hidden text-ellipsis'>{item.address}</div>
                     <Image src={`/copy.svg`} alt="" width={16} height={16} onClick={() => copyToClipboard(item.address)} className="shrink-0  cursor-pointer" />
                   </td>
                   <td className="py-3 text-[14px] text-right font-[500]">
@@ -233,10 +233,10 @@ export default function LeaderboardPage() {
 }
 
 
-const myRankBadge: Record<number, { bg: string; text: string, title: string ,icon:string}> = {
-  1: { bg: 'bg-[rgba(149,110,255,0.1)]', text: 'text-[#956EFF]', title: '5%',icon:'/rank-1.svg' },
-  2: { bg: 'bg-[rgba(255,136,0,0.10)]', text: 'text-[#F80]', title: '10%',icon:'/rank-2.svg'},
-  3: { bg: 'bg-[rgba(252,252,252,0.03)]', text: 'text-[#FCFCFC]', title: '30%',icon:'/rank-3.svg' },
+const myRankBadge: Record<number, { bg: string; text: string, title: string, icon: string }> = {
+  1: { bg: 'bg-[rgba(149,110,255,0.1)]', text: 'text-[#956EFF]', title: '5%', icon: '/rank-1.svg' },
+  2: { bg: 'bg-[rgba(255,136,0,0.10)]', text: 'text-[#F80]', title: '10%', icon: '/rank-2.svg' },
+  3: { bg: 'bg-[rgba(252,252,252,0.1)]', text: 'text-[#FCFCFC]', title: '30%', icon: '/rank-3.svg' },
 };
 function SummaryCard({
   title,
@@ -262,7 +262,7 @@ function SummaryCard({
       <div className="text-[12px] font-[600] text-[#FCFCFC66]">{title}
         {badge && <>
           <span className={`px-3 py-1 ml-2 rounded-[12px] ${badge.bg} ${badge.text} inline-flex items-center gap-1`}>
-           
+
             TOP {badge.title}
             <Image src={badge.icon} alt="" width={12} height={12} className="shrink-0" />
           </span></>}
@@ -284,13 +284,15 @@ function RankCell({ rank }: { rank: number }) {
   if (rank <= 3) {
     const { bg, text } = rankBadge[rank];
     return (
-      <span className={`px-3 py-1 rounded-[12px] ${bg} ${text} inline-flex items-center gap-1`}>
+      <span className={`px-3 py-1 text-right rounded-[12px] ${bg} ${text} inline-flex items-center gap-1`}>
         <Image src={`/laurel-leafs-${rank}.svg`} alt="" width={14} height={14} className="shrink-0" />
         #{rank}
       </span>
     );
   }
-  return <>#{rank}</>;
+  return <span className={`px-3 py-1 rounded-[12px] inline-flex items-center gap-1`}>
+    #{rank}
+  </span>;
 }
 
 function PaginateButton({

@@ -51,7 +51,7 @@ function formatPercent(num?: string | number, digits = 2) {
   return `${(n * 1).toFixed(digits)}%` // *1 兼容字符串科学计数
 }
 
-export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
+export default function YieldChart({ coinConfig, h }: { coinConfig: CoinConfig, h: number }) {
   const params = useParams()
   const [activeTab, setActiveTab] = useState(0)
   const [activeMetric, setActiveMetric] =
@@ -248,7 +248,7 @@ export default function YieldChart({ coinConfig }: { coinConfig: CoinConfig }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={h}>
         <LineChart data={chartData} margin={{ left: 16, right: 0 }}>
           <CartesianGrid stroke="rgba(252,252,252,0.1)" vertical={false} />
           <XAxis

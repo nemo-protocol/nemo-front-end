@@ -46,7 +46,7 @@ export default function PTMarketDetail({ coinConfig }: Props) {
         <div className="lg:col-span-2 flex flex-col gap-6">
           <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
             {/* Chart */}
-            <YieldChart coinConfig={coinConfig} />
+            <YieldChart coinConfig={coinConfig} h={462}/>
           </div>
         </div>
 
