@@ -7,68 +7,68 @@ import { useSearchParams } from 'next/navigation';
 
 /* ────────────────── 类型定义 ────────────────── */
 export interface LeaderboardItem {
-  rank         : number;
-  address      : string;
-  pointsPerDay : number;
-  totalPoints  : number;
+  rank: number;
+  address: string;
+  pointsPerDay: number;
+  totalPoints: number;
 }
 
 export interface LeaderboardData {
   count: number;
-  data : LeaderboardItem[];
-  page : { pageIndex: number; pageSize: number };
+  data: LeaderboardItem[];
+  page: { pageIndex: number; pageSize: number };
 
   /* 如果后端在响应里附带了“我的信息”，可在这里追加字段 */
   // my?: { rank: number; pointsPerDay: number; totalPoints: number };
 }
 
 export interface LeaderboardResponse {
-  msg  : string;          // "success"
+  msg: string;          // "success"
   count: number;
-  data : LeaderboardItem[];
-  page : { pageIndex: number; pageSize: number };
+  data: LeaderboardItem[];
+  page: { pageIndex: number; pageSize: number };
 
   // my?: { ... }         // ← 预留，你可以根据后端返回补上
 }
 
 export interface UseLeaderboardParams {
-  pageSize?  : number;     // 默认 10
-  pageIndex? : number;     // 默认 1
-  autoFetch? : boolean;    // 默认 true
+  pageSize?: number;     // 默认 10
+  pageIndex?: number;     // 默认 1
+  autoFetch?: boolean;    // 默认 true
 }
 
 export interface UseLeaderboardResult {
-  data      : LeaderboardData | null;
-  loading   : boolean;
-  error     : AxiosError | null;
-  refetch   : () => void;
+  data: LeaderboardData | null;
+  loading: boolean;
+  error: AxiosError | null;
+  refetch: () => void;
 
-  setPageSize : React.Dispatch<React.SetStateAction<number>>;
+  setPageSize: React.Dispatch<React.SetStateAction<number>>;
   setPageIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
 /* ────────────────── Hook 实现 ────────────────── */
 export function useLeaderboard(
   {
-    pageSize  : initSize = 10,
-    pageIndex : initIdx  = 1,
+    pageSize: initSize = 10,
+    pageIndex: initIdx = 1,
     autoFetch = true,
   }: UseLeaderboardParams = {},
 ): UseLeaderboardResult {
   /* ---------- Wallet / mockAddress ---------- */
-  const { address }      = useWallet();
-  const searchParams      = useSearchParams();
-  const mockAddressRaw    = searchParams.get('mockAddress');
-
+  const { address } = useWallet();
+  const searchParams = useSearchParams();
+  const mockAddressRaw = searchParams.get('mockAddress');
+  console.log(process.env.NODE_ENV,process.env.NEXT_PUBLIC_HOST,process.env.NEXT_PUBLIC_DEBUG, 'sixu')
   const effectiveAddress =
     process.env.NODE_ENV !== 'production' && mockAddressRaw
       ? mockAddressRaw
       : address;
 
   /* ---------- state ---------- */
-  const [data, setData]         = useState<LeaderboardData | null>(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState<AxiosError | null>(null);
+  const [data, setData] = useState<LeaderboardData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<AxiosError | null>(null);
   const [pageSize, setPageSize] = useState(initSize);
   const [pageIndex, setPageIndex] = useState(initIdx);
 
@@ -88,8 +88,8 @@ export function useLeaderboard(
         '/api/v1/points/page',
         {
           cancelToken: source.token,
-          params     : { pageSize, pageIndex },
-          headers    : { userAddress: effectiveAddress || '' },  // 服务器如需用户地址可带上
+          params: { pageSize, pageIndex },
+          headers: { userAddress: effectiveAddress || '' },  // 服务器如需用户地址可带上
         },
       );
 
@@ -97,8 +97,8 @@ export function useLeaderboard(
       if (msg === 'success') {
         setData({
           count: payload.count,
-          data : payload.data,
-          page : payload.page,
+          data: payload.data,
+          page: payload.page,
           // my  : payload.my,   ← 如果后端返回，可放开
         });
       } else {

@@ -68,6 +68,7 @@ export default function LeaderboardPage() {
             )
             : '--'
         }
+        ranking={myRank ? myRank.rank / totalUsers : 1}
       />
     </div>
   );
@@ -87,7 +88,7 @@ export default function LeaderboardPage() {
       <div className="flex mx-7.5  gap-1">
         <h1 className="fallback #FCFCFC 
         text-[color:var(--typo-primary,#FCFCFC)]
-        [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Effective APY"}</h1>
+        [text-shadow:0_0_32px_rgba(239,244,252,0.56)] [font-family:'Season Serif TRIAL'] text-[32px] font-normal font-serif">{"Rankings"}</h1>
 
         <div className="relative mt-1 group">
           <button
@@ -122,15 +123,34 @@ export default function LeaderboardPage() {
             </thead>
 
             <tbody className="text-[#FCFCFC]">
+              {myRank &&
+                <tr key={myRank.address} >
+                  <td className="py-3 text-[14px] font-[500] border-t border-b border-[#3F3F3F]">
+                    <span className={`px-3 py-1 rounded-[12px]  text-[12px] text-white/60 font-[600] inline-flex items-center gap-1`}>
+                      <Image src={`/people.svg`} alt="" width={14} height={14} className="shrink-0" />
+                      #{myRank.rank}
+                    </span>
+                  </td>
+                  <td className="py-3 text-[14px] font-[500] h-[60px]  flex items-center gap-2 border-t border-b border-[#3F3F3F]">
+                    <div className='w-52 whitespace-nowrap overflow-hidden text-ellipsis'>{myRank.address}</div>
+                    <Image src={`/copy.svg`} alt="" width={16} height={16} onClick={() => copyToClipboard(myRank.address)} className="shrink-0  cursor-pointer" />
+                  </td>
+                  <td className="py-3 text-[14px] text-right font-[500] border-t border-b border-[#3F3F3F]">
+                    {myRank.pointsPerDay.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-3 text-right text-[14px] font-[500] border-t border-b border-[#3F3F3F]">
+                    {myRank.totalPoints.toLocaleString()}
+                  </td>
+                </tr>}
               {rows.map((item) => (
                 <tr key={item.address}>
                   <td className="py-3 text-[14px] font-[500]">
                     <RankCell rank={item.rank} />
                   </td>
                   <td className="py-3 text-[14px] font-[500] flex items-center gap-2">
-                    <div className='w-52 whitespace-nowrap overflow-hidden text-ellipsis'>{item.address}</div>   
-                    <Image src={`/copy.svg`} alt="" width={16} height={16}    onClick={()=>copyToClipboard(item.address)} className="shrink-0  cursor-pointer" />
-                    </td>
+                    <div className='w-52 whitespace-nowrap overflow-hidden text-ellipsis'>{item.address}</div>
+                    <Image src={`/copy.svg`} alt="" width={16} height={16} onClick={() => copyToClipboard(item.address)} className="shrink-0  cursor-pointer" />
+                  </td>
                   <td className="py-3 text-[14px] text-right font-[500]">
                     {item.pointsPerDay.toLocaleString(undefined, { maximumFractionDigits: 2 })}
                   </td>
@@ -150,7 +170,7 @@ export default function LeaderboardPage() {
             </tbody>
           </table>
 
-      
+
         </div>
 
         {/* ───── 分页 ───── */}
@@ -212,20 +232,41 @@ export default function LeaderboardPage() {
   );
 }
 
-/* ───────────────────────────── 小组件 ───────────────────────────── */
 
+const myRankBadge: Record<number, { bg: string; text: string, title: string ,icon:string}> = {
+  1: { bg: 'bg-[rgba(149,110,255,0.1)]', text: 'text-[#956EFF]', title: '5%',icon:'/rank-1.svg' },
+  2: { bg: 'bg-[rgba(255,136,0,0.10)]', text: 'text-[#F80]', title: '10%',icon:'/rank-2.svg'},
+  3: { bg: 'bg-[rgba(252,252,252,0.03)]', text: 'text-[#FCFCFC]', title: '30%',icon:'/rank-3.svg' },
+};
 function SummaryCard({
   title,
   value,
   loading,
+  ranking
 }: {
   title: string;
   value: React.ReactNode;
   loading?: boolean;
+  ranking?: number
 }) {
+  let badge
+  if (ranking && ranking < 0.05) {
+    badge = myRankBadge[1];
+  } else if (ranking && ranking < 0.1) {
+    badge = myRankBadge[2];
+  } else if (ranking && ranking < 0.3) {
+    badge = myRankBadge[3];
+  }
   return (
-    <div className="flex flex-col h-[182px] items-center">
-      <div className="text-[12px] font-[600] text-[#FCFCFC66]">{title}</div>
+    <div className="flex flex-col h-[152px] items-center">
+      <div className="text-[12px] font-[600] text-[#FCFCFC66]">{title}
+        {badge && <>
+          <span className={`px-3 py-1 ml-2 rounded-[12px] ${badge.bg} ${badge.text} inline-flex items-center gap-1`}>
+           
+            TOP {badge.title}
+            <Image src={badge.icon} alt="" width={12} height={12} className="shrink-0" />
+          </span></>}
+      </div>
       {(loading) ? <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div> : <div className="text-[56px] font-serif font-Medium font-[470] text-[#FCFCFC]">{value}</div>}
       <div className="text-[48px] font-serif font-[470] text-[#FCFCFC]">
       </div>

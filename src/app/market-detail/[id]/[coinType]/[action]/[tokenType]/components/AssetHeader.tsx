@@ -18,7 +18,7 @@ export default function AssetHeader({ coinConfig }: Props) {
         className="shrink-0"
       />
       <InfoTooltip
-        side="right"
+        side="bottom"
         content={
           <div className="relative">
             <div

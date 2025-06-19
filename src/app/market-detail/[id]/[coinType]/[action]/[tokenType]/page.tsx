@@ -197,7 +197,7 @@ export default function MarketDetailPage() {
 
       {/* TOOD */}
       {/* 统计信息卡片区域 */}
-      <div className="grid grid-cols-8 gap-8 mt-8 mb-0 border-b border-b-[rgba(252,252,252,0.10)] pb-6">
+      <div className="grid grid-cols-8 gap-8 mt-4 mb-0 border-b border-b-[rgba(252,252,252,0.10)] pb-6">
         {/* TVL */}
         <div className="flex flex-col">
           <span className="text-xs font-[600] mb-4 text-[#FCFCFC]/40">TVL</span>
