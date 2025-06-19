@@ -59,9 +59,9 @@ export function useLeaderboard(
   const { address } = useWallet();
   const searchParams = useSearchParams();
   const mockAddressRaw = searchParams.get('mockAddress');
-  console.log(process.env.NODE_ENV,process.env.NEXT_PUBLIC_HOST,process.env.NEXT_PUBLIC_DEBUG, 'sixu')
+
   const effectiveAddress =
-    process.env.NODE_ENV !== 'production' && mockAddressRaw
+  process.env.NEXT_PUBLIC_DEBUG && mockAddressRaw
       ? mockAddressRaw
       : address;
 

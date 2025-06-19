@@ -19,7 +19,7 @@ const useAllPyPositions = (items?: PortfolioItem[]) => {
   const searchParams   = useSearchParams();          // app-router
   const mockAddressRaw = searchParams.get("mockAddress");
   const effectiveAddress = useMemo(() => {
-    const isDevLike = process.env.NODE_ENV !== "production";
+    const isDevLike = process.env.NEXT_PUBLIC_DEBUG;
     return isDevLike && mockAddressRaw ? mockAddressRaw : address;
   }, [address, mockAddressRaw]);
 

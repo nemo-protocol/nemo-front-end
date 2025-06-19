@@ -9,13 +9,13 @@ import { useSearchParams } from 'next/navigation';
 export interface MarketTransaction {
   tokenLogo: string;
   id: string;
-  tradeTime: number;   
-  maturity: number;    
-  asset: string;       
+  tradeTime: number;
+  maturity: number;
+  asset: string;
   tradeType: 'ADD' | 'BUY' | 'SELL' | string;
   processType: 'success' | 'failed' | '' | string;
-  amount: string;     
-  tx: string;         
+  amount: string;
+  tx: string;
 }
 
 export interface MarketTransactionsData {
@@ -68,7 +68,7 @@ export function useMarketTransactions(
   /* 计算最终要用的地址：mockAddress（dev 环境） > 钱包 address          */
   /* ------------------------------------------------------------------ */
   const { address } = useWallet();
-  const searchParams   = useSearchParams();           // app-router
+  const searchParams = useSearchParams();           // app-router
   const mockAddressRaw = searchParams.get("mockAddress");
 
   // pages-router 写法：
@@ -76,15 +76,15 @@ export function useMarketTransactions(
   // const mockAddressRaw = query.mockAddress as string | undefined;
 
   const effectiveAddress =
-    process.env.NODE_ENV !== "production" && mockAddressRaw
+    process.env.NEXT_PUBLIC_DEBUG && mockAddressRaw
       ? mockAddressRaw
       : address;
 
   /* ------------------------- 组件状态 ------------------------------ */
-  const [data, setData]       = useState<MarketTransactionsData | null>(null);
+  const [data, setData] = useState<MarketTransactionsData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<AxiosError | null>(null);
-  const [pageSize, setPageSize]   = useState(initSize);
+  const [error, setError] = useState<AxiosError | null>(null);
+  const [pageSize, setPageSize] = useState(initSize);
   const [pageIndex, setPageIndex] = useState(initIdx);
 
   const cancelRef = useRef<CancelTokenSource>();
@@ -104,7 +104,7 @@ export function useMarketTransactions(
         "/api/v1/market/transactions",
         {
           cancelToken: source.token,
-          params : { pageSize, pageIndex },
+          params: { pageSize, pageIndex },
           headers: { userAddress: effectiveAddress },  // ← 用替换后的地址
         },
       );
@@ -113,8 +113,8 @@ export function useMarketTransactions(
       if (msg === "success") {
         setData({
           count: payload.count,
-          data : payload.data,
-          page : payload.page,
+          data: payload.data,
+          page: payload.page,
         });
       } else {
         throw new Error(msg);

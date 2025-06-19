@@ -15,7 +15,7 @@ const useAllLpPositions = (items?: PortfolioItem[]) => {
  
 
   const effectiveAddress = useMemo(() => {
-    const shouldMock = process.env.NODE_ENV !== "production" && mockAddressRaw;
+    const shouldMock = process.env.NEXT_PUBLIC_DEBUG && mockAddressRaw;
     return shouldMock ? mockAddressRaw! : address;
   }, [address, mockAddressRaw]);
 

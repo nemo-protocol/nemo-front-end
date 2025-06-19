@@ -29,7 +29,7 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
   const mockAddressRaw = searchParams.get("mockAddress");
 
   const effectiveAddress =
-    process.env.NODE_ENV !== "production" && mockAddressRaw
+    process.env.NEXT_PUBLIC_DEBUG && mockAddressRaw
       ? mockAddressRaw
       : address;
 
@@ -47,7 +47,7 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
       const tx = new Transaction();
       tx.setSender(effectiveAddress);
       params.filteredYTLists.forEach((item, index) => {
-       
+
         const balance = params.pyPositionsMap?.[item.id]?.ytBalance;
         const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions;
         const coinConfig = item;

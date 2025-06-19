@@ -41,7 +41,7 @@ export default function useQueryClaimAllLpReward<T extends boolean = false>(
   // const mockAddressRaw = query.mockAddress as string | undefined;
 
   const effectiveAddress =
-    process.env.NODE_ENV !== "production" && mockAddressRaw
+  process.env.NEXT_PUBLIC_DEBUG && mockAddressRaw
       ? mockAddressRaw
       : address;
 

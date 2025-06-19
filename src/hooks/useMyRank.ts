@@ -47,7 +47,8 @@ export function useMyRank({
 
   const effectiveAddress =
     explicitAddress ??
-    (process.env.NODE_ENV !== 'production' && mockAddress
+
+    (process.env.NEXT_PUBLIC_DEBUG && mockAddress
       ? mockAddress
       : wallet.address);
 
