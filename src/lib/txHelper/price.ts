@@ -24,7 +24,7 @@ export const getPriceVoucher = <T extends boolean = true>(
   ? [TransactionArgument, MoveCallInfo]
   : TransactionArgument => {
   let moveCall: MoveCallInfo
-  if (coinConfig.provider === "SpringSui") {
+  if (coinConfig.provider === "SpringSui" ||coinConfig.provider === "Liquid Agents") {
     const lstInfo = SPRING_SUI_STAKING_INFO_LIST.find(
       (item) => item.coinType === coinConfig.coinType,
     )?.value

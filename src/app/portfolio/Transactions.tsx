@@ -174,7 +174,7 @@ export default function Transactions() {
 
 
             {isPage && data && (
-                <div className="flex justify-end gap-3 text-[12px] font-[600] mt-6 transition-all duration-200">
+                <div className="flex justify-end gap-3 text-[12px] font-[600] mt-6">
 
                     {(() => {
                         const pageIndex = data.page.pageIndex;
@@ -188,7 +188,7 @@ export default function Transactions() {
                             <>
                                 {/* FIRST */}
                                 <button
-                                    className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === 1) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
+                                    className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 transition disabled:opacity-60 ${!(pageIndex === 1) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === 1}
                                     onClick={() => setPageIndex(1)}
                                 >
@@ -197,7 +197,7 @@ export default function Transactions() {
 
                                 {/* < */}
                                 <button
-                                    className={`w-8  py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === 1) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
+                                    className={`w-8  py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 transition disabled:opacity-60 ${!(pageIndex === 1) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === 1}
                                     onClick={() => setPageIndex(p => Math.max(1, p - 1))}
                                 >
@@ -211,7 +211,7 @@ export default function Transactions() {
 
                                 {/* > */}
                                 <button
-                                    className={`w-8  py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === totalPages) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
+                                    className={`w-8  py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 transition disabled:opacity-60 ${!(pageIndex === totalPages) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === totalPages}
                                     onClick={() => setPageIndex(p => Math.min(totalPages, p + 1))}
                                 >
@@ -220,7 +220,7 @@ export default function Transactions() {
 
                                 {/* LAST */}
                                 <button
-                                    className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 disabled:opacity-60 ${!(pageIndex === totalPages) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
+                                    className={`px-4 py-1 rounded bg-[#1b1f25] text-[#FCFCFC]/80 transition disabled:opacity-60 ${!(pageIndex === totalPages) && "hover:bg-[rgba(23,133,183,0.30)]"}`}
                                     disabled={pageIndex === totalPages}
                                     onClick={() => setPageIndex(totalPages)}
                                 >

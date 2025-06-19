@@ -52,7 +52,7 @@ export default function RpcSelectorMenu() {
                                 : 'text-white/60 hover:bg-gray-700/60 hover:text-white'}`}
                     >
                         <span>{name}</span>
-                        <span className={`ml-2 font-mono ${latencyColor}`}>
+                        <span className={`font-mono ${latencyColor}`}>
                             {ms == null ? '…' : `${ms} ms`}
                         </span>
                     </button>

@@ -15,7 +15,7 @@ export default function Footer() {
           rel="noreferrer"
        
           className="inline-flex items-center gap-2 text-sm 
-                     rounded-full px-4 py-3 bg-gradient-to-r from-white/10 to-white/5 text-white/60"
+                     rounded-full px-4 py-3 bg-gradient-to-r from-white/5 to-white/1 text-white/60"
         >
           Powered&nbsp;by
           <Image
