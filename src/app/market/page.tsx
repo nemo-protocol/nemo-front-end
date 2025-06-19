@@ -210,6 +210,7 @@ export default function MarketPage() {
         let activeCount = Math.round((remainingDays / 365) * count)
         if (activeCount > count) activeCount = count
         if (activeCount < 0) activeCount = 0
+        if (remainingDays > 0 && activeCount < 1) activeCount = 1
         return (
           <div className="grid grid-cols-5 items-center">
             <div className="col-span-2 flex flex-col items-start gap-x-2">

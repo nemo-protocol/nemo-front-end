@@ -277,7 +277,7 @@ export default function MarketDetailPage() {
             {`Underlying Apy(7D)`.toLocaleUpperCase()}
           </span>
           <span className="text-[20px] font-[500] text-white">
-            {formatTVL(coinConfig.sevenAvgUnderlyingApyRateChange)}
+            {formatLargeNumber(coinConfig.sevenAvgUnderlyingApyRateChange)}%
           </span>
           <span
             className={[
@@ -316,7 +316,7 @@ export default function MarketDetailPage() {
             YIELD APY
           </span>
           <span className="text-[20px] font-[500] text-white">
-            ${formatLargeNumber(coinConfig.yieldApy)}%
+            {formatLargeNumber(coinConfig.yieldApy)}%
           </span>
           <span
             className={[

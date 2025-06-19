@@ -28,8 +28,13 @@ const StripedBar: React.FC<StripedBarProps> = ({
       {Array.from({ length: count }).map((_, i) => {
         let style
         if (i < activeCount) {
-          // 渐变白色，左侧最透明(0.1)，右侧全白(1.0)
-          const alpha = 0.1 + (i / (activeCount - 1)) * 0.9
+          // Gradient white, the most transparent on the left (0.3), and all white on the right (1.0)
+          let alpha
+          if (activeCount === 1) {
+            alpha = 1
+          } else {
+            alpha = 0.25 + (i / (activeCount - 1)) * 0.75
+          }
 
           style = {
             backgroundColor: `rgba(255,255,255,${alpha})`,

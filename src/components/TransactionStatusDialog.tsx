@@ -99,18 +99,15 @@ const TransactionStatusDialog: React.FC<TransactionStatusDialogProps> = ({
             {status === "Success" ? (
               <ViewDetailsPopover />
             ) : (
-              <>
-                <span className="text-[#FF2E54] text-xs">
-                  Request Signature: {message}
-                </span>
-                {/* {txId && <ViewDetailsPopover />} */}
-              </>
+              <span className="text-[#FF2E54] text-sm">
+                Request Signature: {message}
+              </span>
             )}
           </div>
         </AlertDialogHeader>
         <div className="flex items-center justify-center mt-[46px]">
           <button
-            className="text-white w-full max-w-[400px] text-sm rounded-full bg-[#256DFF] py-4 hover:bg-[#1A4FCC] transition-colors"
+            className="text-white w-full text-sm rounded-full bg-[#256DFF] h-10 hover:bg-[#1A4FCC] transition-colors"
             onClick={onClose}
           >
             OK
