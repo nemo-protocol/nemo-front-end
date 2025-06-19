@@ -1,7 +1,7 @@
 import React from "react"
 import { cn, formatDecimalValue, isValidAmount } from "@/lib/utils"
 import Decimal from "decimal.js"
-import { Info, Wallet } from "lucide-react"
+import { Info } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   TooltipProvider,
@@ -64,33 +64,71 @@ export default function AmountInput({
         className
       )}
     >
-      <div className="flex items-center justify-between">
-        <div className="grow space-y-0.5 sm:space-y-1 ml-2 sm:ml-0">
-          {title && (
+      <div className="flex flex-col space-y-2 sm:space-y-3">
+        {/* First row: Title */}
+        {title && (
+          <div className="flex items-center">
             <span className="text-xs font-[600] text-light-gray/40">
               {title}
             </span>
-          )}
-          <input
-            min={0}
-            type="number"
-            value={amount}
-            placeholder={"0"}
-            disabled={disabled}
-            onChange={(e) => onChange && onChange(e.target.value)}
-            onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()}
-            className={cn(
-              "bg-transparent outline-none min-w-0 placeholder:text-xl p-0 font-medium w-full shrink-0 placeholder:text-[rgba(252,252,252,0.40)] text-white",
-              disabled && "cursor-not-allowed",
-              amount.length <= 8
-                ? "text-xl"
-                : amount.length <= 10
-                ? "text-lg"
-                : amount.length <= 16
-                ? "text-base"
-                : "text-sm"
+          </div>
+        )}
+
+        {/* Second row: Input and Name/Logo */}
+        <div className="flex items-center justify-between">
+          <div className="grow">
+            <input
+              min={0}
+              type="number"
+              value={amount}
+              placeholder={"0"}
+              disabled={disabled}
+              onChange={(e) => onChange && onChange(e.target.value)}
+              onWheel={(e) =>
+                e.target instanceof HTMLElement && e.target.blur()
+              }
+              className={cn(
+                "bg-transparent outline-none min-w-0 placeholder:text-xl p-0 font-medium w-full shrink-0 placeholder:text-[rgba(252,252,252,0.40)] text-white",
+                disabled && "cursor-not-allowed",
+                amount.length <= 8
+                  ? "text-xl"
+                  : amount.length <= 10
+                  ? "text-lg"
+                  : amount.length <= 16
+                  ? "text-base"
+                  : "text-sm"
+              )}
+            />
+          </div>
+
+          <div className="flex items-center gap-x-1 sm:gap-x-2 shrink-0">
+            {isConfigLoading ? (
+              <Skeleton className="h-full w-10 sm:w-12 bg-[#2D2D48]" />
+            ) : (
+              <div className="flex items-center gap-x-1 sm:gap-x-2">
+                {isConfigLoading ? (
+                  <Skeleton className="size-8 sm:size-12 rounded-full bg-[#2D2D48]" />
+                ) : coinNameComponent ? (
+                  coinNameComponent
+                ) : (
+                  <div className="flex items-center gap-x-1">
+                    <span className="text-xl">{name}</span>
+                    <Image
+                      src={logo ?? ""}
+                      alt={name ?? ""}
+                      className="size-5"
+                      width={20}
+                      height={20}
+                    />
+                  </div>
+                )}
+              </div>
             )}
-          />
+          </div>
+        </div>
+
+        {/* Third row: Dollar value and Balance */}
+        <div className="flex items-center justify-between">
           <div className="flex">
             {amount ? (
               isLoading ? (
@@ -118,80 +156,52 @@ export default function AmountInput({
               <span className="text-xs text-light-gray/40">$0</span>
             )}
           </div>
-        </div>
 
-        <div className="flex items-center rounded-xl gap-x-1 sm:gap-x-2 shrink-0">
-          <div className="flex items-center gap-x-2 sm:gap-x-4">
-            <div className="flex flex-col items-end gap-y-1.5">
-              <div className="h-5 sm:h-6 flex items-center justify-end gap-x-1 sm:gap-x-2">
-                {isConfigLoading ? (
-                  <Skeleton className="h-full w-10 sm:w-12 bg-[#2D2D48]" />
-                ) : (
-                  <div className="flex items-center gap-x-1 sm:gap-x-2">
-                    {isConfigLoading ? (
-                      <Skeleton className="size-8 sm:size-12 rounded-full bg-[#2D2D48]" />
-                    ) : coinNameComponent ? (
-                      coinNameComponent
-                    ) : (
-                      <div className="flex items-center gap-x-1">
-                        <span className="text-xl">{name}</span>
-                        <Image
-                          src={logo ?? ""}
-                          alt={name ?? ""}
-                          className="size-5"
-                          width={20}
-                          height={20}
-                        />
-                      </div>
-                    )}
-                  </div>
+          <div>
+            {isBalanceLoading || isConfigLoading ? (
+              <Skeleton className="bg-[rgba(252,252,252,0.10)]" />
+            ) : (
+              <button
+                title={`${formatDecimalValue(coinBalance, decimal)} ${name}`}
+                disabled={disabled}
+                className={cn(
+                  "flex items-center gap-x-1 text-xs sm:text-sm",
+                  disabled
+                    ? "cursor-not-allowed "
+                    : " cursor-pointer hover:underline"
                 )}
-              </div>
-              <div>
-                {isBalanceLoading || isConfigLoading ? (
-                  <Skeleton className="bg-[rgba(252,252,252,0.10)]" />
-                ) : (
-                  <button
-                    title={`${formatDecimalValue(
-                      coinBalance,
-                      decimal
-                    )} ${name}`}
-                    disabled={disabled}
-                    className={cn(
-                      "flex items-center gap-x-1 text-xs sm:text-sm",
-                      disabled
-                        ? "cursor-not-allowed "
-                        : " cursor-pointer hover:underline"
-                    )}
-                    onClick={() => {
-                      if (isConnected && coinBalance) {
-                        let adjustedBalance = new Decimal(coinBalance)
-                        // TODO: better way to handle this
-                        if (name === "SUI") {
-                          if (adjustedBalance.lt(0.1) && setWarning) {
-                            setWarning(
-                              "Insufficient SUI for gas fee. Minimum required: 0.1 SUI"
-                            )
-                            return
-                          }
-                          adjustedBalance = adjustedBalance.minus(0.1)
-                        }
-                        onChange(formatDecimalValue(adjustedBalance, decimal))
+                onClick={() => {
+                  if (isConnected && coinBalance) {
+                    let adjustedBalance = new Decimal(coinBalance)
+                    // TODO: better way to handle this
+                    if (name === "SUI") {
+                      if (adjustedBalance.lt(0.1) && setWarning) {
+                        setWarning(
+                          "Insufficient SUI for gas fee. Minimum required: 0.1 SUI"
+                        )
+                        return
                       }
-                    }}
-                  >
-                    <Wallet className="size-3 sm:size-3.5" />
-                    {isConnected ? (
-                      <span className="truncate text-left text-[rgba(252,252,252,0.40)]">
-                        {`${formatDecimalValue(coinBalance, decimal)} ${name}`}
-                      </span>
-                    ) : (
-                      "0"
-                    )}
-                  </button>
+                      adjustedBalance = adjustedBalance.minus(0.1)
+                    }
+                    onChange(formatDecimalValue(adjustedBalance, decimal))
+                  }
+                }}
+              >
+                {isConnected ? (
+                  <span className="truncate text-left text-[rgba(252,252,252,0.40)]">
+                    {`${formatDecimalValue(coinBalance, decimal)} ${name}`}
+                  </span>
+                ) : (
+                  "0"
                 )}
-              </div>
-            </div>
+                <Image
+                  src="/assets/images/wallet.svg"
+                  alt="Balance"
+                  width={12}
+                  height={12}
+                />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -215,7 +225,7 @@ export default function AmountInput({
           )}
         </div>
       )}
-      
+
       {warning && (
         <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-yellow-500 break-words flex items-center gap-x-1">
           {warning}

@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { CoinConfig } from "@/queries/types/market"
 import SimpleTabs from "../components/SimpleTabs"
 import YieldChart from "../components/YieldChart"
@@ -13,6 +14,29 @@ interface Props {
 
 export default function PTMarketDetail({ coinConfig }: Props) {
   const [currentTab, setCurrentTab] = useState<"buy" | "sell">("buy")
+  
+  // 添加路由相关hooks
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // 初始化时从URL读取mode参数
+  useEffect(() => {
+    const urlMode = searchParams.get("mode")
+    if (urlMode === "0") {
+      setCurrentTab("buy")
+    } else if (urlMode === "1") {
+      setCurrentTab("sell")
+    }
+  }, [searchParams])
+
+  const handleTabChange = (newTab: string) => {
+    setCurrentTab(newTab as "buy" | "sell")
+    
+    // 更新URL参数 - 使用数字0对应buy，1对应sell
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", newTab === "buy" ? "0" : "1")
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,7 +59,7 @@ export default function PTMarketDetail({ coinConfig }: Props) {
               { key: "sell", label: "SELL" },
             ]}
             current={currentTab}
-            onChange={key => setCurrentTab(key as "buy" | "sell")}
+            onChange={handleTabChange}
           />
 
           {currentTab === "buy" && <Buy coinConfig={coinConfig} />}

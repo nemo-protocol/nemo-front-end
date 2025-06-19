@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import YieldChart from "../components/YieldChart"
 import SimpleTabs from "../components/SimpleTabs"
 import { CoinConfig } from "@/queries/types/market"
@@ -13,6 +14,29 @@ interface Props {
 
 export default function LPMarketDetail({ coinConfig }: Props) {
   const [currentTab, setCurrentTab] = useState("add")
+  
+  // 添加路由相关hooks
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // 初始化时从URL读取mode参数
+  useEffect(() => {
+    const urlMode = searchParams.get("mode")
+    if (urlMode === "0") {
+      setCurrentTab("add")
+    } else if (urlMode === "1") {
+      setCurrentTab("remove")
+    }
+  }, [searchParams])
+
+  const handleTabChange = (newTab: string) => {
+    setCurrentTab(newTab)
+    
+    // 更新URL参数 - 使用数字0对应add，1对应remove
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", newTab === "add" ? "0" : "1")
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,7 +54,7 @@ export default function LPMarketDetail({ coinConfig }: Props) {
         <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
           <SimpleTabs
             current={currentTab}
-            onChange={setCurrentTab}
+            onChange={handleTabChange}
             tabs={[
               { key: "add", label: "Add Liquidity" },
               { key: "remove", label: "Remove Liquidity" },

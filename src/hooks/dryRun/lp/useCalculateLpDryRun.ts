@@ -29,7 +29,7 @@ interface CalculateLpAmountParams {
   inputAmount: string
   coinData: CoinData[]
   pyPositionData: PyPosition[]
-  action: "mint" | "add"
+  action: "swap" | "mint"
 }
 
 export function useCalculateLpAmount(
@@ -126,7 +126,7 @@ export function useCalculateLpAmount(
             lpValue: new Decimal(lpAmount).div(10 ** decimal).toFixed(decimal),
             ytValue: new Decimal(ytAmount).div(10 ** decimal).toFixed(decimal),
           }
-        } else if (action === "add") {
+        } else if (action === "swap") {
           try {
             const { lpAmount, lpValue, tradeFee } =
               await addLiquiditySingleSyDryRun({

@@ -41,7 +41,6 @@ import {
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { mintSCoin } from "@/lib/txHelper/coin"
 import { redeemPt } from "@/lib/txHelper/pt"
-import Image from "next/image"
 
 interface Props {
   coinConfig: CoinConfig
@@ -104,7 +103,7 @@ export default function Buy({ coinConfig }: Props) {
     if (coinData?.length) {
       return coinData
         .reduce((total, coin) => total.add(coin.balance), new Decimal(0))
-        .div(10 ** decimal)
+        .div(new Decimal(10).pow(decimal))
         .toFixed(decimal)
     }
     return "0"
@@ -132,8 +131,8 @@ export default function Buy({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-          (item) => item.coinType === coinConfig?.coinType
-        )?.vaultId
+            (item) => item.coinType === coinConfig?.coinType
+          )?.vaultId
         : "",
     [coinConfig]
   )
@@ -145,6 +144,16 @@ export default function Buy({ coinConfig }: Props) {
       coinConfig?.maturity,
       coinConfig?.pyPositionTypeList
     )
+
+  const ptBalance = useMemo(() => {
+    if (pyPositionData?.length) {
+      return pyPositionData
+        .reduce((total, item) => total.add(item.ptBalance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [pyPositionData, decimal])
 
   const refreshData = useCallback(async () => {
     await Promise.all([refetchPyPosition(), refetchCoinData()])
@@ -383,16 +392,16 @@ export default function Buy({ coinConfig }: Props) {
         const [splitCoin] =
           tokenType === 0
             ? [
-              await mintSCoin({
-                tx,
-                vaultId,
-                slippage,
-                address,
-                coinData,
-                coinConfig,
-                amount: actualSwapAmount,
-              }),
-            ]
+                await mintSCoin({
+                  tx,
+                  vaultId,
+                  slippage,
+                  address,
+                  coinData,
+                  coinConfig,
+                  amount: actualSwapAmount,
+                }),
+              ]
             : splitCoinHelper(tx, coinData, [actualSwapAmount], coinType)
 
         const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinType)
@@ -525,9 +534,9 @@ export default function Buy({ coinConfig }: Props) {
       {/* RECEIVE 输出区 用AmountOutput组件 */}
       <AmountOutput
         amount={ptValue}
+        balance={ptBalance}
         loading={isCalcPtLoading}
         logo={coinConfig.ptTokenLogo}
-        maturity={coinConfig.maturity}
         name={`PT ${coinConfig.coinName}`}
       />
 
@@ -548,28 +557,31 @@ export default function Buy({ coinConfig }: Props) {
               {!swapValue
                 ? "--"
                 : isCalcPtLoading
-                  ? "--"
-                  : decimal && conversionRate && coinConfig?.underlyingPrice
-                    ? `≈ $${ptValue && decimal && ptValue && conversionRate
+                ? "--"
+                : decimal && conversionRate && coinConfig?.underlyingPrice
+                ? `≈ $${
+                    ptValue && decimal && ptValue && conversionRate
                       ? formatDecimalValue(
-                        new Decimal(ptValue)
-                          .minus(new Decimal(syValue).mul(conversionRate))
-                          .mul(coinConfig.underlyingPrice),
-                        decimal
-                      )
+                          new Decimal(ptValue)
+                            .minus(new Decimal(syValue).mul(conversionRate))
+                            .mul(coinConfig.underlyingPrice),
+                          decimal
+                        )
                       : "--"
-                    }`
-                    : "--"}
+                  }`
+                : "--"}
             </span>
 
-            {isValidAmount(ptValue) && ptValue && decimal && conversionRate
-              ? <span className="text-[#4CC877] ml-2">{`( +${formatDecimalValue(
+            {isValidAmount(ptValue) && ptValue && decimal && conversionRate ? (
+              <span className="text-[#4CC877] ml-2">{`( +${formatDecimalValue(
                 new Decimal(ptValue).minus(
                   new Decimal(syValue).mul(conversionRate)
                 ),
                 decimal
               )} ${coinConfig?.underlyingCoinName} )`}</span>
-              : ""}
+            ) : (
+              ""
+            )}
           </span>
         </div>
 

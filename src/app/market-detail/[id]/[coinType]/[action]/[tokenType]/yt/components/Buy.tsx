@@ -61,6 +61,8 @@ export default function Buy({ coinConfig }: Props) {
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
 
+  const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
+
   const { data: marketStateData } = useMarketStateData(
     coinConfig?.marketStateId
   )
@@ -73,6 +75,16 @@ export default function Buy({ coinConfig }: Props) {
       coinConfig?.maturity,
       coinConfig?.pyPositionTypeList
     )
+
+  const ytBalance = useMemo(() => {
+    if (pyPositionData?.length) {
+      return pyPositionData
+        .reduce((total, item) => total.add(item.ytBalance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [pyPositionData, decimal])
 
   const {
     data: coinData,
@@ -107,8 +119,6 @@ export default function Buy({ coinConfig }: Props) {
       )?.toString(),
     [tokenType, coinConfig]
   )
-
-  const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
 
   const coinBalance = useMemo(() => {
     if (coinData && coinData?.length && decimal) {
@@ -527,7 +537,7 @@ export default function Buy({ coinConfig }: Props) {
         amount={ytValue}
         loading={isCalcYtLoading}
         logo={coinConfig.ytTokenLogo}
-        maturity={coinConfig.maturity}
+        balance={ytBalance}
         name={`YT ${coinConfig.coinName}`}
       />
 

@@ -77,11 +77,31 @@ export default function Mint({ coinConfig }: Props) {
     if (coinData?.length) {
       return coinData
         .reduce((total, coin) => total.add(coin.balance), new Decimal(0))
-        .div(10 ** decimal)
+        .div(new Decimal(10).pow(decimal))
         .toFixed(decimal)
     }
     return "0"
   }, [coinData, decimal])
+
+  const ptBalance = useMemo(() => {
+    if (pyPositionData?.length) {
+      return pyPositionData
+        .reduce((total, item) => total.add(item.ptBalance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [pyPositionData, decimal])
+
+  const ytBalance = useMemo(() => {
+    if (pyPositionData?.length) {
+      return pyPositionData
+        .reduce((total, item) => total.add(item.ytBalance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [pyPositionData, decimal])
 
   const insufficientBalance = useMemo(
     () => new Decimal(coinBalance).lt(mintValue || 0),
@@ -291,10 +311,10 @@ export default function Mint({ coinConfig }: Props) {
 
       <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
         <AmountOutput
+          balance={ptBalance}
           loading={isInputLoading}
           price={coinConfig.ptPrice}
           logo={coinConfig.ptTokenLogo}
-          maturity={coinConfig.maturity}
           name={`PT ${coinConfig.coinName}`}
           title={"Principle Token".toUpperCase()}
           className="bg-transparent rounded-none"
@@ -309,10 +329,10 @@ export default function Mint({ coinConfig }: Props) {
           <div className="border-t border-light-gray/10" />
         </div>
         <AmountOutput
+          balance={ytBalance}
           loading={isInputLoading}
           price={coinConfig.ytPrice}
           logo={coinConfig.ytTokenLogo}
-          maturity={coinConfig.maturity}
           name={`YT ${coinConfig.coinName}`}
           title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"

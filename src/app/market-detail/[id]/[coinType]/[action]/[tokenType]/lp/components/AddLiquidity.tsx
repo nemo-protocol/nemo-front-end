@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { ArrowUpDown } from "lucide-react"
 import { useWallet } from "@nemoprotocol/wallet-kit"
+import { useSearchParams, useRouter } from "next/navigation"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 import { CoinConfig } from "@/queries/types/market"
 import { CoinData } from "@/types"
@@ -27,6 +28,7 @@ import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
 import { initPyPosition } from "@/lib/txHelper/position"
 import Decimal from "decimal.js"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
+import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 
 interface Props {
   coinConfig: CoinConfig
@@ -45,11 +47,17 @@ export default function AddLiquidity({ coinConfig }: Props) {
   const [lpFeeAmount, setLpFeeAmount] = useState<string>()
   const [errorDetail, setErrorDetail] = useState<string>()
   const [isCalculating, setIsCalculating] = useState(false)
-  const [action, setAction] = useState<"mint" | "add">("add")
+  const [action, setAction] = useState<"swap" | "mint">("swap")
   const [addType, setAddType] = useState<"mint" | "seed" | "add">()
   const { account: currentAccount, signAndExecuteTransaction } = useWallet()
+  
+  // 添加路由相关hooks
+  const searchParams = useSearchParams()
+  const router = useRouter()
 
   const { coinType, maturity } = coinConfig
+
+  const decimal = Number(coinConfig.decimal || 0)
 
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
@@ -71,6 +79,33 @@ export default function AddLiquidity({ coinConfig }: Props) {
     coinConfig?.maturity,
     coinConfig?.pyPositionTypeList
   )
+
+  const { data: lppMarketPositionData } = useLpMarketPositionData(
+    address,
+    coinConfig?.marketStateId,
+    coinConfig?.maturity,
+    coinConfig?.marketPositionTypeList
+  )
+
+  const lpBalance = useMemo(() => {
+    if (lppMarketPositionData?.length) {
+      return lppMarketPositionData
+        .reduce((total, item) => total.add(item.lp_amount), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [lppMarketPositionData])
+
+  const ytBalance = useMemo(() => {
+    if (pyPositionData?.length) {
+      return pyPositionData
+        .reduce((total, item) => total.add(item.ytBalance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [pyPositionData])
 
   const { data: coinData } = useCoinData(
     address,
@@ -97,8 +132,6 @@ export default function AddLiquidity({ coinConfig }: Props) {
       )?.toString(),
     [tokenType, coinConfig]
   )
-
-  const decimal = useMemo(() => Number(coinConfig?.decimal || 0), [coinConfig])
 
   const coinBalance = useMemo(() => {
     if (coinData?.length) {
@@ -151,7 +184,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
     [coinConfig]
   )
 
-  const handleActionChange = (newAction: "mint" | "add") => {
+  const handleActionChange = (newAction: "swap" | "mint") => {
     setAction(newAction)
     setAddValue("")
     setLpValue("")
@@ -159,7 +192,22 @@ export default function AddLiquidity({ coinConfig }: Props) {
     setError("")
     setWarning("")
     setErrorDetail("")
+    
+    // 更新URL参数 - 使用数字0对应swap，1对应mint
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("action", newAction === "swap" ? "0" : "1")
+    router.replace(`?${params.toString()}`, { scroll: false })
   }
+
+  // 初始化时从URL读取action参数
+  useEffect(() => {
+    const urlAction = searchParams.get("action")
+    if (urlAction === "0") {
+      setAction("swap")
+    } else if (urlAction === "1") {
+      setAction("mint")
+    }
+  }, [searchParams])
 
   async function handleSeedLiquidity(
     tx: Transaction,
@@ -279,7 +327,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
             pyPosition,
             minLpAmount,
           })
-        } else if (action === "add") {
+        } else if (action === "swap") {
           await handleAddLiquiditySingleSy({
             tx,
             address,
@@ -402,17 +450,21 @@ export default function AddLiquidity({ coinConfig }: Props) {
   useEffect(() => {
     if (marketStateData?.lpSupply === "0") {
       setAction("mint")
+      // 更新URL参数
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("action", "1")
+      router.replace(`?${params.toString()}`, { scroll: false })
     }
-  }, [marketStateData?.lpSupply])
+  }, [marketStateData?.lpSupply, searchParams, router])
 
   return (
     <div className="flex flex-col items-center gap-y-6">
       {/* 二级Tab */}
       <div className="flex gap-2 w-full">
         <button
-          onClick={() => handleActionChange("add")}
+          onClick={() => handleActionChange("swap")}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            action === "add"
+            action === "swap"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
           }`}
@@ -476,12 +528,13 @@ export default function AddLiquidity({ coinConfig }: Props) {
         <ArrowUpDown className="w-5 h-5" />
       </div>
 
-      {action === "add" ? (
+      {action === "swap" ? (
         <AmountOutput
-          maturity={maturity}
+          balance={lpBalance}
           loading={isCalculating}
           price={coinConfig.lpPrice}
           logo={coinConfig.lpTokenLogo}
+          unit={`LP ${coinConfig.coinName}`}
           name={`LP ${coinConfig.coinName}`}
           title={"LP Position".toUpperCase()}
           amount={
@@ -491,10 +544,11 @@ export default function AddLiquidity({ coinConfig }: Props) {
       ) : (
         <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
           <AmountOutput
-            maturity={maturity}
+            balance={ytBalance}
             loading={isCalculating}
             price={coinConfig.ytPrice}
             logo={coinConfig.ytTokenLogo}
+            unit={`YT ${coinConfig.coinName}`}
             name={`YT ${coinConfig.coinName}`}
             title={"YT POSITION".toUpperCase()}
             className="bg-transparent rounded-none"
@@ -506,11 +560,12 @@ export default function AddLiquidity({ coinConfig }: Props) {
             <div className="border-t border-light-gray/10" />
           </div>
           <AmountOutput
-            maturity={maturity}
+            balance={lpBalance}
             loading={isCalculating}
             price={coinConfig.lpPrice}
             logo={coinConfig.lpTokenLogo}
             name={`LP ${coinConfig.coinName}`}
+            unit={`LP ${coinConfig.coinName}`}
             title={"LP Position".toUpperCase()}
             className="bg-transparent rounded-none"
             amount={

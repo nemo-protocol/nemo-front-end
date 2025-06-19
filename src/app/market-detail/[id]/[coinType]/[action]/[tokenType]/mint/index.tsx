@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { CoinConfig } from "@/queries/types/market"
 import Mint from "./componets/Mint"
 import Redeem from "./componets/Redeem"
@@ -13,6 +14,29 @@ interface Props {
 
 export default function MintMarketDetail({ coinConfig }: Props) {
   const [activeTab, setActiveTab] = useState("mint")
+  
+  // 添加路由相关hooks
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  // 初始化时从URL读取mode参数
+  useEffect(() => {
+    const urlMode = searchParams.get("mode")
+    if (urlMode === "0") {
+      setActiveTab("mint")
+    } else if (urlMode === "1") {
+      setActiveTab("redeem")
+    }
+  }, [searchParams])
+
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab)
+    
+    // 更新URL参数 - 使用数字0对应mint，1对应redeem
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", newTab === "mint" ? "0" : "1")
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
 
   const tabs = [
     { key: "mint", label: "Mint" },
@@ -32,7 +56,7 @@ export default function MintMarketDetail({ coinConfig }: Props) {
 
         {/* 右侧 Mint/Redeem 面板 (span 2) */}
         <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
-          <SimpleTabs tabs={tabs} current={activeTab} onChange={setActiveTab} />
+          <SimpleTabs tabs={tabs} current={activeTab} onChange={handleTabChange} />
 
           {activeTab === "mint" ? (
             <Mint coinConfig={coinConfig} />

@@ -4,6 +4,7 @@ import { ArrowUpDown } from "lucide-react"
 import { ContractError } from "@/hooks/types"
 import { CoinConfig } from "@/queries/types/market"
 import { useWallet } from "@nemoprotocol/wallet-kit"
+import { useSearchParams, useRouter } from "next/navigation"
 import { showTransactionDialog } from "@/lib/dialog"
 import { CETUS_VAULT_ID_LIST } from "@/lib/constants"
 import useRedeemLp from "@/hooks/actions/useRedeemLp"
@@ -22,6 +23,7 @@ import { useMemo, useState, useEffect, useCallback } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
+import useCoinData from "@/hooks/query/useCoinData"
 
 interface Props {
   coinConfig: CoinConfig
@@ -44,6 +46,9 @@ export default function Remove({ coinConfig }: Props) {
     "underlying"
   )
 
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
   const handleActionChange = (newAction: "swap" | "redeem") => {
     setAction(newAction)
     setLpValue("")
@@ -53,7 +58,20 @@ export default function Remove({ coinConfig }: Props) {
     setWarning(undefined)
     setWarningDetail(undefined)
     setErrorDetail(undefined)
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("action", newAction === "swap" ? "0" : "1")
+    router.replace(`?${params.toString()}`, { scroll: false })
   }
+
+  useEffect(() => {
+    const urlAction = searchParams.get("action")
+    if (urlAction === "0") {
+      setAction("swap")
+    } else if (urlAction === "1") {
+      setAction("redeem")
+    }
+  }, [searchParams])
 
   const address = useMemo(() => currentAccount?.address, [currentAccount])
   const isConnected = useMemo(() => !!address, [address])
@@ -66,6 +84,13 @@ export default function Remove({ coinConfig }: Props) {
   )
 
   const { mutateAsync: burnLpDryRun } = useBurnLpDryRun(coinConfig)
+
+  const { data: coinData } = useCoinData(
+    address,
+    receivingType === "underlying"
+      ? coinConfig?.underlyingCoinType
+      : coinConfig?.coinType
+  )
 
   const { data: lppMarketPositionData, refetch: refetchLpPosition } =
     useLpMarketPositionData(
@@ -83,9 +108,24 @@ export default function Remove({ coinConfig }: Props) {
       coinConfig?.pyPositionTypeList
     )
 
+  const coinBalance = useMemo(() => {
+    return coinData
+      ?.reduce((total, item) => total.add(item.balance), new Decimal(0))
+      .div(new Decimal(10).pow(decimal))
+      .toString()
+  }, [coinData])
+
   const ytBalance = useMemo(() => {
     return pyPositionData
       ?.reduce((total, item) => total.add(item.ytBalance), new Decimal(0))
+      .div(new Decimal(10).pow(decimal))
+      .toString()
+  }, [pyPositionData])
+
+  const ptBalance = useMemo(() => {
+    return pyPositionData
+      ?.reduce((total, item) => total.add(item.ptBalance), new Decimal(0))
+      .div(new Decimal(10).pow(decimal))
       .toString()
   }, [pyPositionData])
 
@@ -348,7 +388,7 @@ export default function Remove({ coinConfig }: Props) {
       </div>
       {action === "swap" ? (
         <AmountOutput
-          maturity={coinConfig.maturity}
+          balance={coinBalance}
           loading={isInputLoading}
           price={coinConfig.underlyingPrice}
           name={
@@ -396,9 +436,9 @@ export default function Remove({ coinConfig }: Props) {
       ) : (
         <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
           <AmountOutput
+            balance={coinBalance}
             loading={isInputLoading}
             warningDetail={warningDetail}
-            maturity={coinConfig.maturity}
             price={coinConfig.underlyingPrice}
             className="bg-transparent rounded-none"
             name={
@@ -443,10 +483,10 @@ export default function Remove({ coinConfig }: Props) {
             }
           />
           <AmountOutput
+            balance={ptBalance}
             loading={isInputLoading}
             price={coinConfig.ptPrice}
             logo={coinConfig.ptTokenLogo}
-            maturity={coinConfig.maturity}
             name={`PT ${coinConfig.coinName}`}
             title={"PT asset".toLocaleUpperCase()}
             className="bg-transparent rounded-none"

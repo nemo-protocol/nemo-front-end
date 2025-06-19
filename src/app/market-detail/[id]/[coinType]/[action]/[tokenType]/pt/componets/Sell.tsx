@@ -95,6 +95,23 @@ export default function Sell({ coinConfig }: Props) {
     }
   }, [coinConfig])
 
+  const { data: coinData } = useCoinData(
+    address,
+    receivingType === "underlying"
+      ? coinConfig?.underlyingCoinType
+      : coinConfig.coinType
+  )
+
+  const coinBalance = useMemo(() => {
+    if (coinData?.length) {
+      return coinData
+        .reduce((total, coin) => total.add(coin.balance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [coinData, decimal])
+
   const { mutateAsync: sellPtDryRun } = useSellPtDryRun(coinConfig)
   const { data: ptCoins } = useCoinData(address, coinConfig?.ptTokenType)
 
@@ -404,11 +421,21 @@ export default function Sell({ coinConfig }: Props) {
       </div>
 
       <AmountOutput
-        amount={isLoading ? undefined : isValidAmount(targetValue) ? formatDecimalValue(targetValue, decimal) : undefined}
+        amount={
+          isLoading
+            ? undefined
+            : isValidAmount(targetValue)
+            ? formatDecimalValue(targetValue, decimal)
+            : undefined
+        }
         loading={isLoading}
-        maturity={coinConfig?.maturity}
+        balance={coinBalance}
         title="RECEIVE"
-        name={receivingType === "underlying" ? coinConfig.underlyingCoinName : coinConfig.coinName}
+        name={
+          receivingType === "underlying"
+            ? coinConfig.underlyingCoinName
+            : coinConfig.coinName
+        }
         coinNameComponent={
           <TokenTypeSelect
             value={receivingType}
@@ -436,8 +463,11 @@ export default function Sell({ coinConfig }: Props) {
           />
         }
         warningDetail={
-          priceImpact ? 
-            `~ $${formatDecimalValue(priceImpact.value, 2)} (${formatDecimalValue(priceImpact.ratio, 2)}%)`
+          priceImpact
+            ? `~ $${formatDecimalValue(
+                priceImpact.value,
+                2
+              )} (${formatDecimalValue(priceImpact.ratio, 2)}%)`
             : undefined
         }
       />

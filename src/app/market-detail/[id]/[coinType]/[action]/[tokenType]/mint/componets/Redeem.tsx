@@ -20,6 +20,7 @@ import { AmountOutput } from "../../components/AmountOutput"
 import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
+import useCoinData from "@/hooks/query/useCoinData"
 
 interface Props {
   coinConfig: CoinConfig
@@ -33,6 +34,11 @@ export default function Redeem({ coinConfig }: Props) {
   const [isInputLoading, setIsInputLoading] = useState(false)
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
+  )
+
+  const { data: coinData } = useCoinData(
+    address,
+    receivingType === "underlying" ? coinConfig?.underlyingCoinType : coinConfig.id
   )
 
   const isConnected = useMemo(() => !!address, [address])
@@ -70,6 +76,16 @@ export default function Redeem({ coinConfig }: Props) {
     }
     return "0"
   }, [pyPositionData, decimal])
+
+  const coinBalance = useMemo(() => {
+    if (coinData?.length) {
+      return coinData
+        .reduce((total, coin) => total.add(coin.balance), new Decimal(0))
+        .div(new Decimal(10).pow(decimal))
+        .toFixed(decimal)
+    }
+    return "0"
+  }, [coinData, decimal])
 
   const insufficientPtBalance = useMemo(() => {
     return new Decimal(ptBalance).lt(redeemValue || 0)
@@ -270,8 +286,8 @@ export default function Redeem({ coinConfig }: Props) {
       <AmountOutput
         name={coinName}
         amount={syValue}
+        balance={coinBalance}
         loading={isInputLoading}
-        maturity={coinConfig.maturity}
         title={"Underlying asset".toUpperCase()}
         logo={
           receivingType === "underlying"
