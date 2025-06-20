@@ -29,6 +29,8 @@ import { initPyPosition } from "@/lib/txHelper/position"
 import Decimal from "decimal.js"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
+import Image from "next/image"
+import GuideModal from "../../components/GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -50,7 +52,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
   const [action, setAction] = useState<"swap" | "mint">("swap")
   const [addType, setAddType] = useState<"mint" | "seed" | "add">()
   const { account: currentAccount, signAndExecuteTransaction } = useWallet()
-  
+
   // 添加路由相关hooks
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -192,7 +194,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
     setError("")
     setWarning("")
     setErrorDetail("")
-    
+
     // 更新URL参数 - 使用数字0对应swap，1对应mint
     const params = new URLSearchParams(searchParams.toString())
     params.set("action", newAction === "swap" ? "0" : "1")
@@ -608,6 +610,14 @@ export default function AddLiquidity({ coinConfig }: Props) {
         btnText={btnText}
         disabled={btnDisabled}
         loading={isAdding || isCalculating}
+      />
+
+      <GuideModal
+        imageUrl={
+          action === "swap"
+            ? "/assets/images/guide/swap&supply.png"
+            : "/assets/images/guide/mint&supply.png"
+        }
       />
     </div>
   )

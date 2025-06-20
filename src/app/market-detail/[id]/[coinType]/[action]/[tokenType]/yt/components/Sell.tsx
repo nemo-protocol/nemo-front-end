@@ -36,6 +36,7 @@ import { burnSCoin } from "@/lib/txHelper/coin"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import Image from "next/image"
 import Calculator from "../../components/Calculator"
+import GuideModal from "../../components/GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -72,8 +73,8 @@ export default function Sell({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-          (item) => item.coinType === coinConfig?.coinType
-        )?.vaultId
+            (item) => item.coinType === coinConfig?.coinType
+          )?.vaultId
         : "",
     [coinConfig]
   )
@@ -376,7 +377,12 @@ export default function Sell({ coinConfig }: Props) {
         rate={
           ptYtData?.ytPrice &&
           price &&
-          formatDecimalValue(new Decimal(1).div(ptYtData.ytPrice).mul(coinConfig?.underlyingPrice), 6)
+          formatDecimalValue(
+            new Decimal(1)
+              .div(ptYtData.ytPrice)
+              .mul(coinConfig?.underlyingPrice),
+            6
+          )
         }
         setTradeValue={setCalculatorInput}
       />
@@ -488,7 +494,7 @@ export default function Sell({ coinConfig }: Props) {
           Calculate
         </div>
       </div>
-
+      <GuideModal imageUrl="/assets/images/guide/yt.png" />
     </div>
   )
 }

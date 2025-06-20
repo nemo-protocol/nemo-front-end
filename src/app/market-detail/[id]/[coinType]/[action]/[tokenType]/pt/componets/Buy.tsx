@@ -41,6 +41,7 @@ import {
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { mintSCoin } from "@/lib/txHelper/coin"
 import { redeemPt } from "@/lib/txHelper/pt"
+import GuideModal from "../../components/GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -616,6 +617,8 @@ export default function Buy({ coinConfig }: Props) {
         loading={isSwapping}
         type="green"
       />
+
+<GuideModal imageUrl="/assets/images/guide/pt.png" />
     </div>
   )
 }

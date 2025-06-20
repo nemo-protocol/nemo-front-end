@@ -40,6 +40,7 @@ import { getPriceVoucher } from "@/lib/txHelper/price"
 import { burnSCoin } from "@/lib/txHelper/coin"
 import { burnPt } from "@/lib/txHelper/pt"
 import { initPyPosition } from "@/lib/txHelper/position"
+import GuideModal from "../../components/GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -484,6 +485,8 @@ export default function Sell({ coinConfig }: Props) {
         disabled={btnDisabled}
         type="red"
       />
+
+      <GuideModal imageUrl="/assets/images/guide/pt.png" />
     </div>
   )
 }

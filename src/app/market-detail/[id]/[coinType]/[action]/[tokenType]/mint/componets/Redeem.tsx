@@ -21,6 +21,7 @@ import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useCoinData from "@/hooks/query/useCoinData"
+import GuideModal from "../../components/GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -38,7 +39,9 @@ export default function Redeem({ coinConfig }: Props) {
 
   const { data: coinData } = useCoinData(
     address,
-    receivingType === "underlying" ? coinConfig?.underlyingCoinType : coinConfig.id
+    receivingType === "underlying"
+      ? coinConfig?.underlyingCoinType
+      : coinConfig.id
   )
 
   const isConnected = useMemo(() => !!address, [address])
@@ -331,6 +334,7 @@ export default function Redeem({ coinConfig }: Props) {
           redeemValue === "" || insufficientPtBalance || insufficientYtBalance
         }
       />
+      <GuideModal imageUrl="/assets/images/guide/mint.png" />
     </div>
   )
 }

@@ -22,6 +22,7 @@ import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import { mintPY, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
+import GuideModal from "../../components/GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -356,6 +357,8 @@ export default function Mint({ coinConfig }: Props) {
         disabled={mintValue === ""}
         type="green"
       />
+
+      <GuideModal imageUrl="/assets/images/guide/mint.png" />
     </div>
   )
 }
