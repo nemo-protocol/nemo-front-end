@@ -50,18 +50,18 @@ export default function Mint({ coinConfig }: Props) {
 
   const { data: coinData, refetch: refetchCoinData } = useCoinData(
     address,
-    tokenType === 0 ? coinConfig?.underlyingCoinType : coinConfig.id
+    tokenType === 0 ? coinConfig.underlyingCoinType : coinConfig.coinType
   )
 
   const coinName = useMemo(
     () =>
-      tokenType === 0 ? coinConfig?.underlyingCoinName : coinConfig?.coinName,
+      tokenType === 0 ? coinConfig.underlyingCoinName : coinConfig.coinName,
     [tokenType, coinConfig]
   )
 
   const coinLogo = useMemo(
     () =>
-      tokenType === 0 ? coinConfig?.underlyingCoinLogo : coinConfig?.coinLogo,
+      tokenType === 0 ? coinConfig.underlyingCoinLogo : coinConfig.coinLogo,
     [tokenType, coinConfig]
   )
 
