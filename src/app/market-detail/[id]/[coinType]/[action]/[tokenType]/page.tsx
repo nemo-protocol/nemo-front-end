@@ -34,23 +34,23 @@ import LPMarketDetail from "./lp/index"
 import YieldChart from "./components/YieldChart"
 const chartTypes = {
   yield: {
-    "0": 456,
-    "1": 456,
+    "0": 510,
+    "1": 510,
     tokenType: 'YIELD'
   },
   fixed: {
-    "0": 488,
-    "1": 488,
+    "0": 530,
+    "1": 530,
     tokenType: 'FIXED'
   },
   pool: {
-    "0": 510,
-    "1": 510,
+    "0": 552,
+    "1": 552,
     tokenType: 'POOL'
   },
   tvl: {
-    "0": 488,
-    "1": 488,
+    "0": 538,
+    "1": 538,
     tokenType: 'FIXED'
   },
 }
@@ -342,8 +342,8 @@ export default function MarketDetailPage() {
                 : "--"}
               %
             </span>
-            {isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
-              new Decimal(coinConfig.liquidityRateChange).gt(0) ? (
+            {isValidAmountWithoutZero(coinConfig.sevenAvgUnderlyingApyRateChange) &&
+              new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
