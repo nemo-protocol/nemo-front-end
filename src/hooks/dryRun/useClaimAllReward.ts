@@ -188,7 +188,6 @@ export default function useClaimAllReward<T extends boolean = false>(
       //     onlyTransactionKind: true,
       //   }),
       // })
-      // console.log(result,'sixu')
       // if (result?.error) {
       //   tx = new Transaction()
       //   await claimAll(tx, false, params)

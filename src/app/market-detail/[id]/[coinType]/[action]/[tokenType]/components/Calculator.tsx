@@ -191,7 +191,7 @@ export default function Calculator({
             </span>}
           </p>
           <button
-            className={`w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5]  disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none text-[14px] text-[#FCFCFC] font-[550] 
+            className={`w-full mt-6 h-[42px] rounded-[16px] cursor-pointer bg-[#2E81FCE5]  disabled:cursor-not-allowed flex items-center justify-center gap-2 select-none text-[16px] text-[#FCFCFC] font-[500] 
             ${inputYT
                 ? "hover:bg-[#2E81FCc5] transition"
                 : "opacity-40"}`

@@ -100,8 +100,7 @@ export default function LeaderboardPage() {
           <div
             className="hidden group-hover:block absolute top-0 left-0.5 ml-4 w-[480px] rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur px-2.5 py-3.5 text-sm z-10 animate-fade-in text-[#FCFCFC]"
           >
-            The Effective APY module compares the expected APY of users buying YT
-            versus holding the underlying asset.
+            This ranking is used to quantify the contributors who are deeply involved in the Nemo protocol.
           </div>
         </div>
 

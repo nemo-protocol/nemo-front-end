@@ -10,63 +10,41 @@ import Remove from "./components/Remove"
 
 interface Props {
   coinConfig: CoinConfig
+  setCurrentTab: (newTab: "1" | "0") => void
+  currentTab: any
 }
 
-export default function LPMarketDetail({ coinConfig }: Props) {
-  const [currentTab, setCurrentTab] = useState("add")
-  
+export default function LPMarketDetail({ coinConfig, currentTab, setCurrentTab }: Props) {
+
   // 添加路由相关hooks
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  // 初始化时从URL读取mode参数
-  useEffect(() => {
-    const urlMode = searchParams.get("mode")
-    if (urlMode === "0") {
-      setCurrentTab("add")
-    } else if (urlMode === "1") {
-      setCurrentTab("remove")
-    }
-  }, [searchParams])
+
 
   const handleTabChange = (newTab: string) => {
-    setCurrentTab(newTab)
-    
-    // 更新URL参数 - 使用数字0对应add，1对应remove
+    setCurrentTab(newTab as "1" | "0")
+
     const params = new URLSearchParams(searchParams.toString())
-    params.set("mode", newTab === "add" ? "0" : "1")
+    params.set("mode", newTab)
     router.replace(`?${params.toString()}`, { scroll: false })
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* 主布局 */}
-      <div className="mt-6 grid lg:grid-cols-4 gap-6">
-        {/* 左侧  (span 2) */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
-            {/* Chart */}
-            <YieldChart coinConfig={coinConfig} h={486}/>
-          </div>
-        </div>
-
-        {/* 右侧 Trade 面板 */}
-        <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
-          <SimpleTabs
-            current={currentTab}
-            onChange={handleTabChange}
-            tabs={[
-              { key: "add", label: "Add Liquidity" },
-              { key: "remove", label: "Remove Liquidity" },
-            ]}
-          />
-          {currentTab === "add" ? (
-            <AddLiquidity coinConfig={coinConfig} />
-          ) : (
-            <Remove coinConfig={coinConfig} />
-          )}
-        </div>
-      </div>
+    <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
+      <SimpleTabs
+        current={currentTab}
+        onChange={handleTabChange}
+        tabs={[
+          { key: "0", label: "Add Liquidity" },
+          { key: "1", label: "Remove Liquidity" },
+        ]}
+      />
+      {currentTab === "0" ? (
+        <AddLiquidity coinConfig={coinConfig} />
+      ) : (
+        <Remove coinConfig={coinConfig} />
+      )}
     </div>
   )
 }

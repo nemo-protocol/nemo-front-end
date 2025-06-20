@@ -51,16 +51,12 @@ function formatPercent(num?: string | number, digits = 2) {
   return `${(n * 1).toFixed(digits)}%` // *1 兼容字符串科学计数
 }
 
-export default function YieldChart({ coinConfig, h }: { coinConfig: CoinConfig, h: number }) {
-  const params = useParams()
+export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: CoinConfig, h: number, tokenType: TokenType }) {
   const [activeTab, setActiveTab] = useState(0)
   const [activeMetric, setActiveMetric] =
     useState<(typeof METRICS)[number]["value"]>("apy")
-  const { tokenType: _tokenType } = params as {
-    tokenType: Lowercase<TokenType>
-  }
 
-  const tokenType = _tokenType.toUpperCase() as TokenType
+
 
   // const [open, setOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
@@ -122,7 +118,6 @@ export default function YieldChart({ coinConfig, h }: { coinConfig: CoinConfig, 
   }, [tokenType, coinConfig, activeMetric])
 
   const { granularity } = TABS[activeTab]
-
   const { data, error } = useApyHistory({
     marketStateId: coinConfig.marketStateId,
     tokenType: tokenType,
@@ -166,7 +161,7 @@ export default function YieldChart({ coinConfig, h }: { coinConfig: CoinConfig, 
       yTicks: ticks,
       xInterval: interval,
     }
-  }, [data, activeMetric])
+  }, [data?.data, activeMetric])
 
   // if (isLoading) return <p className="text-sm text-gray-500">Loading…</p>;
   if (error) return <p className="text-red-500">{error.message}</p>

@@ -107,7 +107,6 @@ export default function useQueryClaimAllYtReward(params: ClaimYtRewardParams) {
           onlyTransactionKind: true,
         }),
       });
-      console.log(result, 'sixu')
       /* ---------- 解析返回的 u64 ---------- */
       const pyReward: Record<string, string> = {};
       params.filteredYTLists.forEach((item, index) => {

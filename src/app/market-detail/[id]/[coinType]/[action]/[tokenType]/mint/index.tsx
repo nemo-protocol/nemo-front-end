@@ -10,61 +10,41 @@ import YieldChart from "../components/YieldChart"
 
 interface Props {
   coinConfig: CoinConfig
+  setCurrentTab: (newTab: "1" | "0") => void
+  currentTab: any
 }
 
-export default function MintMarketDetail({ coinConfig }: Props) {
-  const [activeTab, setActiveTab] = useState("mint")
-  
-  // 添加路由相关hooks
-  const searchParams = useSearchParams()
-  const router = useRouter()
+export default function MintMarketDetail({ coinConfig, currentTab, setCurrentTab }: Props) {
 
-  // 初始化时从URL读取mode参数
-  useEffect(() => {
-    const urlMode = searchParams.get("mode")
-    if (urlMode === "0") {
-      setActiveTab("mint")
-    } else if (urlMode === "1") {
-      setActiveTab("redeem")
-    }
-  }, [searchParams])
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleTabChange = (newTab: string) => {
-    setActiveTab(newTab)
-    
+    setCurrentTab(newTab as "1" | "0")
+
     // 更新URL参数 - 使用数字0对应mint，1对应redeem
     const params = new URLSearchParams(searchParams.toString())
-    params.set("mode", newTab === "mint" ? "0" : "1")
+    params.set("mode", newTab)
     router.replace(`?${params.toString()}`, { scroll: false })
   }
 
   const tabs = [
-    { key: "mint", label: "Mint" },
-    { key: "redeem", label: "Redeem" },
+    { key: "0", label: "Mint" },
+    { key: "1", label: "Redeem" },
   ]
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="mt-6 grid lg:grid-cols-4 gap-6">
-        {/* 左侧  (span 2) */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
-            {/* Chart */}
-            <YieldChart coinConfig={coinConfig} h={456}/>
-          </div>
-        </div>
 
-        {/* 右侧 Mint/Redeem 面板 (span 2) */}
-        <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
-          <SimpleTabs tabs={tabs} current={activeTab} onChange={handleTabChange} />
 
-          {activeTab === "mint" ? (
-            <Mint coinConfig={coinConfig} />
-          ) : (
-            <Redeem coinConfig={coinConfig} />
-          )}
-        </div>
-      </div>
+    <div className="bg-[#FCFCFC]/[0.03] rounded-xl lg:col-span-2 p-6 flex flex-col gap-6">
+      <SimpleTabs tabs={tabs} current={currentTab} onChange={handleTabChange} />
+
+      {currentTab === "0" ? (
+        <Mint coinConfig={coinConfig} />
+      ) : (
+        <Redeem coinConfig={coinConfig} />
+      )}
     </div>
+
   )
 }

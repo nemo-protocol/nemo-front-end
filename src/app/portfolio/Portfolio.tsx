@@ -107,7 +107,6 @@ export default function PortfolioPage() {
   const claimAllandAddLiqudity = async () => {
     setClaimLoading(false)
     try {
-      console.log(ytReward, "sixu1")
 
       if (ytReward) {
         const digest = await claimAllReward({
@@ -226,13 +225,13 @@ export default function PortfolioPage() {
                   </div>
                   <div>
                     <div
-                      className="text-[12px] font-[500] text-[#FCFCFC66] flex
+                      className="text-[14px] font-[500] text-[#FCFCFC66] flex
                               transition-colors duration-200
                              cursor-pointer hover:text-white hover:bg-[rgba(252,252,252,0.10)] gap-2 px-4 py-2.5 items-center rounded-[24px]"
                       onClick={() => setOpen(true)}
                     >
                       <Download className="w-4 h-4" />
-                      Claim ALL
+                      Claim All
                     </div>
                   </div>
                 </>

@@ -55,8 +55,6 @@ export function useApyHistory({
     marketStateId,
     tokenType,
     granularity,
-    startTime,
-    endTime,
     autoFetch = true,
 }: UseApyHistoryParams): UseApyHistoryResult {
     const [data, setData] = useState<ApyHistoryData | null>(null);
@@ -83,8 +81,6 @@ export function useApyHistory({
                     marketStateId,
                     tokenType,
                     granularity,
-                    startTime,
-                    endTime,
                 },
             });
             if (res.data.msg == "success" && res.data.data) { setData(res.data.data); }
@@ -95,7 +91,7 @@ export function useApyHistory({
         } finally {
             setLoading(false);
         }
-    }, [marketStateId, tokenType, granularity, startTime, endTime]);
+    }, [marketStateId, tokenType, granularity]);
 
     // 组件卸载时取消请求
     useEffect(() => {

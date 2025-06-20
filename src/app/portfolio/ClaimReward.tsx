@@ -197,7 +197,7 @@ const UnclaimedRewardModal: React.FC<Props> = ({
 
             {/* Claim All */}
             <button
-                className="mt-5 w-full rounded-[16px] bg-[#2E81FCE5] py-2 text-[14px] font-[500] transition
+                className="mt-5 w-full rounded-[16px] bg-[#2E81FCE5] py-2 text-[16px] font-[500] transition
                 disabled:cursor-not-allowed disabled:opacity-40
                 relative hover:bg-[#2E81FCc5] transition"
                 disabled={!claimLoading}
