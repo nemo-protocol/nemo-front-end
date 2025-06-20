@@ -277,7 +277,12 @@ export default function MarketDetailPage() {
             {`Underlying Apy(7D)`.toLocaleUpperCase()}
           </span>
           <span className="text-[20px] font-[500] text-white">
-            {formatLargeNumber(coinConfig.sevenAvgUnderlyingApyRateChange)}%
+            {formatLargeNumber(
+              new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange)
+                .mul(100)
+                .toFixed(2)
+            )}
+            %
           </span>
           <span
             className={[
