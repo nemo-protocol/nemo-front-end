@@ -94,7 +94,7 @@ export function APYTooltip({
                   />
                 </div>
               </div>
-              <div className="flex flex-col items-end">
+              <div className="flex flex-col items-end gap-y-1">
                 <span className="text-sm font-normal">
                   {formatLargeNumber(
                     config.incentives.reduce((acc, i) => acc + i.apy, 0),
@@ -106,7 +106,7 @@ export function APYTooltip({
                   {config.incentives?.map((incentive, index) => (
                     <div
                       key={index}
-                      className="flex flex-row items-center gap-2 ml-6"
+                      className="flex flex-row items-center gap-x-1 ml-6"
                     >
                       <Image
                         src={incentive.tokenLogo}
@@ -115,16 +115,6 @@ export function APYTooltip({
                         width={12}
                         height={12}
                       />
-                      <span className="text-xs text-light-gray/40">
-                        {incentive.apy
-                          ? `${
-                              incentive.tokenLogo
-                                .split("/")
-                                .pop()
-                                ?.split(".")[0]
-                            }`
-                          : ""}
-                      </span>
                       <span className="text-xs text-light-gray/40">{`${formatLargeNumber(
                         incentive.apy,
                         6

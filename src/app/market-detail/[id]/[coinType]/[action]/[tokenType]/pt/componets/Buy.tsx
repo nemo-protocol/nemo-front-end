@@ -548,6 +548,7 @@ export default function Buy({ coinConfig }: Props) {
         balance={ptBalance}
         loading={isCalcPtLoading}
         logo={coinConfig.ptTokenLogo}
+        maturity={coinConfig.maturity}
         name={`PT ${coinConfig.coinName}`}
       />
 

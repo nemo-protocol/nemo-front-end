@@ -10,6 +10,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip"
 import Image from "next/image"
+import dayjs from "dayjs"
 
 interface AmountInputProps {
   logo?: string
@@ -41,6 +42,7 @@ export default function AmountInput({
   price,
   error,
   warning,
+  maturity,
   amount,
   title,
   decimal = 0,
@@ -113,6 +115,11 @@ export default function AmountInput({
                 ) : (
                   <div className="flex items-center gap-x-1">
                     <span className="text-xl">{name}</span>
+                    {maturity && (
+                      <span className="text-xs text-light-gray/40">
+                        ({dayjs(Number(maturity)).format("DD MMM YYYY")})
+                      </span>
+                    )}
                     <Image
                       src={logo ?? ""}
                       alt={name ?? ""}

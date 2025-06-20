@@ -387,10 +387,14 @@ export default function Remove({ coinConfig }: Props) {
         errorDetail={errorDetail}
         coinBalance={lpCoinBalance}
         logo={coinConfig?.lpTokenLogo}
+        maturity={coinConfig.maturity}
         name={`LP ${coinConfig?.coinName}`}
         title={"Remove Liquidity".toUpperCase()}
       />
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
+      <div
+        className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors"
+        onClick={handleModeSwitch}
+      >
         <ArrowUpDown className="w-5 h-5" />
       </div>
       {action === "swap" ? (
@@ -494,6 +498,7 @@ export default function Remove({ coinConfig }: Props) {
             loading={isInputLoading}
             price={coinConfig.ptPrice}
             logo={coinConfig.ptTokenLogo}
+            maturity={coinConfig.maturity}
             name={`PT ${coinConfig.coinName}`}
             title={"PT asset".toLocaleUpperCase()}
             className="bg-transparent rounded-none"

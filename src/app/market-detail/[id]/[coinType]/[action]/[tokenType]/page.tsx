@@ -215,7 +215,7 @@ export default function MarketDetailPage() {
           >
             <span>
               {isValidAmountWithoutZero(coinConfig.tvlRateChange)
-                ? new Decimal(coinConfig.tvlRateChange).toFixed(2)
+                ? new Decimal(coinConfig.tvlRateChange).mul(100).toFixed(2)
                 : "--"}
               %
             </span>
@@ -247,7 +247,7 @@ export default function MarketDetailPage() {
           >
             <span>
               {isValidAmountWithoutZero(coinConfig.volumeRateChange)
-                ? new Decimal(coinConfig.volumeRateChange).toFixed(2)
+                ? new Decimal(coinConfig.volumeRateChange).mul(100).toFixed(2)
                 : "--"}
               %
             </span>
@@ -278,17 +278,16 @@ export default function MarketDetailPage() {
           </span>
           <span className="text-[20px] font-[500] text-white">
             {formatLargeNumber(
-              new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange)
-                .mul(100)
-                .toFixed(2)
+              new Decimal(coinConfig.sevenAvgUnderlyingApy).mul(100).toFixed(2)
             )}
             %
           </span>
           <span
             className={[
               "text-xs font-[600] rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
-              isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
-              new Decimal(coinConfig.liquidityRateChange).gt(0)
+              isValidAmountWithoutZero(
+                coinConfig.sevenAvgUnderlyingApyRateChange
+              ) && new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
@@ -296,14 +295,20 @@ export default function MarketDetailPage() {
             <span
               className={[
                 "text-xs",
-                isValidAmountWithoutZero(coinConfig.liquidityRateChange) &&
-                new Decimal(coinConfig.liquidityRateChange).gt(0)
+                isValidAmountWithoutZero(
+                  coinConfig.sevenAvgUnderlyingApyRateChange
+                ) &&
+                new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange).gt(0)
                   ? "text-[#4CC877]"
                   : "text-[#FF2E54]",
               ].join(" ")}
             >
-              {isValidAmountWithoutZero(coinConfig.liquidityRateChange)
-                ? new Decimal(coinConfig.liquidityRateChange).toFixed(2)
+              {isValidAmountWithoutZero(
+                coinConfig.sevenAvgUnderlyingApyRateChange
+              )
+                ? new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange)
+                    .mul(100)
+                    .toFixed(2)
                 : "--"}
               %
             </span>
@@ -321,7 +326,10 @@ export default function MarketDetailPage() {
             YIELD APY
           </span>
           <span className="text-[20px] font-[500] text-white">
-            {formatLargeNumber(coinConfig.yieldApy)}%
+            {formatLargeNumber(
+              new Decimal(coinConfig.yieldApy).mul(100).toFixed(2)
+            )}
+            %
           </span>
           <span
             className={[
@@ -334,7 +342,7 @@ export default function MarketDetailPage() {
           >
             <span>
               {isValidAmountWithoutZero(coinConfig.yieldApyRateChange)
-                ? new Decimal(coinConfig.yieldApyRateChange).toFixed(2)
+                ? new Decimal(coinConfig.yieldApyRateChange).mul(100).toFixed(2)
                 : "--"}
               %
             </span>
@@ -352,7 +360,10 @@ export default function MarketDetailPage() {
             FIXED APY
           </span>
           <span className="text-[20px] font-[500] text-white">
-            ${formatLargeNumber(coinConfig.fixedApy)}%
+            {formatLargeNumber(
+              new Decimal(coinConfig.fixedApy).mul(100).toFixed(2)
+            )}
+            %
           </span>
           {isValidAmountWithoutZero(coinConfig.fixedApyRateChange) && (
             <span
@@ -365,7 +376,9 @@ export default function MarketDetailPage() {
               ].join(" ")}
             >
               <span>
-                {`${new Decimal(coinConfig.fixedApyRateChange).toFixed(2)} %`}
+                {`${new Decimal(coinConfig.fixedApyRateChange)
+                  .mul(100)
+                  .toFixed(2)} %`}
               </span>
               {new Decimal(coinConfig.fixedApyRateChange).gt(0) ? (
                 <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
@@ -422,7 +435,10 @@ export default function MarketDetailPage() {
                 )}
               </span>
               <span className="text-[20px] font-[500] text-white">
-                ${formatLargeNumber(coinConfig.poolApy)}%
+                {formatLargeNumber(
+                  new Decimal(coinConfig.poolApy).mul(100).toFixed(2)
+                )}
+                %
               </span>
               {isValidAmountWithoutZero(coinConfig.poolApyRateChange) && (
                 <span

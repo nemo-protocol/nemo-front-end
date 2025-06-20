@@ -542,6 +542,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
           loading={isCalculating}
           price={coinConfig.lpPrice}
           logo={coinConfig.lpTokenLogo}
+          maturity={coinConfig.maturity}
           unit={`LP ${coinConfig.coinName}`}
           name={`LP ${coinConfig.coinName}`}
           title={"LP Position".toUpperCase()}
@@ -556,6 +557,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
             loading={isCalculating}
             price={coinConfig.ytPrice}
             logo={coinConfig.ytTokenLogo}
+            maturity={coinConfig.maturity}
             unit={`YT ${coinConfig.coinName}`}
             name={`YT ${coinConfig.coinName}`}
             title={"YT POSITION".toUpperCase()}
@@ -572,6 +574,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
             loading={isCalculating}
             price={coinConfig.lpPrice}
             logo={coinConfig.lpTokenLogo}
+            maturity={coinConfig.maturity}
             name={`LP ${coinConfig.coinName}`}
             unit={`LP ${coinConfig.coinName}`}
             title={"LP Position".toUpperCase()}

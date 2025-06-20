@@ -2,6 +2,7 @@ import Image from "next/image"
 import Decimal from "decimal.js"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn, isValidAmount, formatDecimalValue } from "@/lib/utils"
+import dayjs from "dayjs"
 
 interface AmountOutputProps {
   name: string
@@ -11,9 +12,11 @@ interface AmountOutputProps {
   price?: string
   amount?: string
   balance?: string
+  maturity?: string
   loading?: boolean
   className?: string
   warningDetail?: string
+
   coinNameComponent?: React.ReactNode
 }
 
@@ -21,6 +24,7 @@ export const AmountOutput = ({
   name,
   logo,
   unit,
+  maturity,
   className,
   price = "0",
   amount = "0",
@@ -69,6 +73,11 @@ export const AmountOutput = ({
             ) : (
               <div className="flex items-center gap-x-1">
                 <span className="text-xl text-white">{name}</span>
+                {maturity && (
+                  <span className="text-xs text-light-gray/40">
+                    ({dayjs(Number(maturity)).format("DD MMM YYYY")})
+                  </span>
+                )}
                 {logo && <Image src={logo} alt={name} width={20} height={20} />}
               </div>
             )}

@@ -546,9 +546,10 @@ export default function Buy({ coinConfig }: Props) {
 
       <AmountOutput
         amount={ytValue}
+        balance={ytBalance}
         loading={isCalcYtLoading}
         logo={coinConfig.ytTokenLogo}
-        balance={ytBalance}
+        maturity={coinConfig.maturity}
         name={`YT ${coinConfig.coinName}`}
       />
 
