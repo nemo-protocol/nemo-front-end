@@ -22,6 +22,7 @@ import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useCoinData from "@/hooks/query/useCoinData"
 import GuideModal from "../../components/GuideModal"
+import { useRouter, useSearchParams } from "next/navigation"
 
 interface Props {
   coinConfig: CoinConfig
@@ -36,6 +37,9 @@ export default function Redeem({ coinConfig }: Props) {
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
+  
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const { data: coinData } = useCoinData(
     address,
@@ -248,6 +252,12 @@ export default function Redeem({ coinConfig }: Props) {
     [receivingType, coinConfig]
   )
 
+  const handleModeSwitch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", "0") // Switch to mint mode
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <div className="flex flex-col items-center gap-y-6">
       <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
@@ -283,7 +293,7 @@ export default function Redeem({ coinConfig }: Props) {
           className="bg-transparent rounded-none"
         />
       </div>
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
         <ArrowUpDown className="w-5 h-5" />
       </div>
       <AmountOutput

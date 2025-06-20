@@ -23,6 +23,7 @@ import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import { mintPY, splitCoinHelper, depositSyCoin } from "@/lib/txHelper"
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
 import GuideModal from "../../components/GuideModal"
+import { useRouter, useSearchParams } from "next/navigation"
 
 interface Props {
   coinConfig: CoinConfig
@@ -32,6 +33,9 @@ export default function Mint({ coinConfig }: Props) {
   const [isMinting, setIsMinting] = useState(false)
   const [tokenType, setTokenType] = useState<number>(0)
   const [slippage, setSlippage] = useState("0.5")
+  
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const { address, signAndExecuteTransaction } = useWallet()
 
@@ -269,6 +273,12 @@ export default function Mint({ coinConfig }: Props) {
     }
   }
 
+  const handleModeSwitch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", "1") // Switch to redeem mode
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <div className="flex flex-col items-center gap-y-6">
       <AmountInput
@@ -306,7 +316,7 @@ export default function Mint({ coinConfig }: Props) {
         }
       />
 
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
         <ArrowUpDown className="w-5 h-5" />
       </div>
 

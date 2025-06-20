@@ -6,6 +6,7 @@ import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
 import { ArrowUpDown } from "lucide-react"
 import Image from "next/image"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
@@ -251,6 +252,15 @@ export default function Buy({ coinConfig }: Props) {
         : "",
     [coinConfig]
   )
+
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const handleModeSwitch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", "1") // Switch to sell mode
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
 
   async function swap() {
     if (
@@ -530,7 +540,7 @@ export default function Buy({ coinConfig }: Props) {
         }
       />
 
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-2 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
         <ArrowUpDown className="w-5 h-5" />
       </div>
 

@@ -287,6 +287,12 @@ export default function Remove({ coinConfig }: Props) {
     [decimal, coinConfig]
   )
 
+  const handleModeSwitch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", "0") // Switch to add mode
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
+
   async function remove() {
     if (
       decimal &&
@@ -384,7 +390,7 @@ export default function Remove({ coinConfig }: Props) {
         name={`LP ${coinConfig?.coinName}`}
         title={"Remove Liquidity".toUpperCase()}
       />
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
         <ArrowUpDown className="w-5 h-5" />
       </div>
       {action === "swap" ? (

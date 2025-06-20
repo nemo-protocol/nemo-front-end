@@ -211,6 +211,12 @@ export default function AddLiquidity({ coinConfig }: Props) {
     }
   }, [searchParams])
 
+  const handleModeSwitch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", "1") // Switch to remove mode
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
+
   async function handleSeedLiquidity(
     tx: Transaction,
     addAmount: string,
@@ -526,7 +532,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
         }
       />
 
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
         <ArrowUpDown className="w-5 h-5" />
       </div>
 

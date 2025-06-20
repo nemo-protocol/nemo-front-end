@@ -5,6 +5,7 @@ import { useWallet } from "@nemoprotocol/wallet-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import Decimal from "decimal.js"
 import { ArrowUpDown } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
@@ -394,6 +395,15 @@ export default function Sell({ coinConfig }: Props) {
     coinConfig?.underlyingPrice,
   ])
 
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const handleModeSwitch = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("mode", "0") // Switch to buy mode
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <AmountInput
@@ -417,7 +427,7 @@ export default function Sell({ coinConfig }: Props) {
         }
       />
 
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10">
+      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
         <ArrowUpDown className="w-5 h-5" />
       </div>
 
