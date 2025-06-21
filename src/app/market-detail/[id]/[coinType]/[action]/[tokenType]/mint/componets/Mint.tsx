@@ -326,6 +326,7 @@ export default function Mint({ coinConfig }: Props) {
           loading={isInputLoading}
           price={coinConfig.ptPrice}
           logo={coinConfig.ptTokenLogo}
+          maturity={coinConfig.maturity}
           name={`PT ${coinConfig.coinName}`}
           title={"Principle Token".toUpperCase()}
           className="bg-transparent rounded-none"
@@ -344,6 +345,7 @@ export default function Mint({ coinConfig }: Props) {
           loading={isInputLoading}
           price={coinConfig.ytPrice}
           logo={coinConfig.ytTokenLogo}
+          maturity={coinConfig.maturity}
           name={`YT ${coinConfig.coinName}`}
           title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"

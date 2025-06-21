@@ -271,6 +271,7 @@ export default function Redeem({ coinConfig }: Props) {
           price={ptYtData?.ptPrice}
           onChange={setRedeemValue}
           logo={coinConfig.ptTokenLogo}
+          maturity={coinConfig.maturity}
           name={`PT ${coinConfig.coinName}`}
           className="bg-transparent rounded-none"
           title={"Principle Token".toUpperCase()}
@@ -288,6 +289,7 @@ export default function Redeem({ coinConfig }: Props) {
           onChange={setRedeemValue}
           price={ptYtData?.ytPrice}
           logo={coinConfig.ytTokenLogo}
+          maturity={coinConfig.maturity}
           name={`YT ${coinConfig.coinName}`}
           title={"Yield Token".toUpperCase()}
           className="bg-transparent rounded-none"
