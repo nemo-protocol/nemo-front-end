@@ -28,12 +28,25 @@ const StripedBar: React.FC<StripedBarProps> = ({
       {Array.from({ length: count }).map((_, i) => {
         let style
         if (i < activeCount) {
-          // Gradient white, the most transparent on the left (0.3), and all white on the right (1.0)
+          // Adjust the brightness range according to the progress bar fill ratio
+          const fillRatio = activeCount / count
           let alpha
-          if (activeCount === 1) {
-            alpha = 1
+          let minAlpha, maxAlpha
+
+          if (fillRatio < 0.5) {
+            // When it is less than 1/2, the brightness is from 0.5-1
+            minAlpha = 0.5
+            maxAlpha = 1
           } else {
-            alpha = 0.25 + (i / (activeCount - 1)) * 0.75
+            // When it is greater than 1/2, the brightness is from 0.25-1
+            minAlpha = 0.25
+            maxAlpha = 1
+          }
+
+          if (activeCount === 1) {
+            alpha = maxAlpha
+          } else {
+            alpha = minAlpha + (i / (activeCount - 1)) * (maxAlpha - minAlpha)
           }
 
           style = {
