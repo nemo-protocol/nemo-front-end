@@ -97,7 +97,11 @@ export function APYTooltip({
               <div className="flex flex-col items-end gap-y-1">
                 <span className="text-sm font-normal">
                   {formatLargeNumber(
-                    config.incentives.reduce((acc, i) => acc + i.apy, 0),
+                    new Decimal(
+                      config.incentives.reduce((acc, i) => acc + i.apy, 0)
+                    )
+                      .mul(100)
+                      .toFixed(6),
                     6
                   )}
                   %
@@ -116,7 +120,7 @@ export function APYTooltip({
                         height={12}
                       />
                       <span className="text-xs text-light-gray/40">{`${formatLargeNumber(
-                        incentive.apy,
+                        new Decimal(incentive.apy).mul(100).toFixed(6),
                         6
                       )}%`}</span>
                     </div>
@@ -135,18 +139,24 @@ export function APYTooltip({
             </div>
             <div className="flex flex-col items-end">
               <span className="text-sm font-normal">
-                {typeof config.scaledTotalApy === "number"
-                  ? `${formatLargeNumber(config.scaledTotalApy, 6)}%`
-                  : config.poolApy
-                  ? `${formatLargeNumber(config.poolApy, 6)}%`
-                  : "--"}
+                {`${formatLargeNumber(
+                  new Decimal(config.scaledPtApy || 0)
+                    .add(config.scaledUnderlyingApy || 0)
+                    .add(config.swapFeeApy || 0)
+                    .mul(100)
+                    .toFixed(6),
+                  6
+                )}%`}
               </span>
               <div className="flex flex-col items-end gap-0.5 mt-1">
                 <div className="flex flex-row items-center gap-2">
                   <span className="text-xs text-light-gray/40">PT APY</span>
                   <span className="text-xs text-light-gray/40">
                     {config.scaledPtApy
-                      ? `${formatLargeNumber(config.scaledPtApy, 6)}%`
+                      ? `${formatLargeNumber(
+                          new Decimal(config.scaledPtApy).mul(100).toFixed(6),
+                          6
+                        )}%`
                       : "--"}
                   </span>
                 </div>
@@ -156,7 +166,12 @@ export function APYTooltip({
                   </span>
                   <span className="text-xs text-light-gray/40">
                     {config.scaledUnderlyingApy
-                      ? `${formatLargeNumber(config.scaledUnderlyingApy, 6)}%`
+                      ? `${formatLargeNumber(
+                          new Decimal(config.scaledUnderlyingApy)
+                            .mul(100)
+                            .toFixed(6),
+                          6
+                        )}%`
                       : "--"}
                   </span>
                 </div>
@@ -166,7 +181,10 @@ export function APYTooltip({
                   </span>
                   <span className="text-xs text-light-gray/40">
                     {config.swapFeeApy
-                      ? `${formatLargeNumber(config.swapFeeApy, 6)}%`
+                      ? `${formatLargeNumber(
+                          new Decimal(config.swapFeeApy).mul(100).toFixed(6),
+                          6
+                        )}%`
                       : "--"}
                   </span>
                 </div>
@@ -179,7 +197,10 @@ export function APYTooltip({
             <span>Total APY</span>
             <span>
               {config.poolApy
-                ? `${formatLargeNumber(config.poolApy, 6)}%`
+                ? `${formatLargeNumber(
+                    new Decimal(config.poolApy).mul(100).toFixed(6),
+                    6
+                  )}%`
                 : "--"}
             </span>
           </div>

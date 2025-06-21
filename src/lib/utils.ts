@@ -200,8 +200,7 @@ export const isValidAmountWithoutZero = (
   if (
     !amount ||
     amount === "" ||
-    amount === "NaN" ||
-    new Decimal(amount).isZero()
+    amount === "NaN"
   )
     return false
   const num = Number(amount)

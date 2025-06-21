@@ -3,7 +3,6 @@
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useCoinConfig } from "@/queries"
 import { ArrowLeft, ArrowUpRight, ArrowDownRight } from "lucide-react"
-import dynamic from "next/dynamic"
 import { Action, CoinConfig, TokenType } from "@/queries/types/market"
 import AssetHeader from "./components/AssetHeader"
 import { Tab, type TabItem } from "@/components/ui/tab"
@@ -36,22 +35,22 @@ const chartTypes = {
   yield: {
     "0": 510,
     "1": 510,
-    tokenType: 'YIELD'
+    tokenType: "YIELD",
   },
   fixed: {
     "0": 530,
     "1": 530,
-    tokenType: 'FIXED'
+    tokenType: "FIXED",
   },
   pool: {
     "0": 552,
     "1": 552,
-    tokenType: 'POOL'
+    tokenType: "POOL",
   },
   tvl: {
     "0": 538,
     "1": 538,
-    tokenType: 'FIXED'
+    tokenType: "FIXED",
   },
 }
 export default function MarketDetailPage() {
@@ -91,23 +90,55 @@ export default function MarketDetailPage() {
   }, [coinConfig])
 
   // 动态导入对应类型的组件
-  const MarketDetailComponent =
-    ({ coinConfig }: { coinConfig: CoinConfig }) => {
-      if (action === "mint") {
-        return <MintMarketDetail coinConfig={coinConfig} currentTab={currentTab} setCurrentTab={setCurrentTab} />
-      }
-      switch (tokenType) {
-        case "yield":
-          return <YTMarketDetail coinConfig={coinConfig} currentTab={currentTab} setCurrentTab={setCurrentTab} />
-        case "fixed":
-          return <PTMarketDetail coinConfig={coinConfig} currentTab={currentTab} setCurrentTab={setCurrentTab} />
-        case "pool":
-          return <LPMarketDetail coinConfig={coinConfig} currentTab={currentTab} setCurrentTab={setCurrentTab} />
-        default:
-          return <YTMarketDetail coinConfig={coinConfig} currentTab={currentTab} setCurrentTab={setCurrentTab} />
-      }
+  const MarketDetailComponent = ({
+    coinConfig,
+  }: {
+    coinConfig: CoinConfig
+  }) => {
+    if (action === "mint") {
+      return (
+        <MintMarketDetail
+          coinConfig={coinConfig}
+          currentTab={currentTab}
+          setCurrentTab={setCurrentTab}
+        />
+      )
     }
-
+    switch (tokenType) {
+      case "yield":
+        return (
+          <YTMarketDetail
+            coinConfig={coinConfig}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+          />
+        )
+      case "fixed":
+        return (
+          <PTMarketDetail
+            coinConfig={coinConfig}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+          />
+        )
+      case "pool":
+        return (
+          <LPMarketDetail
+            coinConfig={coinConfig}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+          />
+        )
+      default:
+        return (
+          <YTMarketDetail
+            coinConfig={coinConfig}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
+          />
+        )
+    }
+  }
 
   if (isConfigLoading) {
     return (
@@ -153,7 +184,7 @@ export default function MarketDetailPage() {
       router.replace(
         `/market-detail/${coinConfig.id}/${coinConfig.coinType}/${action}/${tokenType}`,
         { scroll: false }
-      );
+      )
     }
     const tabItems: TabItem[] = [
       {
@@ -238,7 +269,7 @@ export default function MarketDetailPage() {
             className={[
               "text-xs rounded-lg  font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
               isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
-                new Decimal(coinConfig.tvlRateChange).gt(0)
+              new Decimal(coinConfig.tvlRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4cc877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
@@ -250,7 +281,7 @@ export default function MarketDetailPage() {
               %
             </span>
             {isValidAmountWithoutZero(coinConfig.tvlRateChange) &&
-              new Decimal(coinConfig.tvlRateChange).gt(0) ? (
+            new Decimal(coinConfig.tvlRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -270,7 +301,7 @@ export default function MarketDetailPage() {
             className={[
               "text-xs font-[600] rounded-lg px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
               isValidAmountWithoutZero(coinConfig.volumeRateChange) &&
-                new Decimal(coinConfig.volumeRateChange).gt(0)
+              new Decimal(coinConfig.volumeRateChange).gt(0)
                 ? "text-[#4CC877] bg-[#4CC877]/10"
                 : "text-[#FF2E54] bg-[#FF2E54]/10",
             ].join(" ")}
@@ -282,7 +313,7 @@ export default function MarketDetailPage() {
               %
             </span>
             {isValidAmountWithoutZero(coinConfig.volumeRateChange) &&
-              new Decimal(coinConfig.volumeRateChange).gt(0) ? (
+            new Decimal(coinConfig.volumeRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -342,8 +373,10 @@ export default function MarketDetailPage() {
                 : "--"}
               %
             </span>
-            {isValidAmountWithoutZero(coinConfig.sevenAvgUnderlyingApyRateChange) &&
-              new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange).gt(0) ? (
+            {isValidAmountWithoutZero(
+              coinConfig.sevenAvgUnderlyingApyRateChange
+            ) &&
+            new Decimal(coinConfig.sevenAvgUnderlyingApyRateChange).gt(0) ? (
               <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
             ) : (
               <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
@@ -361,28 +394,31 @@ export default function MarketDetailPage() {
             )}
             %
           </span>
-          <span
-            className={[
-              "text-xs rounded-lg font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
-              isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
+          {coinConfig?.yieldApyRateChange && (
+            <span
+              className={[
+                "text-xs rounded-lg font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+                isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
                 new Decimal(coinConfig.yieldApyRateChange).gt(0)
-                ? "text-[#4CC877] bg-[#4CC877]/10"
-                : "text-[#FF2E54] bg-[#FF2E54]/10",
-            ].join(" ")}
-          >
-            <span>
-              {isValidAmountWithoutZero(coinConfig.yieldApyRateChange)
-                ? new Decimal(coinConfig.yieldApyRateChange).mul(100).toFixed(2)
-                : "--"}
-              %
-            </span>
-            {isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
+                  ? "text-[#4CC877] bg-[#4CC877]/10"
+                  : "text-[#FF2E54] bg-[#FF2E54]/10",
+              ].join(" ")}
+            >
+              <span>
+                {isValidAmountWithoutZero(coinConfig.yieldApyRateChange)
+                  ? `${new Decimal(coinConfig.yieldApyRateChange)
+                      .mul(100)
+                      .toFixed(2)} %`
+                  : "--"}
+              </span>
+              {isValidAmountWithoutZero(coinConfig.yieldApyRateChange) &&
               new Decimal(coinConfig.yieldApyRateChange).gt(0) ? (
-              <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
-            ) : (
-              <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
-            )}
-          </span>
+                <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
+              ) : (
+                <ArrowDownRight className="w-4 h-4 text-[#FF2E54]" />
+              )}
+            </span>
+          )}
         </div>
         {/* FIXED APY */}
         <div className="flex flex-col">
@@ -473,7 +509,7 @@ export default function MarketDetailPage() {
               {isValidAmountWithoutZero(coinConfig.poolApyRateChange) && (
                 <span
                   className={[
-                    "text-xs rounded-lg font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit ",
+                    "text-xs rounded-lg font-[600] px-3 py-1 mt-1 inline-flex items-center gap-1 w-fit",
                     new Decimal(coinConfig.poolApyRateChange).gt(0)
                       ? "text-[#4CC877] bg-[#4CC877]/10"
                       : "text-[#FF2E54] bg-[#FF2E54]/10",
@@ -528,22 +564,22 @@ export default function MarketDetailPage() {
                     <span className="text-light-gray/40">
                       {coinConfig.marketState.totalPt && coinConfig.decimal
                         ? `${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalPt).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalPt).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                       PT {coinConfig?.coinName}:
                     </span>
                     <span>
                       {coinConfig.marketState?.totalPt && coinConfig.decimal
                         ? `$${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalPt).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalPt).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                     </span>
                   </div>
@@ -551,22 +587,22 @@ export default function MarketDetailPage() {
                     <span className="text-light-gray/40">
                       {coinConfig.marketState.totalSy && coinConfig.decimal
                         ? `${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalSy).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                       {coinConfig?.coinName}:
                     </span>
                     <span>
                       {coinConfig.marketState?.totalSy && coinConfig.decimal
                         ? `$${formatDecimalValue(
-                          new Decimal(coinConfig.marketState.totalSy).div(
-                            new Decimal(10).pow(coinConfig.decimal)
-                          ),
-                          2
-                        )} `
+                            new Decimal(coinConfig.marketState.totalSy).div(
+                              new Decimal(10).pow(coinConfig.decimal)
+                            ),
+                            2
+                          )} `
                         : "--"}
                     </span>
                   </div>
@@ -582,13 +618,16 @@ export default function MarketDetailPage() {
         <div className="mt-6 grid lg:grid-cols-4 gap-6 items-start">
           <div className="lg:col-span-2 flex flex-col gap-6">
             <div className="bg-[rgba(252,252,252,0.03)] rounded-xl p-6">
-              <YieldChart coinConfig={coinConfig} h={chartTypes?.[tokenType]?.[currentTab]} tokenType={chartTypes?.[tokenType].tokenType as TokenType} />
+              <YieldChart
+                coinConfig={coinConfig}
+                h={chartTypes?.[tokenType]?.[currentTab]}
+                tokenType={chartTypes?.[tokenType].tokenType as TokenType}
+              />
             </div>
           </div>
           <MarketDetailComponent coinConfig={coinConfig} />
         </div>
       </div>
-
     </main>
   )
 }

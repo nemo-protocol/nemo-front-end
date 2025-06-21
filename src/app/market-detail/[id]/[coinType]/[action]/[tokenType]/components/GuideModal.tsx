@@ -4,6 +4,7 @@ import {
   AlertDialogOverlay,
   AlertDialogTrigger,
   AlertDialogCancel,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import Image from "next/image"
 
@@ -27,6 +28,7 @@ export default function GuideModal({ imageUrl }: GuideModalProps) {
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
       <AlertDialogContent className="bg-transparent border-none p-0 max-w-5xl shadow-none flex flex-col items-center gap-y-8">
+        <AlertDialogTitle></AlertDialogTitle>
         <AlertDialogCancel asChild className="border-none">
           <button className="absolute top-0 right-0 z-10 text-light-gray/40 hover:text-light-gray">
             <Image
