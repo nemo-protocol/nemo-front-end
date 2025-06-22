@@ -14,6 +14,7 @@ import { useWallet } from '@nemoprotocol/wallet-kit';
 const typeColor: Record<string, string> = {
     BUY: 'bg-[rgba(76,200,119,0.1)]',
     ADD: 'bg-[rgba(76,200,119,0.1)]',
+    MINT: 'bg-[rgba(76,200,119,0.1)]',
     CLAIM: 'bg-[rgba(76,200,119,0.1)]',
     REDEEM: 'bg-[rgba(76,200,119,0.1)]',
 
@@ -28,6 +29,8 @@ const textColor: Record<string, string> = {
     BUY: 'text-[#4CC877]',
     ADD: 'text-[#4CC877]',
     CLAIM: 'text-[#4CC877]',
+    MINT: 'text-[#4CC877]',
+
     REDEEM: 'text-[#4CC877]',
 
     SELL: 'text-[#FF2E54]',
