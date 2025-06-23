@@ -464,28 +464,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
       router.replace(`?${params.toString()}`, { scroll: false })
     }
   }, [marketStateData?.lpSupply, searchParams, router])
-  const priceImpact = useMemo(() => {
-    if (
-      !addValue||
-      !price||
-      !lpBalance||
-      !coinConfig?.lpPrice
 
-    ) {
-      return undefined
-    }
-    const preValue = new Decimal(addValue).mul(price)
-    const value = new Decimal(lpBalance).mul(coinConfig.lpPrice)
-    const ratio = value.minus(preValue).div(preValue).mul(100)
-
-
-    return { value, ratio }
-  }, [
-    addValue,
-    price,
-    lpBalance,
-    coinConfig?.lpPrice,
-  ])
   return (
     <div className="flex flex-col items-center gap-y-6">
       {/* 二级Tab */}
@@ -493,8 +472,8 @@ export default function AddLiquidity({ coinConfig }: Props) {
         <button
           onClick={() => handleActionChange("swap")}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${action === "swap"
-              ? "bg-white/10 text-white"
-              : "bg-transparent text-white/40 hover:text-white/80"
+            ? "bg-white/10 text-white"
+            : "bg-transparent text-white/40 hover:text-white/80"
             }`}
         >
           {`SWAP & SUPPLY`.toLocaleUpperCase()}
@@ -502,8 +481,8 @@ export default function AddLiquidity({ coinConfig }: Props) {
         <button
           disabled={marketStateData?.lpSupply === "0"}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${action === "mint"
-              ? "bg-white/10 text-white"
-              : "bg-transparent text-white/40 hover:text-white/80"
+            ? "bg-white/10 text-white"
+            : "bg-transparent text-white/40 hover:text-white/80"
             }  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
           onClick={() => handleActionChange("mint")}
         >
@@ -564,7 +543,6 @@ export default function AddLiquidity({ coinConfig }: Props) {
           maturity={coinConfig.maturity}
           unit={`LP ${coinConfig.coinName}`}
           name={`LP ${coinConfig.coinName}`}
-          priceImpact={priceImpact}
           title={"LP Position".toUpperCase()}
           amount={
             !lpValue || !decimal ? "" : formatDecimalValue(lpValue, decimal)

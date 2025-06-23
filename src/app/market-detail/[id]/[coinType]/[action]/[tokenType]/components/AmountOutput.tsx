@@ -100,12 +100,21 @@ export const AmountOutput = ({
                 >
                   ${formatDecimalValue(priceImpact?.value, 6)}
                   <span className="text-[#F80] ml-2">
-                  {`(${formatDecimalValue(priceImpact.ratio, 2)}%)`}
+                    {`(${formatDecimalValue(priceImpact.ratio, 2)}%)`}
                   </span>
                 </span>
 
               ) : (
-                <span className="text-xs text-light-gray/40">$0</span>
+                <span
+                  className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)]  truncate"
+
+                >
+                  {isValidAmount(price) && isValidAmount(amount)
+                    ? formatDecimalValue(new Decimal(price).mul(amount), 6)
+                    : "0"}
+                </span>
+
+
               )}
             {warningDetail && (
               <div className="text-xs text-yellow-400 break-words">
