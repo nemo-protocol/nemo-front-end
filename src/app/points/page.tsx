@@ -1,10 +1,10 @@
 import { Suspense } from 'react';
-import PortfolioPage from './Portfolio';
+import PointsPage from './Points';
 
 export default function Page() {
   return (
     <Suspense fallback={null}>
-      <PortfolioPage />
+      <PointsPage />
     </Suspense>
   );
 }
