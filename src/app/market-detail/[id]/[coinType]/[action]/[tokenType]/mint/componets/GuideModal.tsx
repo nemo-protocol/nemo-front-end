@@ -23,7 +23,7 @@ export default function GuideModal() {
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-white">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] max-h-[90vh] overflow-y-auto text-white">
         <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
           What is Minting?
         </AlertDialogTitle>

@@ -19,11 +19,13 @@ export default function MintSupplyGuideModal() {
             width={16}
             height={16}
           />
-          <span className="text-gray-400 text-sm">How it works</span>
+          <span className="text-light-gray/40 hover:text-white text-sm">
+            How it works
+          </span>
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-white">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-white max-h-[90vh] overflow-y-auto">
         <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
           What is Mint & Supply?
         </AlertDialogTitle>

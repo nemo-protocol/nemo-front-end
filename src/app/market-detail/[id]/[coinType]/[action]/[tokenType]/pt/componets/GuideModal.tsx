@@ -20,7 +20,9 @@ export default function GuideModal() {
             width={16}
             height={16}
           />
-          <span className="text-gray-400 text-sm">How it works</span>
+          <span className="text-light-gray/40 hover:text-white text-sm">
+            How it works
+          </span>
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
