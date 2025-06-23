@@ -162,54 +162,54 @@ export default function LPRow({
 
             {/* Incentive */}
             <td className="py-3 text-[#FCFCFC] relative group">
-                <div
+                {Number(totalRew) !== 0 ? <> <div
                     className={`text-[12px] cursor-pointer font-[600] py-1 gap-1 px-1.5 rounded-[8px] inline-flex ${item.lpTotalReward > 1000
                         ? 'bg-[rgba(149,110,255,0.80)]'
                         : 'bg-[rgba(76,200,119,0.80)]'
                         }`}
                 >
                     <Image src="/lpReward.svg" alt="" width={12} height={12} className="shrink-0" />
-                    {Number(totalRew) == 0 ? <span>$0</span> : <span>~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}</span>}
+                    <span>~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}</span>
                 </div>
 
-                {/* Hover Card */}
-                {Number(totalRew) !== 0 && <div className="absolute top-12 left-[-120px] ml-4 w-[320px] rounded-xl border border-[#6D7177] bg-[#101722] backdrop-blur px-6 py-6 text-sm z-10 opacity-0 invisible transition-all duration-200 group-hover:opacity-100 group-hover:visible">
-                    <div className="text-[18px] font-[470]">Incentive&nbsp;Details</div>
-                    <div className="mt-4 font-[500]">
-                        {marketStates[item.marketStateId]?.rewardMetrics.map((r) => {
-                            const rew = new Decimal(lpReward[item.id + r.tokenName] || 0);
-                            return (
-                                <div key={r.tokenName} className="flex justify-between text-[14px] mt-2">
-                                    <div className="text-[rgba(252,252,252,0.40)]">${r.tokenName}</div>
-                                    <div className="flex text-[rgba(252,252,252,0.40)]">
-                                        {rew.isZero() ? (
-                                            <>
-                                                <span>0</span>
-                                                <span className="mx-2 text-[#FCFCFC]">$0</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span>{rew.lt(0.01) && '<'}{formatPortfolioNumber(rew)}</span>
-                                                <span className="mx-2 text-[#FCFCFC]">
-                                                    ~{rew.mul(r.tokenPrice).lt(0.01) && '<'}$
-                                                    {formatPortfolioNumber(rew.mul(r.tokenPrice))}
-                                                </span>
-                                            </>
-                                        )}
-                                        <Image src={r.tokenLogo} alt="" width={16} height={16} className="shrink-0" />
+                    {/* Hover Card */}
+                    {Number(totalRew) !== 0 && <div className="absolute top-12 left-[-120px] ml-4 w-[320px] rounded-xl border border-[#6D7177] bg-[#101722] backdrop-blur px-6 py-6 text-sm z-10 opacity-0 invisible transition-all duration-200 group-hover:opacity-100 group-hover:visible">
+                        <div className="text-[18px] font-[470]">Incentive&nbsp;Details</div>
+                        <div className="mt-4 font-[500]">
+                            {marketStates[item.marketStateId]?.rewardMetrics.map((r) => {
+                                const rew = new Decimal(lpReward[item.id + r.tokenName] || 0);
+                                return (
+                                    <div key={r.tokenName} className="flex justify-between text-[14px] mt-2">
+                                        <div className="text-[rgba(252,252,252,0.40)]">${r.tokenName}</div>
+                                        <div className="flex text-[rgba(252,252,252,0.40)]">
+                                            {rew.isZero() ? (
+                                                <>
+                                                    <span>0</span>
+                                                    <span className="mx-2 text-[#FCFCFC]">$0</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span>{rew.lt(0.01) && '<'}{formatPortfolioNumber(rew)}</span>
+                                                    <span className="mx-2 text-[#FCFCFC]">
+                                                        ~{rew.mul(r.tokenPrice).lt(0.01) && '<'}$
+                                                        {formatPortfolioNumber(rew.mul(r.tokenPrice))}
+                                                    </span>
+                                                </>
+                                            )}
+                                            <Image src={r.tokenLogo} alt="" width={16} height={16} className="shrink-0" />
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="w-full h-px bg-[rgba(252,252,252,0.10)] my-4"></div>
-                    <div className="flex justify-between text-[14px] font-[500]">
-                        <div className="text-[rgba(252,252,252,0.50)]">Total</div>
-                        <div className="text-[#956EFF]">
-                            ~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}
+                                );
+                            })}
                         </div>
-                    </div>
-                </div>}
+                        <div className="w-full h-px bg-[rgba(252,252,252,0.10)] my-4"></div>
+                        <div className="flex justify-between text-[14px] font-[500]">
+                            <div className="text-[rgba(252,252,252,0.50)]">Total</div>
+                            <div className="text-[#956EFF]">
+                                ~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}
+                            </div>
+                        </div>
+                    </div>}</> : "—"}
             </td>
 
             <td className="py-3 text-[14px] text-[#FCFCFC]">—</td>
