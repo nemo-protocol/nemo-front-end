@@ -35,6 +35,11 @@ const MENU: {
       href: "/leaderboard",
       icon: "/header/leaderboard.svg",
     },
+    // {
+    //   label: "Vaults",
+    //   href: "/vaults",
+    //   icon: "/header/vaults.svg",
+    // },
     // { label: "Airdrop", href: "/airdrop", icon: "/header/airdrop.svg" },
   ]
 
