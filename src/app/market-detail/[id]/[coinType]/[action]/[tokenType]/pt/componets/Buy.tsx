@@ -136,8 +136,8 @@ export default function Buy({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -228,7 +228,7 @@ export default function Buy({ coinConfig }: Props) {
                 swapAmount: actualSwapAmount,
               })
 
-              const ptRatio = new Decimal(ptValue).div(value).toFixed(4)
+              const ptRatio = new Decimal(ptValue).div(syValue).toFixed(6)
               setPtRatio(ptRatio)
               setPtValue(newPtValue)
             } catch (dryRunError) {
@@ -237,7 +237,7 @@ export default function Buy({ coinConfig }: Props) {
                 (dryRunError as Error).message ?? dryRunError
               )
               console.log("error", error)
-              setPtRatio(new Decimal(ptValue).div(value).toFixed(4))
+              setPtRatio(new Decimal(ptValue).div(syValue).toFixed(6))
               setPtValue(ptValue)
               setError(error)
             }
@@ -247,13 +247,11 @@ export default function Buy({ coinConfig }: Props) {
             )
             console.log("errorMsg error", errorMsg, error)
             setErrorDetail(detail)
-            setPtValue(undefined)
             setPtFeeValue(undefined)
           } finally {
             setIsCalcPtLoading(false)
           }
         } else {
-          setPtValue(undefined)
           setPtFeeValue(undefined)
           setError(undefined)
         }
@@ -326,16 +324,26 @@ export default function Buy({ coinConfig }: Props) {
       !initPtRatio ||
       !ptRatio ||
       !swapValue ||
+      !coinConfig?.underlyingPrice ||
       !coinConfig?.coinPrice ||
-      !ptYtData?.ptPrice
+      !ptYtData?.ptPrice ||
+      !ptFeeValue
     ) {
       return undefined
     }
-
-    const outputValue = new Decimal(ptValue).mul(ptYtData?.ptPrice)
-    const value = outputValue
-    const preValue = new Decimal(swapValue).mul(coinConfig?.coinPrice)
+    const pirce = tokenType === 0 ? coinConfig?.underlyingPrice : coinConfig?.coinPrice
+    const preValue = new Decimal(swapValue).mul(pirce)
+    const _ratio = new Decimal(initPtRatio).minus(ptRatio).div(ptRatio).mul(100)
+    const value = new Decimal(swapValue).mul(pirce).mul(1 + Number(_ratio) * 0.01).minus(ptFeeValue)
     const ratio = value.minus(preValue).div(preValue).mul(100)
+    console.log(
+      "show rate  price impact ptRatio",
+      ptRatio.toString(),
+      "initPtRatio",
+      initPtRatio.toString(),
+      "ratio",
+      ratio.toString(),
+    )
 
     return { value, ratio }
   }, [
@@ -343,7 +351,9 @@ export default function Buy({ coinConfig }: Props) {
     initPtRatio,
     ptRatio,
     swapValue,
+    ptFeeValue,
     coinConfig?.coinPrice,
+    coinConfig?.underlyingPrice,
     ptYtData?.ptPrice,
   ])
 
@@ -397,16 +407,16 @@ export default function Buy({ coinConfig }: Props) {
         const [splitCoin] =
           tokenType === 0
             ? [
-                await mintSCoin({
-                  tx,
-                  vaultId,
-                  slippage,
-                  address,
-                  coinData,
-                  coinConfig,
-                  amount: actualSwapAmount,
-                }),
-              ]
+              await mintSCoin({
+                tx,
+                vaultId,
+                slippage,
+                address,
+                coinData,
+                coinConfig,
+                amount: actualSwapAmount,
+              }),
+            ]
             : splitCoinHelper(tx, coinData, [actualSwapAmount], coinType)
 
         const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinType)
@@ -494,7 +504,7 @@ export default function Buy({ coinConfig }: Props) {
       <AmountInput
         error={error}
         title={"Trade".toUpperCase()}
-        price={coinConfig?.coinPrice?.toString()}
+        price={tokenType === 0 ? coinConfig?.underlyingPrice : coinConfig?.coinPrice}
         decimal={decimal}
         warning={warning}
         amount={swapValue}
@@ -548,6 +558,7 @@ export default function Buy({ coinConfig }: Props) {
         balance={ptBalance}
         loading={isCalcPtLoading}
         logo={coinConfig.ptTokenLogo}
+        priceImpact={priceImpact}
         maturity={coinConfig.maturity}
         name={`PT ${coinConfig.coinName}`}
       />
@@ -569,19 +580,18 @@ export default function Buy({ coinConfig }: Props) {
               {!swapValue
                 ? "--"
                 : isCalcPtLoading
-                ? "--"
-                : decimal && conversionRate && coinConfig?.underlyingPrice
-                ? `≈ $${
-                    ptValue && decimal && ptValue && conversionRate
+                  ? "--"
+                  : decimal && conversionRate && coinConfig?.underlyingPrice
+                    ? `≈ $${ptValue && decimal && ptValue && conversionRate
                       ? formatDecimalValue(
-                          new Decimal(ptValue)
-                            .minus(new Decimal(syValue).mul(conversionRate))
-                            .mul(coinConfig.underlyingPrice),
-                          decimal
-                        )
+                        new Decimal(ptValue)
+                          .minus(new Decimal(syValue).mul(conversionRate))
+                          .mul(coinConfig.underlyingPrice),
+                        decimal
+                      )
                       : "--"
-                  }`
-                : "--"}
+                    }`
+                    : "--"}
             </span>
 
             {isValidAmount(ptValue) && ptValue && decimal && conversionRate ? (
@@ -610,7 +620,7 @@ export default function Buy({ coinConfig }: Props) {
           <span>Trading Fees</span>
           <span className="text-white">
             {ptFeeValue
-              ? `${formatDecimalValue(ptFeeValue, 2)} ${coinConfig?.coinName}`
+              ? `${formatDecimalValue(ptFeeValue, 6)} ${coinConfig?.coinName}`
               : "--"}
           </span>
         </div>
@@ -629,7 +639,7 @@ export default function Buy({ coinConfig }: Props) {
         type="green"
       />
 
-<GuideModal imageUrl="/assets/images/guide/pt.png" />
+      <GuideModal imageUrl="/assets/images/guide/pt.png" />
     </div>
   )
 }

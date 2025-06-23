@@ -16,7 +16,10 @@ interface AmountOutputProps {
   loading?: boolean
   className?: string
   warningDetail?: string
-
+  priceImpact?: {
+    value: Decimal;
+    ratio: Decimal;
+  }
   coinNameComponent?: React.ReactNode
 }
 
@@ -30,6 +33,7 @@ export const AmountOutput = ({
   amount = "0",
   balance = "0",
   warningDetail,
+  priceImpact,
   loading = false,
   title = "RECEIVE",
   coinNameComponent,
@@ -37,7 +41,6 @@ export const AmountOutput = ({
   price = isValidAmount(price) ? price : "0"
   amount = isValidAmount(amount) ? amount : "0"
   balance = isValidAmount(balance) ? balance : "0"
-
   return (
     <div
       className={cn(
@@ -72,7 +75,7 @@ export const AmountOutput = ({
               coinNameComponent
             ) : (
               <div className="flex items-center gap-x-1">
-                <span className="text-xl text-white">{name}</span>
+                <span className="text-xl text-white mr-1">{name}</span>
                 {maturity && (
                   <span className="text-xs text-light-gray/40">
                     ({dayjs(Number(maturity)).format("DD MMM YYYY")})
@@ -89,24 +92,21 @@ export const AmountOutput = ({
           <div className="flex flex-col gap-y-1">
             {loading ? (
               <Skeleton className="h-3 w-16 sm:w-20 bg-[rgba(252,252,252,0.10)]" />
-            ) : amount ? (
-              <span
-                className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)] max-w-20 truncate hover:cursor-pointer"
-                title={`${formatDecimalValue(
-                  new Decimal(isValidAmount(price) ? price ?? "0" : 0).mul(
-                    amount
-                  ),
-                  6
-                )}`}
-              >
-                $
-                {isValidAmount(price) && isValidAmount(amount)
-                  ? formatDecimalValue(new Decimal(price).mul(amount), 6)
-                  : "0"}
-              </span>
-            ) : (
-              <span className="text-xs text-light-gray/40">$0</span>
-            )}
+            ) : priceImpact?.value ?
+              (
+                <span
+                  className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)]  truncate"
+
+                >
+                  ${formatDecimalValue(priceImpact?.value, 6)}
+                  <span className="text-[#F80] ml-2">
+                  {`(${formatDecimalValue(priceImpact.ratio, 2)}%)`}
+                  </span>
+                </span>
+
+              ) : (
+                <span className="text-xs text-light-gray/40">$0</span>
+              )}
             {warningDetail && (
               <div className="text-xs text-yellow-400 break-words">
                 {warningDetail}

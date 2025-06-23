@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Decimal from 'decimal.js';
 import { BaseRowProps } from '@/types/PortfolioRows';
-import { LpPosition, PyPosition } from '@/hooks/types';
+import { ContractError, LpPosition, PyPosition } from '@/hooks/types';
 import { MarketStateMap } from '@/hooks/query/useMultiMarketState';
 import { RankedPortfolioItem, categories, isExpired } from './Assets';
 import dayjs from 'dayjs';
@@ -12,6 +12,9 @@ import { ArrowUpRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from '@/lib/constants';
 import useRedeemLp from '@/hooks/actions/useRedeemLp';
+import { parseErrorMessage } from '@/lib/errorMapping';
+import { showTransactionDialog } from '@/lib/dialog';
+import { network } from "@/config"
 
 export default function LPRow({
     item,
@@ -96,15 +99,28 @@ export default function LPRow({
                 lpAmount,
                 ytBalance: pyPositionsMap?.[item.id]?.ytBalance,
             })
-            //   if (digest) setTxId(digest)
-            //   setOpen(true)
-            //   setStatus("Success")
-            //   setLpRedeemed(true)
-            // await refreshData()
-        } catch (error) {
-            //   setOpen(true)
-            //   setStatus("Failed")
-            //   setMessage((error as Error)?.message ?? error)
+            if (digest)
+                showTransactionDialog({
+                    status: "Success",
+                    network,
+                    txId: digest,
+
+                })
+            setRedeemLoading(false)
+
+        } catch (errorMsg) {
+            const { error } = parseErrorMessage(
+                (errorMsg as ContractError)?.message ?? errorMsg
+            )
+            showTransactionDialog({
+                status: "Failed",
+                network,
+                txId: "",
+                message: error,
+            })
+            setRedeemLoading(false)
+
+
         } finally {
             setRedeemLoading(false)
         }
@@ -147,17 +163,17 @@ export default function LPRow({
             {/* Incentive */}
             <td className="py-3 text-[#FCFCFC] relative group">
                 <div
-                    className={`text-[12px] font-[600] py-1 gap-1 px-1.5 rounded-[8px] inline-flex ${item.lpTotalReward > 1000
+                    className={`text-[12px] cursor-pointer font-[600] py-1 gap-1 px-1.5 rounded-[8px] inline-flex ${item.lpTotalReward > 1000
                         ? 'bg-[rgba(149,110,255,0.80)]'
                         : 'bg-[rgba(76,200,119,0.80)]'
                         }`}
                 >
                     <Image src="/lpReward.svg" alt="" width={12} height={12} className="shrink-0" />
-                    <span>~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}</span>
+                    {Number(totalRew) == 0 ? <span>$0</span> : <span>~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}</span>}
                 </div>
 
                 {/* Hover Card */}
-                <div className="absolute top-12 left-[-120px] ml-4 w-[320px] rounded-xl border border-[#6D7177] bg-[#101722] backdrop-blur px-6 py-6 text-sm z-10 opacity-0 invisible transition-all duration-200 group-hover:opacity-100 group-hover:visible">
+                {Number(totalRew) !== 0 && <div className="absolute top-12 left-[-120px] ml-4 w-[320px] rounded-xl border border-[#6D7177] bg-[#101722] backdrop-blur px-6 py-6 text-sm z-10 opacity-0 invisible transition-all duration-200 group-hover:opacity-100 group-hover:visible">
                     <div className="text-[18px] font-[470]">Incentive&nbsp;Details</div>
                     <div className="mt-4 font-[500]">
                         {marketStates[item.marketStateId]?.rewardMetrics.map((r) => {
@@ -193,7 +209,7 @@ export default function LPRow({
                             ~{totalRew.lt(0.01) && '<'}${formatPortfolioNumber(totalRew)}
                         </div>
                     </div>
-                </div>
+                </div>}
             </td>
 
             <td className="py-3 text-[14px] text-[#FCFCFC]">—</td>

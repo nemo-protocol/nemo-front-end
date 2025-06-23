@@ -180,8 +180,8 @@ export default function AddLiquidity({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -231,16 +231,16 @@ export default function AddLiquidity({ coinConfig }: Props) {
     const [splitCoin] =
       tokenType === 0
         ? [
-            await mintSCoin({
-              tx,
-              vaultId,
-              address,
-              slippage,
-              coinData,
-              coinConfig,
-              amount: addAmount,
-            }),
-          ]
+          await mintSCoin({
+            tx,
+            vaultId,
+            address,
+            slippage,
+            coinData,
+            coinConfig,
+            amount: addAmount,
+          }),
+        ]
         : splitCoinHelper(tx, coinData, [addAmount], coinType)
 
     const syCoin = depositSyCoin(tx, coinConfig, splitCoin, coinType)
@@ -464,28 +464,47 @@ export default function AddLiquidity({ coinConfig }: Props) {
       router.replace(`?${params.toString()}`, { scroll: false })
     }
   }, [marketStateData?.lpSupply, searchParams, router])
+  const priceImpact = useMemo(() => {
+    if (
+      !addValue||
+      !price||
+      !lpBalance||
+      !coinConfig?.lpPrice
 
+    ) {
+      return undefined
+    }
+    const preValue = new Decimal(addValue).mul(price)
+    const value = new Decimal(lpBalance).mul(coinConfig.lpPrice)
+    const ratio = value.minus(preValue).div(preValue).mul(100)
+
+
+    return { value, ratio }
+  }, [
+    addValue,
+    price,
+    lpBalance,
+    coinConfig?.lpPrice,
+  ])
   return (
     <div className="flex flex-col items-center gap-y-6">
       {/* 二级Tab */}
       <div className="flex gap-2 w-full">
         <button
           onClick={() => handleActionChange("swap")}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            action === "swap"
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${action === "swap"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
-          }`}
+            }`}
         >
           {`SWAP & SUPPLY`.toLocaleUpperCase()}
         </button>
         <button
           disabled={marketStateData?.lpSupply === "0"}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            action === "mint"
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${action === "mint"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
-          }  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
+            }  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-white/40`}
           onClick={() => handleActionChange("mint")}
         >
           {`MINT & SUPPLY`.toLocaleUpperCase()}
@@ -545,6 +564,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
           maturity={coinConfig.maturity}
           unit={`LP ${coinConfig.coinName}`}
           name={`LP ${coinConfig.coinName}`}
+          priceImpact={priceImpact}
           title={"LP Position".toUpperCase()}
           amount={
             !lpValue || !decimal ? "" : formatDecimalValue(lpValue, decimal)
@@ -597,9 +617,8 @@ export default function AddLiquidity({ coinConfig }: Props) {
             <span>Price</span>
             <span className="text-white">
               {ratio
-                ? `1 ${coinName} = ${formatDecimalValue(ratio, 4)} LP ${
-                    coinConfig?.coinName
-                  }`
+                ? `1 ${coinName} = ${formatDecimalValue(ratio, 4)} LP ${coinConfig?.coinName
+                }`
                 : "--"}
             </span>
           </p>

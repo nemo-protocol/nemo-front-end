@@ -42,6 +42,7 @@ import { burnSCoin } from "@/lib/txHelper/coin"
 import { burnPt } from "@/lib/txHelper/pt"
 import { initPyPosition } from "@/lib/txHelper/position"
 import GuideModal from "../../components/GuideModal"
+import useQuerySyRatio from "@/hooks/useQuerySyRatio"
 
 interface Props {
   coinConfig: CoinConfig
@@ -63,7 +64,8 @@ export default function Sell({ coinConfig }: Props) {
 
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
-
+  const [nowRatio, setNowRatio] = useState<string>()
+  const [inputValue, setInputValue] = useState<Decimal>()
   const { data: pyPositionData, refetch: refetchPyPosition } =
     usePyPositionData(
       address,
@@ -78,8 +80,8 @@ export default function Sell({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -142,7 +144,7 @@ export default function Sell({ coinConfig }: Props) {
             )
 
             setTargetValue(targetValue)
-
+            setNowRatio(new Decimal(value).div(outputValue).toFixed(6))
             if (
               new Decimal(targetValue).lt(minValue) &&
               receivingType === "underlying"
@@ -336,7 +338,7 @@ export default function Sell({ coinConfig }: Props) {
   const { data: marketState } = useMarketStateData(coinConfig?.marketStateId)
   const { data: ptYtData } = useCalculatePtYt(coinConfig, marketState)
 
-  const price = useMemo(() => ptYtData?.ptPrice?.toString(), [ptYtData])
+  const price = useMemo(() => inputValue ? inputValue.div(redeemValue).toString() : "0", [ptYtData, inputValue])
 
   const { isLoading } = useInputLoadingState(redeemValue, false)
 
@@ -355,6 +357,7 @@ export default function Sell({ coinConfig }: Props) {
     },
     [decimal, coinConfig]
   )
+  const { data: initSyRatio } = useQuerySyRatio(coinConfig, "1000")
 
   const btnDisabled = useMemo(() => {
     return !!error || !isValidAmount(redeemValue) || !isValidAmount(targetValue)
@@ -366,24 +369,30 @@ export default function Sell({ coinConfig }: Props) {
       !redeemValue ||
       !ptYtData?.ptPrice ||
       !coinConfig?.coinPrice ||
-      !coinConfig?.underlyingPrice
+      !coinConfig?.underlyingPrice ||
+      !initSyRatio ||
+      !nowRatio 
     ) {
       return
     }
 
-    const inputValue = new Decimal(redeemValue).mul(ptYtData.ptPrice)
+
+
+    const _ratio = new Decimal(initSyRatio?.initSyRatioBypt).minus(nowRatio).div(nowRatio).mul(100)
+
+
+    console.log(`RatioCalc: (${initSyRatio?.initSyRatioBypt} - ${nowRatio})/${initSyRatio?.initSyRatioBypt} * 100 = ${_ratio.toFixed(4)}`)
     const outputValue = new Decimal(targetValue).mul(
       receivingType === "underlying"
-        ? coinConfig.underlyingPrice ?? "0"
-        : coinConfig.coinPrice ?? "0"
+        ? (coinConfig.underlyingPrice ?? "0")
+        : (coinConfig.coinPrice ?? "0"),
     )
+    const inputValue = new Decimal(outputValue).div(1 + Number(_ratio) * 0.01)
+    setInputValue(inputValue)
+    const ratio = outputValue.minus(inputValue).div(inputValue).mul(100)
 
     const value = outputValue
-    const ratio = safeDivide(
-      inputValue.minus(outputValue),
-      inputValue,
-      "decimal"
-    ).mul(100)
+
 
     return { value, ratio }
   }, [
@@ -391,6 +400,7 @@ export default function Sell({ coinConfig }: Props) {
     redeemValue,
     receivingType,
     ptYtData?.ptPrice,
+    ptYtData?.ytPrice,
     coinConfig?.coinPrice,
     coinConfig?.underlyingPrice,
   ])
@@ -436,8 +446,8 @@ export default function Sell({ coinConfig }: Props) {
           isLoading
             ? undefined
             : isValidAmount(targetValue)
-            ? formatDecimalValue(targetValue, decimal)
-            : undefined
+              ? formatDecimalValue(targetValue, decimal)
+              : undefined
         }
         loading={isLoading}
         balance={coinBalance}
@@ -473,14 +483,8 @@ export default function Sell({ coinConfig }: Props) {
             }}
           />
         }
-        warningDetail={
-          priceImpact
-            ? `~ $${formatDecimalValue(
-                priceImpact.value,
-                2
-              )} (${formatDecimalValue(priceImpact.ratio, 2)}%)`
-            : undefined
-        }
+        priceImpact={priceImpact}
+     
       />
 
       <div className="flex justify-between">

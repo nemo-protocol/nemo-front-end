@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Decimal from 'decimal.js';
 import { BaseRowProps } from '@/types/PortfolioRows';
-import { LpPosition, PyPosition } from '@/hooks/types';
+import { ContractError, LpPosition, PyPosition } from '@/hooks/types';
 import { RankedPortfolioItem, categories, isExpired } from './Assets';
 import dayjs from 'dayjs';
 import { formatPortfolioNumber, formatTVL } from '@/lib/utils';
@@ -15,6 +15,9 @@ import useCoinData from '@/hooks/query/useCoinData';
 import { useWallet } from '@nemoprotocol/wallet-kit';
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from '@/lib/constants';
 import { useEffect, useMemo, useState } from 'react';
+import { parseErrorMessage } from '@/lib/errorMapping';
+import { showTransactionDialog } from '@/lib/dialog';
+import { network } from "@/config"
 
 export default function PTRow({
   item,
@@ -89,15 +92,26 @@ export default function PTRow({
         coinConfig: item,
         pyPositions: pyPositionsMap?.[item.id]?.pyPositions,
       })
-      // if (digest) setTxId(digest)
-      // setOpen(true)
-      // setStatus("Success")
-      // setPtRedeemed(true)
-      // await refreshData()
-    } catch (error) {
-      // setOpen(true)
-      // setStatus("Failed")
-      // setMessage((error as Error)?.message ?? error)
+      if (digest)
+        showTransactionDialog({
+          status: "Success",
+          network,
+          txId: digest,
+
+        })
+      setRedeemLoading(false)
+    } catch (errorMsg) {
+      const { error } = parseErrorMessage(
+        (errorMsg as ContractError)?.message ?? errorMsg
+      )
+      showTransactionDialog({
+        status: "Failed",
+        network,
+        txId: "",
+        message: error,
+      })
+      setRedeemLoading(false)
+
     } finally {
       setRedeemLoading(false)
     }

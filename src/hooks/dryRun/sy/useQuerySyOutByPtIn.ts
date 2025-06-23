@@ -20,7 +20,7 @@ type DryRunResult<T extends boolean> = T extends true
   : SyOutByPtInResult
 
 export default function useQuerySyOutDryRun<T extends boolean = false>(
-  { outerCoinInfo, debug }: { outerCoinInfo?: BaseCoinInfo; debug: T } = {
+  { outerCoinInfo, debug }: { outerCoinInfo?: BaseCoinInfo; debug?: T } = {
     debug: false as T,
   },
 ) {

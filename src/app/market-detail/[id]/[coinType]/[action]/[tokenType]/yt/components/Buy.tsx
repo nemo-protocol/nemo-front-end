@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 
 import { network } from "@/config"
 import { CoinConfig } from "@/queries/types/market"
-import { formatDecimalValue, isValidAmount, debounce } from "@/lib/utils"
+import { formatDecimalValue, isValidAmount, debounce, safeDivide } from "@/lib/utils"
 import { parseErrorMessage, parseGasErrorMessage } from "@/lib/errorMapping"
 import { showTransactionDialog } from "@/lib/dialog"
 import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST } from "@/lib/constants"
@@ -42,6 +42,7 @@ import { getPriceVoucher } from "@/lib/txHelper/price"
 import { debugLog } from "@/config"
 import Calculator from "../../components/Calculator"
 import GuideModal from "../../components/GuideModal"
+import useTradeRatio from "@/hooks/actions/useTradeRatio"
 
 interface Props {
   coinConfig: CoinConfig
@@ -59,6 +60,9 @@ export default function Buy({ coinConfig }: Props) {
   const [isCalcYtLoading, setIsCalcYtLoading] = useState(false)
   const [slippage, setSlippage] = useState("0.5")
   const [minValue, setMinValue] = useState(0)
+  const [initRatio, setInitRatio] = useState<string>("")
+  const { mutateAsync: calculateRatio } = useTradeRatio(coinConfig)
+  const [ytRatio, setYtRatio] = useState<string>("")
 
   const { address, signAndExecuteTransaction } = useWallet()
   const isConnected = useMemo(() => !!address, [address])
@@ -107,6 +111,21 @@ export default function Buy({ coinConfig }: Props) {
     [tokenType, coinConfig]
   )
 
+  useEffect(() => {
+    async function initRatio() {
+      if (conversionRate) {
+        try {
+          const initialRatio = await calculateRatio(
+            tokenType === 0 ? conversionRate : "1",
+          )
+          setInitRatio(initialRatio)
+        } catch (error) {
+          console.error("Failed to calculate initial ratio:", error)
+        }
+      }
+    }
+    initRatio()
+  }, [calculateRatio, conversionRate, tokenType])
   const coinLogo = useMemo(
     () =>
       tokenType === 0 ? coinConfig?.underlyingCoinLogo : coinConfig?.coinLogo,
@@ -207,6 +226,8 @@ export default function Buy({ coinConfig }: Props) {
 
             setYtValue(ytValue)
             setYtFeeValue(feeValue)
+            const ytRatio = safeDivide(ytValue, Number(value), "string")
+            setYtRatio(ytRatio)
           } catch (error) {
             const { error: msg, detail } = parseErrorMessage(
               (error as Error)?.message ?? ""
@@ -215,7 +236,9 @@ export default function Buy({ coinConfig }: Props) {
             setErrorDetail(detail)
             setYtValue(undefined)
             setYtFeeValue(undefined)
+
           } finally {
+
             setIsCalcYtLoading(false)
           }
         } else {
@@ -247,8 +270,8 @@ export default function Buy({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -294,16 +317,16 @@ export default function Buy({ coinConfig }: Props) {
         const [splitCoin] =
           tokenType === 0
             ? [
-                await mintSCoin({
-                  tx,
-                  vaultId,
-                  address,
-                  slippage,
-                  coinData,
-                  coinConfig,
-                  amount: swapAmount,
-                }),
-              ]
+              await mintSCoin({
+                tx,
+                vaultId,
+                address,
+                slippage,
+                coinData,
+                coinConfig,
+                amount: swapAmount,
+              }),
+            ]
             : splitCoinHelper(tx, coinData, [swapAmount], coinConfig.coinType)
 
         const syCoin = depositSyCoin(
@@ -424,7 +447,46 @@ export default function Buy({ coinConfig }: Props) {
     }
   }
   const [open, setOpen] = useState(false)
+  const priceImpact = useMemo(() => {
+    if (
+      !ytValue ||
+      !decimal ||
+      !tradeValue ||
+      !ptYtData?.ytPrice ||
+      !coinConfig?.coinPrice ||
+      !coinConfig?.underlyingPrice ||
+      !price ||
+      !ytFeeValue ||
+      !ytRatio
+    ) {
+      return
+    }
+    const preValue = new Decimal(tradeValue).mul(price)
+    const _ratio = new Decimal(ytRatio).minus(initRatio).div(initRatio).mul(100)
+    const value = new Decimal(tradeValue).mul(price).mul(1 + Number(_ratio) * 0.01).minus(ytFeeValue)
+    const ratio = value.minus(preValue).div(preValue).mul(100)
 
+    console.log(
+      "ytRatio",
+      value.minus(preValue).div(preValue).mul(100).toString(),
+      ytRatio,
+      initRatio,
+      ratio.toString()
+    )
+    // const ratio = value.minus(preValue).div(preValue).mul(100)
+    return { value, ratio }
+  }, [
+    ytValue,
+    decimal,
+    tradeValue,
+    ytFeeValue,
+    ptYtData?.ytPrice,
+    coinConfig?.coinPrice,
+    coinConfig?.underlyingPrice,
+    price,
+    ytRatio,
+    initRatio,
+  ])
   return (
     <div className="flex flex-col gap-6">
       <Calculator
@@ -485,22 +547,22 @@ export default function Buy({ coinConfig }: Props) {
                   {(tokenType === 0
                     ? coinConfig?.underlyingCoinLogo
                     : coinConfig?.coinLogo) && (
-                    <Image
-                      src={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinLogo
-                          : coinConfig?.coinLogo
-                      }
-                      alt={
-                        tokenType === 0
-                          ? coinConfig?.underlyingCoinName
-                          : coinConfig?.coinName
-                      }
-                      className="size-4 sm:size-5"
-                      width={20}
-                      height={20}
-                    />
-                  )}
+                      <Image
+                        src={
+                          tokenType === 0
+                            ? coinConfig?.underlyingCoinLogo
+                            : coinConfig?.coinLogo
+                        }
+                        alt={
+                          tokenType === 0
+                            ? coinConfig?.underlyingCoinName
+                            : coinConfig?.coinName
+                        }
+                        className="size-4 sm:size-5"
+                        width={20}
+                        height={20}
+                      />
+                    )}
                 </div>
               </SelectValue>
             </SelectTrigger>
@@ -548,9 +610,11 @@ export default function Buy({ coinConfig }: Props) {
         amount={ytValue}
         balance={ytBalance}
         loading={isCalcYtLoading}
+        priceImpact={priceImpact}
         logo={coinConfig.ytTokenLogo}
         maturity={coinConfig.maturity}
         name={`YT ${coinConfig.coinName}`}
+        
       />
 
       <div className="text-sm text-slate-400 flex flex-col gap-2">
@@ -568,9 +632,9 @@ export default function Buy({ coinConfig }: Props) {
           <span className="text-white">
             {ptYtData?.ytPrice && price
               ? `1 ${coinName} = ${formatDecimalValue(
-                  new Decimal(1).div(ptYtData.ytPrice).mul(price),
-                  6
-                )} YT ${coinConfig?.coinName}`
+                new Decimal(1).div(ptYtData.ytPrice).mul(price),
+                6
+              )} YT ${coinConfig?.coinName}`
               : "--"}
           </span>
         </div>
