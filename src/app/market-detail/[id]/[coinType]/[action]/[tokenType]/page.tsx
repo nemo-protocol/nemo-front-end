@@ -465,17 +465,8 @@ export default function MarketDetailPage() {
             perPoints: coinConfig.perPoints
               ? Number(coinConfig.perPoints)
               : undefined,
-            incentives: coinConfig.marketState?.rewardMetrics?.map(
-              (metric) => ({
-                tokenLogo: metric.tokenLogo,
-                apy:
-                  ((Number(metric.dailyEmission) *
-                    Number(metric.tokenPrice) *
-                    365) /
-                    Number(coinConfig.tvl)) *
-                  100,
-              })
-            ),
+            incentiveApy: Number(coinConfig.incentiveApy),
+            incentives: coinConfig.incentives,
           }}
           trigger={
             <div className="flex flex-col cursor-pointer">

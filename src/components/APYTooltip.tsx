@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { formatLargeNumber } from "@/lib/utils"
+import { Incentive } from "@/queries/types/market"
 
 export interface APYTooltipConfig {
   perPoints?: number
@@ -16,10 +17,8 @@ export interface APYTooltipConfig {
   swapFeeApy?: number
   feeApy?: number
   poolApy?: number
-  incentives?: Array<{
-    tokenLogo: string
-    apy: number
-  }>
+  incentives?: Incentive[]
+  incentiveApy?: number
   scaledTotalApy?: number
 }
 
@@ -98,7 +97,7 @@ export function APYTooltip({
                 <span className="text-sm font-normal">
                   {formatLargeNumber(
                     new Decimal(
-                      config.incentives.reduce((acc, i) => acc + i.apy, 0)
+                      config.incentiveApy || 0
                     )
                       .mul(100)
                       .toFixed(6),

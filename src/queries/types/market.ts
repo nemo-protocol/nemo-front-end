@@ -144,6 +144,8 @@ export interface CoinConfig extends BaseCoinInfo {
   lpPriceRateChange: string
   ptPriceRateChange: string
   ytPriceRateChange: string
+  incentiveApy: string
+  incentives: Incentive[]
 }
 
 export interface PortfolioItem extends CoinConfig {

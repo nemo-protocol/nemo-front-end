@@ -262,10 +262,8 @@ export default function MarketPage() {
             swapFeeApy: Number(row.original.swapFeeApy),
             feeApy: Number(row.original.feeApy),
             poolApy: Number(row.original.poolApy),
-            incentives: row.original.incentives?.map((incentive) => ({
-              tokenLogo: incentive.tokenLogo,
-              apy: Number(incentive.apy),
-            })),
+            incentives: row.original.incentives,
+            incentiveApy: Number(row.original.incentiveApy),
             scaledTotalApy:
               Number(row.original.scaledPtApy) +
               Number(row.original.scaledUnderlyingApy) +
