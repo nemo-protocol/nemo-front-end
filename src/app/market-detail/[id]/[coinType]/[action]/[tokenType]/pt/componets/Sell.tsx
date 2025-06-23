@@ -41,7 +41,7 @@ import { getPriceVoucher } from "@/lib/txHelper/price"
 import { burnSCoin } from "@/lib/txHelper/coin"
 import { burnPt } from "@/lib/txHelper/pt"
 import { initPyPosition } from "@/lib/txHelper/position"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 import useQuerySyRatio from "@/hooks/useQuerySyRatio"
 
 interface Props {
@@ -500,7 +500,7 @@ export default function Sell({ coinConfig }: Props) {
         type="red"
       />
 
-      <GuideModal imageUrl="/assets/images/guide/pt.png" />
+      <GuideModal />
     </div>
   )
 }

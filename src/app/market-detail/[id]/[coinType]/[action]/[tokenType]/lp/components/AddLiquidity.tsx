@@ -30,7 +30,8 @@ import Decimal from "decimal.js"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import Image from "next/image"
-import GuideModal from "../../components/GuideModal"
+import SwapSupplyGuideModal from "./SwapSupplyGuideModal"
+import MintSupplyGuideModal from "./MintSupplyGuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -618,13 +619,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
         loading={isAdding || isCalculating}
       />
 
-      <GuideModal
-        imageUrl={
-          action === "swap"
-            ? "/assets/images/guide/swap&supply.png"
-            : "/assets/images/guide/mint&supply.png"
-        }
-      />
+      {action === "swap" ? <SwapSupplyGuideModal /> : <MintSupplyGuideModal />}
     </div>
   )
 }

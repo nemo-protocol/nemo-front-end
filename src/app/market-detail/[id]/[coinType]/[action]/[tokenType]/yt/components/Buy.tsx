@@ -41,7 +41,7 @@ import { mintSCoin } from "@/lib/txHelper/coin"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { debugLog } from "@/config"
 import Calculator from "../../components/Calculator"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 import useTradeRatio from "@/hooks/actions/useTradeRatio"
 
 interface Props {
@@ -674,7 +674,7 @@ export default function Buy({ coinConfig }: Props) {
           Calculate
         </div>
       </div>
-      <GuideModal imageUrl="/assets/images/guide/yt.png" />
+      <GuideModal />
     </div>
   )
 }
