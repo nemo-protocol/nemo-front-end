@@ -18,6 +18,7 @@ import type {
   TokenType,
   CoinInfoWithMetrics,
 } from "@/queries/types/market"
+import Decimal from "decimal.js"
 
 export default function MarketPage() {
   const router = useRouter()
@@ -189,7 +190,9 @@ export default function MarketPage() {
             src={row.original.coinLogo}
             alt={row.original.coinName}
           />
-          <span className="text-[20px] font-[500]">{truncate(row.original.coinName, 7)}</span>
+          <span className="text-[20px] font-[500]">
+            {truncate(row.original.coinName, 7)}
+          </span>
           {row.original.ptTokenType && (
             <span className="text-light-gray/40 bg-[#956EFF]/10 text-xs px-1.5 py-1 rounded-lg ml-1">
               V2 TOKEN
@@ -206,7 +209,10 @@ export default function MarketPage() {
         const maturity = parseInt(row.original.maturity)
         const now = Date.now()
         const count = 30
-        const remainingDays = Math.max(0, Math.ceil((maturity - now) / (1000 * 60 * 60 * 24)))
+        const remainingDays = Math.max(
+          0,
+          Math.ceil((maturity - now) / (1000 * 60 * 60 * 24))
+        )
         let activeCount = Math.round((remainingDays / 365) * count)
         if (activeCount > count) activeCount = count
         if (activeCount < 0) activeCount = 0
@@ -286,7 +292,11 @@ export default function MarketPage() {
               className="flex text-sm items-center gap-1 px-4 py-2 rounded-full bg-[#956EFF]/10 text-[#FCFCFC] font-[550] transition-all duration-200 shadow-lg justify-center cursor-pointer hover:bg-[#956EFF]/30"
             >
               <span className="text-white font-[500]">
-                {formatLargeNumber(row.original.poolApy, 2)}%
+                {formatLargeNumber(
+                  new Decimal(row.original.poolApy).mul(100),
+                  2
+                )}
+                %
               </span>
               {row.original.perPoints && (
                 <Image
@@ -329,7 +339,7 @@ export default function MarketPage() {
           className="flex text-sm items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] shadow-lg  transition-all duration-200 justify-center cursor-pointer hover:bg-[#1785B7]/30"
         >
           <span className="text-white font-medium">
-            {formatLargeNumber(row.original.ytApy, 2)}%
+            {formatLargeNumber(new Decimal(row.original.ytApy).mul(100), 2)}%
           </span>
           <span className="text-[#FCFCFC]/40">
             {formatLargeNumber(row.original.ytPrice, 2)}
@@ -357,7 +367,7 @@ export default function MarketPage() {
           className="flex text-sm items-center gap-1 px-4 py-2 rounded-full bg-light-gray/[0.03] text-white font-[550] transition-all duration-200 shadow-lg justify-center cursor-pointer hover:bg-[#17B69B]/30"
         >
           <span className="text-white font-[500]">
-            {formatLargeNumber(row.original.ptApy, 2)}%
+            {formatLargeNumber(new Decimal(row.original.ptApy).mul(100), 2)}%
           </span>
           <span className="text-[#FCFCFC]/40">
             {formatLargeNumber(row.original.ptPrice, 2)}
@@ -382,7 +392,9 @@ export default function MarketPage() {
               potential.
             </p>
             <div className="text-light-gray/40 flex items-center gap-4">
-              <span className="text-light-gray/40 text-[12px] font-[600]">LIST MODE:</span>
+              <span className="text-light-gray/40 text-[12px] font-[600]">
+                LIST MODE:
+              </span>
               <Tab className="gap-4" items={listModeItems} />
             </div>
           </div>
@@ -481,8 +493,9 @@ export default function MarketPage() {
                         {arr.length}
                       </span>
                       <ChevronDown
-                        className={`transition-transform duration-200  ${open[groupName] ? "rotate-180" : ""
-                          } text-white/70`}
+                        className={`transition-transform duration-200  ${
+                          open[groupName] ? "rotate-180" : ""
+                        } text-white/70`}
                         size={24}
                       />
                     </div>

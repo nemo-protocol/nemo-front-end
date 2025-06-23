@@ -3,7 +3,9 @@ import { codeInspectorPlugin } from "code-inspector-plugin"
 
 const nextConfig: NextConfig = {
   webpack: (config) => {
-    config.plugins.push(codeInspectorPlugin({ bundler: "webpack" }))
+    if (process.env.NODE_ENV === 'development') {
+      config.plugins.push(codeInspectorPlugin({ bundler: "webpack" }))
+    }
     return config
   },
   images: {
