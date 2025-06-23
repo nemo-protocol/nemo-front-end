@@ -51,10 +51,7 @@ export const formatDecimalValue = (
 ): string => {
   try {
     const value = _value instanceof Decimal ? _value : new Decimal(_value || 0)
-    return value.toNumber().toLocaleString('en-US', {
-      minimumFractionDigits: decimal,
-      maximumFractionDigits: decimal
-    })
+    return value.toNumber().toFixed(decimal)
   } catch (error) {
     return "0"
   }
@@ -197,12 +194,7 @@ export const isValidAmount = (
 export const isValidAmountWithoutZero = (
   amount?: string | number | Decimal | null
 ): boolean => {
-  if (
-    !amount ||
-    amount === "" ||
-    amount === "NaN"
-  )
-    return false
+  if (!amount || amount === "" || amount === "NaN") return false
   const num = Number(amount)
   return !isNaN(num)
 }
@@ -303,9 +295,9 @@ export const formatLargeNumber = (
     }
 
     if (abs.lessThan(1000000)) {
-      return num.toNumber().toLocaleString('en-US', {
+      return num.toNumber().toLocaleString("en-US", {
         minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
+        maximumFractionDigits: decimals,
       })
     }
 
@@ -313,10 +305,13 @@ export const formatLargeNumber = (
     const magnitude = Math.min(Math.floor(abs.log(1000000).toNumber()), 3)
     const scaledValue = num.div(new Decimal(1000000).pow(magnitude))
 
-    return scaledValue.toNumber().toLocaleString('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    }).concat(suffixes[magnitude])
+    return scaledValue
+      .toNumber()
+      .toLocaleString("en-US", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })
+      .concat(suffixes[magnitude])
   } catch {
     return "0"
   }
