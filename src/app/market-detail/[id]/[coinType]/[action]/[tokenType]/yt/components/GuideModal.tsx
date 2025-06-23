@@ -6,7 +6,6 @@ import {
   AlertDialogCancel,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { DOCS_LINK } from "@/lib/constants"
 import Image from "next/image"
 
 export default function GuideModal() {
@@ -26,8 +25,8 @@ export default function GuideModal() {
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1000px] text-white">
-        <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1000px] text-light-gray font-sans">
+        <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]">
           What is Yield Token (YT)?
         </AlertDialogTitle>
         <AlertDialogCancel asChild className="border-none">
@@ -56,8 +55,8 @@ export default function GuideModal() {
               {/* View docs 链接 */}
               <a
                 target="_blank"
-                href={DOCS_LINK}
-                className="text-light-gray flex items-center gap-x-2"
+                href={"https://docs.nemoprotocol.com/tutorial/yt"}
+                className="flex items-center gap-x-2"
               >
                 <span>View docs</span>
                 <Image
@@ -76,12 +75,12 @@ export default function GuideModal() {
           </div>
 
           {/* 流程展示 - 水平流程图 */}
-          <div className="w-[300px] py-[60px] font-serif text-light-gray">
+          <div className="w-[300px] py-[60px]">
             <div className="flex items-center justify-between">
               {/* BALANCE */}
               <div className="flex flex-col items-center">
                 <div className="text-light-gray/40 text-xs mb-4">BALANCE</div>
-                <div className="text-2xl mb-1.5">1</div>
+                <div className="text-2xl mb-1.5 font-serif">1</div>
                 <div className="flex items-center gap-2">
                   <Image
                     alt="YT"
@@ -102,8 +101,10 @@ export default function GuideModal() {
 
               {/* UNDERLYING TOKEN */}
               <div className="flex flex-col items-center">
-                <div className="text-xs mb-4">UNDERLYING TOKEN</div>
-                <div className="text-2xl mb-1.5">1</div>
+                <div className="text-light-gray/40 text-xs mb-4">
+                  UNDERLYING TOKEN
+                </div>
+                <div className="text-2xl mb-1.5 font-serif">1</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui-sca.png"

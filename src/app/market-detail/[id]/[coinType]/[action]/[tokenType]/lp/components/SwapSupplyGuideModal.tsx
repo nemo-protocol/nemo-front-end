@@ -25,7 +25,7 @@ export default function SwapSupplyGuideModal() {
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-white">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-light-gray font-sans">
         <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
           What is Swap & Supply?
         </AlertDialogTitle>
@@ -50,19 +50,17 @@ export default function SwapSupplyGuideModal() {
             </p>
 
             <div className="space-y-3">
-              <p className="text-light-gray/60 font-medium">
-                When to use Swap & Supply:
-              </p>
+              <p className="text-light-gray/40">When to use Swap & Supply:</p>
               <ul className="space-y-2 text-light-gray/40">
                 <li className="flex items-start gap-2">
-                  <span className="text-light-gray/60 mt-1">•</span>
+                  <span className="text-light-gray/40 mt-1">•</span>
                   <span>
                     If you want exposure to only one position (LP tokens) and
                     want to avoid managing YT.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-light-gray/60 mt-1">•</span>
+                  <span className="text-light-gray/40 mt-1">•</span>
                   <span>If you add relatively few underlying assets.</span>
                 </li>
               </ul>
@@ -70,14 +68,14 @@ export default function SwapSupplyGuideModal() {
           </div>
 
           {/* 流程图 */}
-          <div className="w-[900px] py-[40px] font-serif text-light-gray">
+          <div className="w-[900px] py-[40px]">
             <div
               className="grid grid-cols-5 gap-6"
               style={{ gridTemplateRows: "auto minmax(40px, 1fr) auto" }}
             >
               {/* 第1行: SWAP TO PT */}
               <div className="col-start-3 row-start-1 flex flex-col items-center">
-                <div className="text-[#17B69B] text-xs font-medium mb-4">
+                <div className="text-light-gray/40 text-xs mb-4">
                   SWAP TO PT
                 </div>
                 <div className="flex items-center gap-2 mb-1.5">
@@ -166,4 +164,3 @@ export default function SwapSupplyGuideModal() {
     </AlertDialog>
   )
 }
-

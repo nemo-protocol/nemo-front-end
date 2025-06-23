@@ -424,5 +424,3 @@ export const NO_SUPPORT_YT_COINS = [
   "0xb490d6fa9ead588a9d72da07a02914da42f6b5b1339b8118a90011a42b67a44f::lp_token::LP_TOKEN",
   "0x0c8a5fcbe32b9fc88fe1d758d33dd32586143998f68656f43f3a6ced95ea4dc3::lp_token::LP_TOKEN",
 ]
-
-export const DOCS_LINK = "https://docs.nemoprotocol.com/"

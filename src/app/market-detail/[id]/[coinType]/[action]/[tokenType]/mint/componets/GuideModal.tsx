@@ -23,7 +23,7 @@ export default function GuideModal() {
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] max-h-[90vh] overflow-y-auto text-white">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] max-h-[90vh] overflow-y-auto text-light-gray font-sans">
         <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
           What is Minting?
         </AlertDialogTitle>
@@ -52,7 +52,7 @@ export default function GuideModal() {
               {/* BALANCE */}
               <div className="flex flex-col items-center">
                 <div className="text-light-gray/40 text-xs mb-4">BALANCE</div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     alt="SUI"
@@ -76,7 +76,7 @@ export default function GuideModal() {
                 <div className="text-light-gray/40 text-xs mb-4">
                   PRINCIPAL TOKEN
                 </div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -96,7 +96,7 @@ export default function GuideModal() {
                 <div className="text-light-gray/40 text-xs mb-4">
                   YIELD TOKEN
                 </div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -132,7 +132,7 @@ export default function GuideModal() {
                 <div className="text-light-gray/40 text-xs mb-4">
                   PRINCIPAL TOKEN
                 </div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -152,7 +152,7 @@ export default function GuideModal() {
                 <div className="text-light-gray/40 text-xs mb-4">
                   YIELD TOKEN
                 </div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -174,7 +174,7 @@ export default function GuideModal() {
               {/* BALANCE */}
               <div className="flex flex-col items-center">
                 <div className="text-light-gray/40 text-xs mb-4">BALANCE</div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     alt="SUI"

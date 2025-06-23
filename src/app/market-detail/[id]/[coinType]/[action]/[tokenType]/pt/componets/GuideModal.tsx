@@ -6,7 +6,6 @@ import {
   AlertDialogCancel,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { DOCS_LINK } from "@/lib/constants"
 import Image from "next/image"
 
 export default function GuideModal() {
@@ -26,7 +25,7 @@ export default function GuideModal() {
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1000px] text-white">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1000px] text-light-gray font-sans">
         <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
           What is Principal Token (PT)?
         </AlertDialogTitle>
@@ -55,8 +54,8 @@ export default function GuideModal() {
               {/* View docs 链接 */}
               <a
                 target="_blank"
-                href={DOCS_LINK}
-                className="text-light-gray flex items-center gap-x-2"
+                href={"https://docs.nemoprotocol.com/tutorial/pt"}
+                className="flex items-center gap-x-2"
               >
                 <span>View docs</span>
                 <Image
@@ -69,18 +68,18 @@ export default function GuideModal() {
 
               <p className="text-light-gray/40">
                 If you own 100 PT sSUI with 3 months maturity, you will be able
-                to redeem 100 SUI worth of stETH after 3 months.
+                to redeem 100 SUI after 3 months.
               </p>
             </div>
           </div>
 
           {/* 流程展示 - 水平流程图 */}
-          <div className="w-full py-[60px] font-serif text-light-gray">
+          <div className="w-full py-[60px]">
             <div className="flex items-center justify-between">
               {/* BALANCE */}
               <div className="flex flex-col items-center">
                 <div className="text-light-gray/40 text-xs mb-4">BALANCE</div>
-                <div className="text-2xl mb-1.5">90</div>
+                <div className="text-2xl mb-1.5 font-serif">90</div>
                 <div className="flex items-center gap-2">
                   <Image
                     alt="SUI"
@@ -101,8 +100,10 @@ export default function GuideModal() {
 
               {/* PRINCIPAL TOKEN */}
               <div className="flex flex-col items-center">
-                <div className="text-xs mb-4">PRINCIPAL TOKEN</div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-light-gray/40 text-xs mb-4">
+                  PRINCIPAL TOKEN
+                </div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -123,8 +124,8 @@ export default function GuideModal() {
 
               {/* REDEEM */}
               <div className="flex flex-col items-center">
-                <div className="text-xs mb-4">REDEEM</div>
-                <div className="text-2xl mb-1.5">3 months</div>
+                <div className="text-light-gray/40 text-xs mb-4">REDEEM</div>
+                <div className="text-2xl mb-1.5 font-serif">3 months</div>
                 <div className="text-sm">After</div>
               </div>
 
@@ -137,10 +138,8 @@ export default function GuideModal() {
 
               {/* YIELD */}
               <div className="flex flex-col items-center">
-                <div className="text-[#4CC877] text-xs font-medium mb-4">
-                  YIELD
-                </div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-light-gray/40 text-xs mb-4">YIELD</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -148,7 +147,7 @@ export default function GuideModal() {
                     width={12}
                     height={12}
                   />
-                  <span className="text-white text-sm">SUI</span>
+                  <span className="text-sm">SUI</span>
                 </div>
               </div>
             </div>

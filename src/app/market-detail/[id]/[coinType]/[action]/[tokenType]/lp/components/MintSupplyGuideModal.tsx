@@ -25,7 +25,7 @@ export default function MintSupplyGuideModal() {
         </button>
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
-      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-white max-h-[90vh] overflow-y-auto">
+      <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] text-light-gray font-sans max-h-[90vh] overflow-y-auto">
         <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
           What is Mint & Supply?
         </AlertDialogTitle>
@@ -50,12 +50,10 @@ export default function MintSupplyGuideModal() {
             </p>
 
             <div className="space-y-3">
-              <p className="text-light-gray/60 font-medium">
-                When to use Mint & Supply:
-              </p>
+              <p className="text-light-gray/40">When to use Mint & Supply:</p>
               <ul className="space-y-2 text-light-gray/40">
                 <li className="flex items-start gap-2">
-                  <span className="text-light-gray/60 mt-1">•</span>
+                  <span className="text-light-gray/40 mt-1">•</span>
                   <span>
                     If you want to retain higher underlying yield and points
                     exposure through YT minted and are neutral on the underlying
@@ -63,7 +61,7 @@ export default function MintSupplyGuideModal() {
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-light-gray/60 mt-1">•</span>
+                  <span className="text-light-gray/40 mt-1">•</span>
                   <span>If you add relatively many underlying assets.</span>
                 </li>
               </ul>
@@ -71,15 +69,17 @@ export default function MintSupplyGuideModal() {
           </div>
 
           {/* 流程图 */}
-          <div className="w-[900px] py-[40px] font-serif text-light-gray">
+          <div className="w-[900px] py-[40px]">
             <div
               className="grid grid-cols-5 gap-6"
               style={{ gridTemplateRows: "auto auto minmax(40px, 1fr) auto" }}
             >
               {/* 第1行: MINT TO YT */}
               <div className="col-start-4 row-start-1 flex flex-col items-center">
-                <div className="text-[#1785B7] text-xs mb-4">MINT TO YT</div>
-                <div className="text-2xl mb-1.5">45</div>
+                <div className="text-light-gray/40 text-xs mb-4">
+                  MINT TO YT
+                </div>
+                <div className="text-2xl mb-1.5 font-serif">45</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -94,7 +94,7 @@ export default function MintSupplyGuideModal() {
               {/* 第2行: BALANCE + TOKEN SPLIT + MINT TO PT */}
               <div className="col-start-1 row-start-2 flex flex-col items-center">
                 <div className="text-light-gray/40 text-xs mb-4">BALANCE</div>
-                <div className="text-2xl mb-1.5">100</div>
+                <div className="text-2xl mb-1.5 font-serif">100</div>
                 <div className="flex items-center gap-2">
                   <Image
                     alt="SUI"
@@ -115,8 +115,10 @@ export default function MintSupplyGuideModal() {
               </div>
 
               <div className="col-start-3 row-start-2 flex flex-col items-center">
-                <div className="text-[#17B69B] text-xs mb-4">MINT TO PT</div>
-                <div className="text-2xl mb-1.5">45</div>
+                <div className="text-light-gray/40 text-xs mb-4">
+                  MINT TO PT
+                </div>
+                <div className="text-2xl mb-1.5 font-serif">45</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
@@ -156,7 +158,7 @@ export default function MintSupplyGuideModal() {
               {/* 第4行: CONVERT */}
               <div className="col-start-3 row-start-4 flex flex-col items-center">
                 <div className="text-light-gray/40 text-xs mb-2">CONVERT</div>
-                <div className="text-2xl mb-1">55</div>
+                <div className="text-2xl mb-1 font-serif">55</div>
                 <div className="flex items-center gap-2">
                   <Image
                     src="/assets/images/sui.svg"
