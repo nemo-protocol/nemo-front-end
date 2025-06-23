@@ -21,7 +21,7 @@ import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useCoinData from "@/hooks/query/useCoinData"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 import { useRouter, useSearchParams } from "next/navigation"
 
 interface Props {
@@ -346,7 +346,7 @@ export default function Redeem({ coinConfig }: Props) {
           redeemValue === "" || insufficientPtBalance || insufficientYtBalance
         }
       />
-      <GuideModal imageUrl="/assets/images/guide/mint.png" />
+      <GuideModal />
     </div>
   )
 }

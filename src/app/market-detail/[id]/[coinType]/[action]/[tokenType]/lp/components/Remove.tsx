@@ -24,7 +24,8 @@ import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 import useCoinData from "@/hooks/query/useCoinData"
-import GuideModal from "../../components/GuideModal"
+import SwapSupplyGuideModal from "./SwapSupplyGuideModal"
+import MintSupplyGuideModal from "./MintSupplyGuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -527,13 +528,7 @@ export default function Remove({ coinConfig }: Props) {
         disabled={btnDisabled}
       />
 
-      <GuideModal
-        imageUrl={
-          action === "swap"
-            ? "/assets/images/guide/swap&supply.png"
-            : "/assets/images/guide/mint&supply.png"
-        }
-      />
+      {action === "swap" ? <SwapSupplyGuideModal /> : <MintSupplyGuideModal />}
     </div>
   )
 }

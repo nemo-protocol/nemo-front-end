@@ -37,7 +37,7 @@ import { burnSCoin } from "@/lib/txHelper/coin"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import Image from "next/image"
 import Calculator from "../../components/Calculator"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 import useQuerySyRatio from "@/hooks/useQuerySyRatio"
 
 interface Props {
@@ -509,7 +509,7 @@ export default function Sell({ coinConfig }: Props) {
           Calculate
         </div>
       </div>
-      <GuideModal imageUrl="/assets/images/guide/yt.png" />
+      <GuideModal />
     </div>
   )
 }
