@@ -566,9 +566,9 @@ export default function MarketDetailPage() {
                     <span>
                       {coinConfig.marketState?.totalPt && coinConfig.decimal
                         ? `$${formatDecimalValue(
-                            new Decimal(coinConfig.marketState.totalPt).div(
-                              new Decimal(10).pow(coinConfig.decimal)
-                            ),
+                            new Decimal(coinConfig.marketState.totalPt)
+                              .mul(coinConfig.ptPrice)
+                              .div(new Decimal(10).pow(coinConfig.decimal)),
                             2
                           )} `
                         : "--"}
@@ -589,9 +589,9 @@ export default function MarketDetailPage() {
                     <span>
                       {coinConfig.marketState?.totalSy && coinConfig.decimal
                         ? `$${formatDecimalValue(
-                            new Decimal(coinConfig.marketState.totalSy).div(
-                              new Decimal(10).pow(coinConfig.decimal)
-                            ),
+                            new Decimal(coinConfig.marketState.totalSy)
+                              .mul(coinConfig.coinPrice)
+                              .div(new Decimal(10).pow(coinConfig.decimal)),
                             2
                           )} `
                         : "--"}
