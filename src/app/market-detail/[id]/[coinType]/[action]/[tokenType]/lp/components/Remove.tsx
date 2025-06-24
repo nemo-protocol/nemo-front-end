@@ -421,8 +421,8 @@ export default function Remove({ coinConfig }: Props) {
       <AmountInput
         error={error}
         price={lpPrice}
-        decimal={decimal}
         amount={lpValue}
+        decimal={decimal}
         isLoading={isLoading}
         onChange={setLpValue}
         warning={inputWarning}

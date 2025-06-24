@@ -64,6 +64,18 @@ export default function useBurnLpDryRun(
         throw new Error("Please select a pool")
       }
 
+      if (
+        receivingType === "underlying" &&
+        (coinConfig?.provider === "Cetus" ||
+          NO_SUPPORT_UNDERLYING_COINS.some(
+            (item) => item.coinType === coinConfig?.coinType
+          ))
+      ) {
+        throw new Error(
+          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
+        )
+      }
+
       if (!marketPositions?.length) {
         throw new Error("No LP market position found")
       }
@@ -146,12 +158,7 @@ export default function useBurnLpDryRun(
         )?.minValue || 0
 
       // Use coin::value to get the output amount based on receivingType
-      if (
-        receivingType === "underlying" &&
-        !NO_SUPPORT_UNDERLYING_COINS.some(
-          (item) => item.coinType === coinConfig.underlyingCoinType
-        )
-      ) {
+      if (receivingType === "underlying") {
         const { coinValue, coinAmount: amount } = await burnSCoinDryRun({
           lpAmount,
         })
