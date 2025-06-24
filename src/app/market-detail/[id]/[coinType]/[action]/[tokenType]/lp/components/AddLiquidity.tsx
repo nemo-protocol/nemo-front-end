@@ -477,7 +477,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
     }
     const inputValue = new Decimal(addValue).mul(price)
     const value = new Decimal(coinConfig.lpPrice).mul(formatDecimalValue(lpValue, decimal))
-    const ratio = inputValue.minus(value).div(inputValue).mul(100)
+    const ratio = value.minus(inputValue).div(inputValue).mul(100)
   
 
     return { value, ratio }
