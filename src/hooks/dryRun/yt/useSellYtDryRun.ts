@@ -5,7 +5,7 @@ import type { CoinConfig } from "@/queries/types/market"
 import type { DebugInfo, PyPosition } from "../../types"
 import { ContractError } from "../../types"
 import { initPyPosition, swapExactYtForSy, redeemSyCoin } from "@/lib/txHelper"
-import { UNSUPPORTED_UNDERLYING_COINS } from "@/lib/constants"
+import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 import Decimal from "decimal.js"
 import { bcs } from "@mysten/sui/bcs"
 import { getPriceVoucher } from "@/lib/txHelper/price"
@@ -86,7 +86,9 @@ export default function useSellYtDryRun<T extends boolean = false>(
 
       if (
         receivingType === "underlying" &&
-        !UNSUPPORTED_UNDERLYING_COINS.includes(coinConfig?.coinType)
+        !NO_SUPPORT_UNDERLYING_COINS.some(
+          (item) => item.coinType === coinConfig?.coinType
+        )
       ) {
         const underlyingCoin = await burnSCoin({
           tx,

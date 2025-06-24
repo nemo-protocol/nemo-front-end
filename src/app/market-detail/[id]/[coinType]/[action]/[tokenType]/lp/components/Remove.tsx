@@ -34,6 +34,7 @@ interface Props {
 export default function Remove({ coinConfig }: Props) {
   const [lpValue, setLpValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
+  const [minSyOut, setMinSyOut] = useState("0")
   const [error, setError] = useState<string>()
   const [ptValue, setPtValue] = useState("")
   const { account: currentAccount } = useWallet()
@@ -173,7 +174,13 @@ export default function Remove({ coinConfig }: Props) {
         setError(undefined)
         setInputWarning(undefined)
         setOutputWarning(undefined)
-        if (value && value !== "0" && decimal) {
+        if (
+          value &&
+          value !== "0" &&
+          decimal &&
+          pyPositionData &&
+          lppMarketPositionData
+        ) {
           setIsInputLoading(true)
           try {
             const lpAmount = new Decimal(value).mul(10 ** decimal).toFixed(0)
@@ -182,18 +189,23 @@ export default function Remove({ coinConfig }: Props) {
               vaultId,
               lpAmount,
               receivingType,
+              pyPositions: pyPositionData,
+              marketPositions: lppMarketPositionData,
             })
 
             if (action === "swap") {
               try {
-                const { outputValue: swappedOutputValue } = await sellPtDryRun({
-                  slippage,
-                  vaultId,
-                  ptAmount,
-                  minSyOut: "0",
-                  receivingType,
-                  pyPositions: pyPositionData,
-                })
+                const { outputValue: swappedOutputValue, outputAmount } =
+                  await sellPtDryRun({
+                    vaultId,
+                    ptAmount,
+                    slippage,
+                    minSyOut: "0",
+                    receivingType,
+                    pyPositions: pyPositionData,
+                  })
+
+                setMinSyOut(outputAmount)
 
                 const targetValue = new Decimal(outputValue)
                   .add(swappedOutputValue)
@@ -239,8 +251,10 @@ export default function Remove({ coinConfig }: Props) {
       receivingType,
       pyPositionData,
       coinConfig?.coinName,
+      lppMarketPositionData,
     ]
   )
+
   const btnText = useMemo(() => {
     if (insufficientBalance) {
       return `Insufficient LP ${coinConfig?.coinName} balance`
@@ -258,6 +272,7 @@ export default function Remove({ coinConfig }: Props) {
     coinConfig?.coinName,
     coinConfig?.tradeStatus,
   ])
+
   const btnDisabled = useMemo(() => {
     return (
       !!error ||
@@ -267,16 +282,20 @@ export default function Remove({ coinConfig }: Props) {
       coinConfig?.tradeStatus === "0"
     )
   }, [error, lpValue, insufficientBalance, coinConfig?.tradeStatus])
+
   useEffect(() => {
     const cancelFn = debouncedGetSyOut(lpValue, decimal ?? 0)
     return () => {
       cancelFn()
     }
   }, [lpValue, decimal, debouncedGetSyOut, receivingType])
+
   const refreshData = useCallback(async () => {
     await Promise.all([refetchLpPosition(), refetchPyPosition()])
   }, [refetchLpPosition, refetchPyPosition])
+
   const { mutateAsync: redeemLp } = useRedeemLp(coinConfig, marketState)
+
   const convertReceivingValue = useCallback(
     (value: string, fromType: string, toType: string) => {
       if (!value || !decimal || !coinConfig?.conversionRate) return ""
@@ -313,9 +332,11 @@ export default function Remove({ coinConfig }: Props) {
         setIsRemoving(true)
         const lpAmount = new Decimal(lpValue).mul(10 ** decimal).toFixed(0)
         const { digest } = await redeemLp({
+          action,
           vaultId,
           slippage,
           lpAmount,
+          minSyOut,
           ytBalance,
           coinConfig,
           receivingType,
@@ -324,9 +345,9 @@ export default function Remove({ coinConfig }: Props) {
         })
         if (digest)
           showTransactionDialog({
-            status: "Success",
             network,
             txId: digest,
+            status: "Success",
             onClose: async () => {
               await refreshData()
               await refreshPtYt()

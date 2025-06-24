@@ -369,8 +369,6 @@ export const WWAL = {
     "0x10b9d30c28448939ce6c4d6c6e0ffce4a7f8a4ada8248bdad09ef8b70e4a3904",
 } as const
 
-export const UNSUPPORTED_UNDERLYING_COINS: string[] = []
-
 export const CETUS_VAULT_ID_LIST = [
   {
     coinType:

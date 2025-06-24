@@ -20,7 +20,7 @@ import { showTransactionDialog } from "@/lib/dialog"
 import {
   CETUS_VAULT_ID_LIST,
   NEED_MIN_VALUE_LIST,
-  UNSUPPORTED_UNDERLYING_COINS,
+  NO_SUPPORT_UNDERLYING_COINS,
 } from "@/lib/constants"
 
 import useCoinData from "@/hooks/query/useCoinData"
@@ -80,8 +80,8 @@ export default function Sell({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-          (item) => item.coinType === coinConfig?.coinType
-        )?.vaultId
+            (item) => item.coinType === coinConfig?.coinType
+          )?.vaultId
         : "",
     [coinConfig]
   )
@@ -283,7 +283,9 @@ export default function Sell({ coinConfig }: Props) {
 
         if (
           receivingType === "underlying" &&
-          !UNSUPPORTED_UNDERLYING_COINS.includes(coinConfig?.coinType)
+          !NO_SUPPORT_UNDERLYING_COINS.some(
+            (item) => item.coinType === coinConfig.underlyingCoinType
+          )
         ) {
           const underlyingCoin = await burnSCoin({
             tx,
@@ -338,7 +340,10 @@ export default function Sell({ coinConfig }: Props) {
   const { data: marketState } = useMarketStateData(coinConfig?.marketStateId)
   const { data: ptYtData } = useCalculatePtYt(coinConfig, marketState)
 
-  const price = useMemo(() => inputValue ? inputValue.div(redeemValue).toString() : "0", [ptYtData, inputValue])
+  const price = useMemo(
+    () => (inputValue ? inputValue.div(redeemValue).toString() : "0"),
+    [ptYtData, inputValue]
+  )
 
   const { isLoading } = useInputLoadingState(redeemValue, false)
 
@@ -371,28 +376,31 @@ export default function Sell({ coinConfig }: Props) {
       !coinConfig?.coinPrice ||
       !coinConfig?.underlyingPrice ||
       !initSyRatio ||
-      !nowRatio 
+      !nowRatio
     ) {
       return
     }
 
+    const _ratio = new Decimal(initSyRatio?.initSyRatioBypt)
+      .minus(nowRatio)
+      .div(nowRatio)
+      .mul(100)
 
-
-    const _ratio = new Decimal(initSyRatio?.initSyRatioBypt).minus(nowRatio).div(nowRatio).mul(100)
-
-
-    console.log(`RatioCalc: (${initSyRatio?.initSyRatioBypt} - ${nowRatio})/${initSyRatio?.initSyRatioBypt} * 100 = ${_ratio.toFixed(4)}`)
+    console.log(
+      `RatioCalc: (${initSyRatio?.initSyRatioBypt} - ${nowRatio})/${
+        initSyRatio?.initSyRatioBypt
+      } * 100 = ${_ratio.toFixed(4)}`
+    )
     const outputValue = new Decimal(targetValue).mul(
       receivingType === "underlying"
-        ? (coinConfig.underlyingPrice ?? "0")
-        : (coinConfig.coinPrice ?? "0"),
+        ? coinConfig.underlyingPrice ?? "0"
+        : coinConfig.coinPrice ?? "0"
     )
     const inputValue = new Decimal(outputValue).div(1 + Number(_ratio) * 0.01)
     setInputValue(inputValue)
     const ratio = outputValue.minus(inputValue).div(inputValue).mul(100)
 
     const value = outputValue
-
 
     return { value, ratio }
   }, [
@@ -437,7 +445,10 @@ export default function Sell({ coinConfig }: Props) {
         }
       />
 
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
+      <div
+        className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors"
+        onClick={handleModeSwitch}
+      >
         <ArrowUpDown className="w-5 h-5" />
       </div>
 
@@ -446,8 +457,8 @@ export default function Sell({ coinConfig }: Props) {
           isLoading
             ? undefined
             : isValidAmount(targetValue)
-              ? formatDecimalValue(targetValue, decimal)
-              : undefined
+            ? formatDecimalValue(targetValue, decimal)
+            : undefined
         }
         loading={isLoading}
         balance={coinBalance}
@@ -484,7 +495,6 @@ export default function Sell({ coinConfig }: Props) {
           />
         }
         priceImpact={priceImpact}
-     
       />
 
       <div className="flex justify-between">

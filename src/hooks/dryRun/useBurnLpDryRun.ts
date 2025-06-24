@@ -2,16 +2,14 @@ import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
 import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo, MoveCallInfo, PyPosition } from "../types"
+import type { DebugInfo, LpPosition, MoveCallInfo, PyPosition } from "../types"
 import { ContractError } from "../types"
-import useFetchLpPosition from "../useFetchLpPosition"
-import useFetchPyPosition from "../useFetchPyPosition"
 import { initPyPosition, mergeLpPositions, redeemSyCoin } from "@/lib/txHelper"
 import Decimal from "decimal.js"
 import { bcs } from "@mysten/sui/bcs"
 import {
   NEED_MIN_VALUE_LIST,
-  UNSUPPORTED_UNDERLYING_COINS,
+  NO_SUPPORT_UNDERLYING_COINS,
 } from "@/lib/constants"
 import { debugLog } from "@/config"
 import { burnSCoin, getCoinValue } from "@/lib/txHelper/coin"
@@ -31,26 +29,31 @@ interface BurnLpParams {
   lpAmount: string
   slippage: string
   vaultId?: string
+  pyPositions: PyPosition[]
+  marketPositions: LpPosition[]
   receivingType?: "underlying" | "sy"
 }
 
 export default function useBurnLpDryRun(
   outerCoinConfig?: CoinConfig,
-  debug: boolean = false,
+  debug: boolean = false
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
-  const { mutateAsync: fetchLpPositionAsync } =
-    useFetchLpPosition(outerCoinConfig)
-  const { mutateAsync: fetchPyPositionAsync } =
-    useFetchPyPosition(outerCoinConfig)
 
   const { mutateAsync: burnSCoinDryRun } = useBurnSCoinDryRun(outerCoinConfig)
 
   return useMutation({
     mutationFn: async (
-      { lpAmount, receivingType, slippage, vaultId }: BurnLpParams,
-      innerConfig?: CoinConfig,
+      {
+        lpAmount,
+        receivingType,
+        slippage,
+        vaultId,
+        pyPositions,
+        marketPositions,
+      }: BurnLpParams,
+      innerConfig?: CoinConfig
     ): Promise<[BurnLpResult] | [BurnLpResult, DebugInfo]> => {
       if (!address) {
         throw new Error("Please connect wallet first")
@@ -60,9 +63,6 @@ export default function useBurnLpDryRun(
       if (!coinConfig) {
         throw new Error("Please select a pool")
       }
-
-      const marketPositions = await fetchLpPositionAsync()
-      const [pyPositions] = (await fetchPyPositionAsync()) as [PyPosition[]]
 
       if (!marketPositions?.length) {
         throw new Error("No LP market position found")
@@ -86,7 +86,7 @@ export default function useBurnLpDryRun(
         tx,
         coinConfig,
         marketPositions,
-        lpAmount,
+        lpAmount
       )
 
       const moveCallInfos: MoveCallInfo[] = []
@@ -134,7 +134,7 @@ export default function useBurnLpDryRun(
 
       if (coinConfig.provider === "Cetus" && receivingType === "underlying") {
         throw new Error(
-          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`,
+          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
         )
       }
 
@@ -142,13 +142,15 @@ export default function useBurnLpDryRun(
         NEED_MIN_VALUE_LIST.find(
           (item) =>
             item.provider === coinConfig.provider ||
-            item.coinType === coinConfig?.coinType,
+            item.coinType === coinConfig?.coinType
         )?.minValue || 0
 
       // Use coin::value to get the output amount based on receivingType
       if (
         receivingType === "underlying" &&
-        !UNSUPPORTED_UNDERLYING_COINS.includes(coinConfig?.coinType)
+        !NO_SUPPORT_UNDERLYING_COINS.some(
+          (item) => item.coinType === coinConfig.underlyingCoinType
+        )
       ) {
         const { coinValue, coinAmount: amount } = await burnSCoinDryRun({
           lpAmount,
@@ -160,9 +162,11 @@ export default function useBurnLpDryRun(
           throw new Error(
             `Please at least enter ${formatDecimalValue(
               new Decimal(lpValue).mul(minValue).div(coinValue),
-              decimal,
-            )} LP ${coinConfig.coinName} or try to withdraw to ${coinConfig.coinName}
-            .`,
+              decimal
+            )} LP ${coinConfig.coinName} or try to withdraw to ${
+              coinConfig.coinName
+            }
+            .`
           )
         }
 
@@ -182,7 +186,7 @@ export default function useBurnLpDryRun(
           tx,
           underlyingCoin,
           coinConfig.underlyingCoinType,
-          true,
+          true
         )
         moveCallInfos.push(getCoinValueMoveCallInfo)
       } else {
@@ -190,7 +194,7 @@ export default function useBurnLpDryRun(
           tx,
           yieldToken,
           coinConfig.coinType,
-          true,
+          true
         )
         moveCallInfos.push(getCoinValueMoveCallInfo)
       }
@@ -231,8 +235,8 @@ export default function useBurnLpDryRun(
 
       const outputAmount = bcs.U64.parse(
         new Uint8Array(
-          result.results[result.results.length - 1].returnValues[0][0],
-        ),
+          result.results[result.results.length - 1].returnValues[0][0]
+        )
       )
 
       const outputValue = new Decimal(outputAmount)
