@@ -154,7 +154,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
     };
 
     return (
-        <div className="bg-[#080d16] text-white min-h-screen p-6">
+        <div className="bg-[#080d16] text-white min-h-screen p-6" style={{ fontFamily: '"Season Serif TRIAL"' }}>
             <div className="mb-8">
                 <button
                     onClick={handleBack}
@@ -203,12 +203,13 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
                                     </span>
                                     <a
                                         href="#"
-                                        className="underline"
+                                        className="text-[rgba(252,252,252,0.30)] text-[14px] font-[550] leading-[120%] underline"
                                         style={{
-                                            color: 'rgba(252, 252, 252, 0.30)',
-                                            fontSize: '14px',
-                                            fontWeight: 550,
-                                            lineHeight: '120%'
+                                            textDecorationStyle: 'solid',
+                                            textDecorationSkipInk: 'auto',
+                                            textDecorationThickness: 'auto',
+                                            textUnderlineOffset: 'auto',
+                                            textUnderlinePosition: 'from-font'
                                         }}
                                     >
                                         {projectData.rulesLink}
@@ -217,13 +218,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
                                 </div>
                             </div>
                             <p
-                                className="max-w-3xl"
-                                style={{
-                                    color: 'rgba(252, 252, 252, 0.30)',
-                                    fontSize: '14px',
-                                    fontWeight: 550,
-                                    lineHeight: '120%'
-                                }}
+                                className="max-w-3xl text-[rgba(252,252,252,0.30)] text-[14px] font-[550] leading-[120%]"
                             >
                                 {projectData.description}
                             </p>
@@ -236,14 +231,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
                             style={{ borderLeft: '1px solid rgba(252, 252, 252, 0.08)' }}
                         >
                             <div
-                                className="mb-4 uppercase"
-                                style={{
-                                    color: 'rgba(252, 252, 252, 0.40)',
-                                    fontSize: '12px',
-                                    fontWeight: 650,
-                                    lineHeight: '100%',
-                                    letterSpacing: '0.12px'
-                                }}
+                                className="mb-4 uppercase text-[rgba(252,252,252,0.40)] text-[12px] font-[650] leading-[100%] tracking-[0.12px]"
                             >
                                 VOLO MULTIPLIER
                             </div>
@@ -266,14 +254,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
                             style={{ borderLeft: '1px solid rgba(252, 252, 252, 0.08)' }}
                         >
                             <div
-                                className="mb-4 uppercase"
-                                style={{
-                                    color: 'rgba(252, 252, 252, 0.40)',
-                                    fontSize: '12px',
-                                    fontWeight: 650,
-                                    lineHeight: '100%',
-                                    letterSpacing: '0.12px'
-                                }}
+                                className="mb-4 uppercase text-[rgba(252,252,252,0.40)] text-[12px] font-[650] leading-[100%] tracking-[0.12px]"
                             >
                                 NEMO MULTIPLIER
                             </div>
@@ -354,7 +335,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
 
 
                         {tab.metrics && (
-                            <div className="mb-6">
+                            <div className="mb-3 flex py-[6px] flex-col justify-center items-center gap-4 self-stretch border-t border-[#262626]">
                                 <div
                                     className="mb-2"
                                     style={{
@@ -371,6 +352,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
                                 <div
                                     className="text-white"
                                     style={{
+                                        fontFamily: "Season Serif TRIAL",
                                         fontSize: '56px',
                                         fontWeight: 470,
                                         lineHeight: '100%',
@@ -382,7 +364,7 @@ export default function PointsDetailPage({ params }: { params: { id: string } })
                             </div>
                         )}
                         <button
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-4 px-6 transition-colors flex items-center justify-center gap-2"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-[550] py-4 px-6 transition-colors flex items-center justify-center gap-2"
                             style={{
                                 borderRadius: '999px'
                             }}

@@ -74,9 +74,9 @@ export default function PointsPage() {
   const [activeTab, setActiveTab] = useState(categories[0]);
 
   return (
-    <div className="bg-[#080d16] text-white pl-6 pr-6">
+    <div className="bg-[#080d16] text-white pl-6 pr-6" style={{ fontFamily: '"Season Serif TRIAL"' }}>
       <PointsHeader />
-      <div className="flex p-6 pb-20 flex-col items-start gap-6 rounded-3xl bg-white bg-opacity-5">
+      <div className="flex p-6 pb-20 flex-col items-start gap-6 rounded-3xl bg-[rgba(252,252,252,0.03)]">
         <div className="flex gap-8 items-center">
           <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Assets</div>
           <div className="flex space-x-2 text-[12px]">
@@ -97,34 +97,61 @@ export default function PointsPage() {
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex flex-col gap-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
             {markets.map(market => (
               <PointsMarketCard key={market.id} market={market} />
             ))}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="relative rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center" style={{
-              height: '266px',
-              background: 'url(/points/background1.svg)',
-            }}>
-              <span className="text-white text-[20px] font-bold leading-[120%] text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
+            <div className="w-full max-w-[413px] h-[240px] relative overflow-hidden">
+              <div className="relative rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center w-[413px] h-[266px] aspect-[413.50/266.00] blur-[25px]" style={{
+                background: 'url(/points/background1.svg) lightgray 50% / cover no-repeat',
+              }}>
+              </div>
+              <span 
+                className="text-center text-[20px] font-[650] leading-[120%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  background: 'linear-gradient(90deg, #FFF 0%, #3F3F3F 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
                 Coming Soon...
               </span>
             </div>
-            <div className="relative rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center" style={{
-              height: '266px',
-              background: 'url(/points/background2.svg)',
-            }}>
-              <span className="text-white text-[20px] font-bold leading-[120%] text-center">
+            <div className="w-full max-w-[413px] h-[240px] relative overflow-hidden">
+              <div className="relative rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center w-[413px] h-[266px] aspect-[413.50/266.00] blur-[25px]" style={{
+                background: 'url(/points/background2.svg) lightgray 50% / cover no-repeat',
+              }}>
+              </div>
+              <span 
+                className="text-center text-[20px] font-[650] leading-[120%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  background: 'linear-gradient(90deg, #FFF 0%, #3F3F3F 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
                 Coming Soon...
               </span>
             </div>
-            <div className="relative rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center" style={{
-              height: '266px',
-              background: 'url(/points/background3.svg)',
-            }}>
-              <span className="text-white text-[20px] font-bold leading-[120%] text-center">
+            <div className="w-full max-w-[413px] h-[240px] relative overflow-hidden">
+              <div className="relative rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center w-[413px] h-[266px] aspect-[413.50/266.00] blur-[25px]" style={{
+                background: 'url(/points/background3.svg) lightgray 50% / cover no-repeat',
+              }}>
+              </div>
+              <span 
+                className="text-center text-[20px] font-[650] leading-[120%] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  background: 'linear-gradient(90deg, #FFF 0%, #3F3F3F 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text'
+                }}
+              >
                 Coming Soon...
               </span>
             </div>

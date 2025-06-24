@@ -13,7 +13,7 @@ export default function PointsHeader() {
           className="shrink-0 mt-1.5"
         />
       </h1>
-      <p className="text-light-gray/40 text-[16px] w-full flex justify-center mt-3">
+      <p className="text-[rgba(252,252,252,0.40)] text-[14px] font-[550] leading-[128%] tracking-[0.14px] w-full flex justify-center mt-3">
         Unlock limitless potential with Nemo points markets, YT holders can maximize points exposure
       </p>
     </div>
