@@ -22,6 +22,24 @@ interface CoinInfoListParams {
   isCalc?: boolean
 }
 
+function getJwtToken(sign: string, content: string) {
+  return nemoApi<{ authorization: string; role: number }>(
+    "/api/v1/auth/getJwtToken",
+  ).post({
+    sign,
+    signContent: {
+      content,
+    },
+  })
+}
+
+export function useJwtToken() {
+  return useMutation({
+    mutationFn: async ({ sign, content }: { sign: string; content: string }) =>
+      getJwtToken(sign, content),
+  })
+}
+
 function getCoinInfoList({
   name = "",
   address = "",
