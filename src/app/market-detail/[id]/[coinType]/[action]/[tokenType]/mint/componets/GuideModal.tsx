@@ -24,7 +24,7 @@ export default function GuideModal() {
       </AlertDialogTrigger>
       <AlertDialogOverlay className="backdrop-blur-sm" />
       <AlertDialogContent className="bg-transparent border-none p-12 max-w-[1200px] max-h-[90vh] overflow-y-auto text-light-gray font-sans">
-        <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
+        <AlertDialogTitle className="text-[32px] text-center mb-6 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]">
           What is Minting?
         </AlertDialogTitle>
         <AlertDialogCancel asChild className="border-none">
@@ -47,7 +47,7 @@ export default function GuideModal() {
           </p>
 
           {/* Minting 流程图 */}
-          <div className="w-[400px] py-[40px] font-serif text-light-gray">
+          <div className="w-[400px] py-[40px] text-light-gray">
             <div className="flex items-center justify-between mb-16">
               {/* BALANCE */}
               <div className="flex flex-col items-center">
@@ -113,7 +113,7 @@ export default function GuideModal() {
             <div className="border-b border-light-gray/10 mb-16"></div>
 
             {/* What is Redeeming? 标题 */}
-            <div className="text-[32px] text-center mb-8 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)] font-serif">
+            <div className="text-[32px] text-center mb-8 [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]">
               What is Redeeming?
             </div>
 
