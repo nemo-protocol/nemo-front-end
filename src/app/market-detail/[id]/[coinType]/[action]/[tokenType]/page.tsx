@@ -506,7 +506,10 @@ export default function MarketDetailPage() {
                       : "text-[#FF2E54] bg-[#FF2E54]/10",
                   ].join(" ")}
                 >
-                  {new Decimal(coinConfig.poolApyRateChange).toFixed(2)}%
+                  {new Decimal(coinConfig.poolApyRateChange)
+                    .mul(100)
+                    .toFixed(2)}
+                  %
                   {new Decimal(coinConfig.poolApyRateChange).gt(0) ? (
                     <ArrowUpRight className="w-4 h-4 text-[#4CC877]" />
                   ) : (
