@@ -31,6 +31,7 @@ import YTMarketDetail from "./yt/index"
 import PTMarketDetail from "./pt/index"
 import LPMarketDetail from "./lp/index"
 import YieldChart from "./components/YieldChart"
+import BackButton from "@/components/ui/back"
 const chartTypes = {
   yield: {
     "0": 510,
@@ -246,13 +247,7 @@ export default function MarketDetailPage() {
   return (
     <main className="min-h-screen bg-[#080d16] text-slate-100 px-7.5 py-0">
       {/* 返回按钮 */}
-      <div
-        onClick={() => history.back()}
-        className="text-light-gray bg-gradient-to-r from-white/5 to-white/2 hover:bg-gradient-to-r hover:from-white/10 transition-all duration-200  hover:to-white/4 cursor-pointer inline-flex p-1 px-2.5 rounded-2xl gap-2 text-sm items-center"
-      >
-        <ArrowLeft width={16} />
-        <span className="text-sm">Back</span>
-      </div>
+      <BackButton />
 
       <AssetHeader coinConfig={coinConfig} />
 

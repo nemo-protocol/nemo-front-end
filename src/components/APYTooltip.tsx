@@ -40,7 +40,7 @@ export function APYTooltip({
       <TooltipTrigger asChild>{trigger}</TooltipTrigger>
       <TooltipContent
         side="top"
-        className="p-3 border border-light-gray/10 rounded-xl w-[350px] bg-dark-gray"
+        className="p-4 border border-light-gray/10 rounded-xl w-[350px] bg-dark-gray"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-y-2.5">
