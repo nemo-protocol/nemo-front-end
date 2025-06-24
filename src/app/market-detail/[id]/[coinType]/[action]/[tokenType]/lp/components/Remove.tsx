@@ -159,8 +159,8 @@ export default function Remove({ coinConfig }: Props) {
     () =>
       coinConfig?.underlyingProtocol === "Cetus"
         ? CETUS_VAULT_ID_LIST.find(
-            (item) => item.coinType === coinConfig?.coinType
-          )?.vaultId
+          (item) => item.coinType === coinConfig?.coinType
+        )?.vaultId
         : "",
     [coinConfig]
   )
@@ -354,26 +354,45 @@ export default function Remove({ coinConfig }: Props) {
     console.log("action", action)
   }, [action])
 
+  const priceImpact = useMemo(() => {
+    if (
+      !lpValue ||
+      !coinConfig?.underlyingPrice ||
+      !targetValue ||
+      !lpPrice
+    ) {
+      return undefined
+    }
+    const inputValue = new Decimal(lpPrice).mul(lpValue)
+    const value = new Decimal(coinConfig.underlyingPrice).mul(formatDecimalValue(targetValue, decimal))
+    const ratio = value.minus(inputValue).div(inputValue).mul(100)
+
+
+    return { value, ratio }
+  }, [
+    targetValue,
+    lpPrice,
+    coinConfig.underlyingPrice,
+    lpValue,
+  ])
   return (
     <div className="flex flex-col items-center gap-y-6">
       <div className="flex gap-2 w-full">
         <button
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            action === "swap"
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${action === "swap"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
-          }`}
+            }`}
           onClick={() => handleActionChange("swap")}
         >
           {`swap & remove`.toLocaleUpperCase()}
         </button>
         <button
           onClick={() => handleActionChange("redeem")}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
-            action === "redeem"
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${action === "redeem"
               ? "bg-white/10 text-white"
               : "bg-transparent text-white/40 hover:text-white/80"
-          }`}
+            }`}
         >
           {`redeem & remove`.toLocaleUpperCase()}
         </button>
@@ -406,6 +425,8 @@ export default function Remove({ coinConfig }: Props) {
           balance={coinBalance}
           loading={isInputLoading}
           price={coinConfig.underlyingPrice}
+          priceImpact={priceImpact}
+
           name={
             receivingType === "underlying"
               ? coinConfig?.underlyingCoinName || ""
