@@ -1,6 +1,6 @@
 "use client"
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import React from "react"
+import { useRouter, useParams } from "next/navigation"
 import Image from "next/image"
 
 interface TabItem {
@@ -162,40 +162,21 @@ const allProjectData = {
   sbusdt: sbusdtProjectData,
 }
 
-export default function PointsDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default function PointsDetailPage() {
   const router = useRouter()
-  const [id, setId] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    const resolveParams = async () => {
-      const resolvedParams = await params
-      setId(resolvedParams.id)
-      setIsLoading(false)
-    }
-    resolveParams()
-  }, [params])
-
-  if (isLoading) {
-    return (
-      <div className="bg-[#080d16] text-white min-h-screen p-6 flex items-center justify-center">
-        <div>Loading...</div>
-      </div>
-    )
-  }
+  const params = useParams()
 
   // TODO Data is obtained from the interface
-  const projectData = allProjectData[id as keyof typeof allProjectData]
+  const projectData = allProjectData[params.id as keyof typeof allProjectData]
   const handleBack = () => {
     router.back()
   }
 
   return (
-    <div className="bg-[#080d16] text-white min-h-screen p-6">
+    <div
+      className="bg-[#080d16] text-white min-h-screen p-6"
+      style={{ fontFamily: '"Season Serif TRIAL"' }}
+    >
       <div className="mb-8">
         <button
           onClick={handleBack}
@@ -212,11 +193,11 @@ export default function PointsDetailPage({
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-6">
             <Image
-              width={48}
-              height={48}
               src={projectData.icon}
               alt={projectData.name}
               className="w-12 h-12"
+              width={48}
+              height={48}
             />
             <div>
               <div className="flex gap-2 mb-1">
@@ -249,34 +230,27 @@ export default function PointsDetailPage({
                   </span>
                   <a
                     href="#"
-                    className="underline"
+                    className="text-[rgba(252,252,252,0.30)] text-[14px] font-[550] leading-[120%] underline"
                     style={{
-                      color: "rgba(252, 252, 252, 0.30)",
-                      fontSize: "14px",
-                      fontWeight: 550,
-                      lineHeight: "120%",
+                      textDecorationStyle: "solid",
+                      textDecorationSkipInk: "auto",
+                      textDecorationThickness: "auto",
+                      textUnderlineOffset: "auto",
+                      textUnderlinePosition: "from-font",
                     }}
                   >
                     {projectData.rulesLink}
                   </a>
                   <Image
-                    width={16}
-                    height={16}
                     src="/points/share.svg"
                     alt="share"
                     className="w-4 h-4"
+                    width={16}
+                    height={16}
                   />
                 </div>
               </div>
-              <p
-                className="max-w-3xl"
-                style={{
-                  color: "rgba(252, 252, 252, 0.30)",
-                  fontSize: "14px",
-                  fontWeight: 550,
-                  lineHeight: "120%",
-                }}
-              >
+              <p className="max-w-3xl text-[rgba(252,252,252,0.30)] text-[14px] font-[550] leading-[120%]">
                 {projectData.description}
               </p>
             </div>
@@ -287,16 +261,7 @@ export default function PointsDetailPage({
               className="text-center w-60"
               style={{ borderLeft: "1px solid rgba(252, 252, 252, 0.08)" }}
             >
-              <div
-                className="mb-4 uppercase"
-                style={{
-                  color: "rgba(252, 252, 252, 0.40)",
-                  fontSize: "12px",
-                  fontWeight: 650,
-                  lineHeight: "100%",
-                  letterSpacing: "0.12px",
-                }}
-              >
+              <div className="mb-4 uppercase text-[rgba(252,252,252,0.40)] text-[12px] font-[650] leading-[100%] tracking-[0.12px]">
                 VOLO MULTIPLIER
               </div>
               <div
@@ -317,16 +282,7 @@ export default function PointsDetailPage({
               className="text-center w-60"
               style={{ borderLeft: "1px solid rgba(252, 252, 252, 0.08)" }}
             >
-              <div
-                className="mb-4 uppercase"
-                style={{
-                  color: "rgba(252, 252, 252, 0.40)",
-                  fontSize: "12px",
-                  fontWeight: 650,
-                  lineHeight: "100%",
-                  letterSpacing: "0.12px",
-                }}
-              >
+              <div className="mb-4 uppercase text-[rgba(252,252,252,0.40)] text-[12px] font-[650] leading-[100%] tracking-[0.12px]">
                 NEMO MULTIPLIER
               </div>
               <div
@@ -348,7 +304,7 @@ export default function PointsDetailPage({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {allTabs[id as keyof typeof allTabs].map((tab) => (
+        {allTabs[params.id as keyof typeof allTabs].map((tab) => (
           <div
             key={tab.id}
             className="flex flex-col items-center gap-3 flex-shrink-0 rounded-3xl min-h-[300px] h-full"
@@ -360,11 +316,11 @@ export default function PointsDetailPage({
           >
             <div className="relative w-12 h-12 mb-4">
               <Image
-                width={60}
-                height={60}
                 src={tab.icon}
                 alt={tab.title}
                 className="w-[60px] h-[60px]"
+                width={60}
+                height={60}
               />
             </div>
 
@@ -410,7 +366,7 @@ export default function PointsDetailPage({
             </div>
 
             {tab.metrics && (
-              <div className="mb-6">
+              <div className="mb-3 flex py-[6px] flex-col justify-center items-center gap-4 self-stretch border-t border-[#262626]">
                 <div
                   className="mb-2"
                   style={{
@@ -427,6 +383,7 @@ export default function PointsDetailPage({
                 <div
                   className="text-white"
                   style={{
+                    fontFamily: "Season Serif TRIAL",
                     fontSize: "56px",
                     fontWeight: 470,
                     lineHeight: "100%",
@@ -438,17 +395,17 @@ export default function PointsDetailPage({
               </div>
             )}
             <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-4 px-6 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-[550] py-4 px-6 transition-colors flex items-center justify-center gap-2"
               style={{
                 borderRadius: "999px",
               }}
             >
               <Image
-                width={16}
-                height={16}
                 src="/points/$.svg"
                 alt="buy"
                 className="w-4 h-4"
+                width={16}
+                height={16}
               />
               {tab.id === "yt"
                 ? "Buy YT"

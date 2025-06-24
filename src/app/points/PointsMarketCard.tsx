@@ -80,71 +80,81 @@ export default function PointsMarketCard({ market }: { market: Market }) {
 
   return (
     <div 
-      className="relative rounded-3xl overflow-hidden border border-transparent hover:border-[#868686] hover:bg-[#13181B] transition-all duration-300 cursor-pointer"
+      className="relative rounded-2xl overflow-hidden bg-[#13181B] border border-transparent hover:border-[#868686] transition-all duration-300 cursor-pointer flex flex-col items-center gap-2 self-stretch p-[1px_1px_17px_1px] w-full max-w-[413px]"
       onClick={handleCardClick}
     >
       <div 
-        className="relative p-6 pb-8"
+        className="relative px-4 py-3 rounded-t-2xl border-b border-[#252A2D] h-[130px] w-full flex flex-col justify-between"
         style={{ background: market.topBgColor }}
       >
-        <div className="absolute -top-4 -right-4 w-32 h-32 opacity-15 pointer-events-none">
+        <div className="absolute top-0 right-0 bottom-0 opacity-50 pointer-events-none">
           <img src={market.iconRight} alt="" className="w-full h-full object-contain" />
         </div>
 
-        <div className="relative flex flex-wrap gap-2 mb-8">
+        <div className="relative flex gap-2">
           {market.items.map((item, index) => (
             <div 
               key={index} 
-              className="flex items-center rounded-[26px] px-[10px] py-[6px] gap-[5px] text-sm font-medium leading-[120%]"
+              className="flex items-center rounded-[26px] px-[10px] py-[6px] gap-[4px] text-[14px] font-[550] leading-[120%]"
               style={getBoostBadgeStyle(market.id)}
             >
               <span className="truncate">{item}</span>
-              <img src="/points/star.svg" alt="star" className="w-4 h-4 flex-shrink-0" />
+              <img src="/points/star.svg" alt="star" className="w-[14px] h-[14px] flex-shrink-0" />
             </div>
           ))}
         </div>
 
         <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <div className="w-16 h-16">
               <img src={market.icon} alt={market.name} className="w-full h-full" />
             </div>
             <div>
-              <h3 className="text-white text-[20px] font-medium mb-1">{market.name}</h3>
-              <p className="text-[#A1A3A4] text-sm font-medium">{market.content}</p>
+              <h3 className="text-white text-[20px] font-[550] mb-1">{market.name}</h3>
+              <p className="text-[#A1A3A4] text-[14px] font-[550]">{market.content}</p>
             </div>
           </div>
           
           <div className="flex gap-6">
             <div className="text-right">
               <div 
-                className="text-[28px] font-medium leading-[120%] underline mb-1"
+                className="text-right text-[28px] font-[550] leading-[120%] underline"
                 style={{
                   background: getMultiplierGradient(market.id),
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
+                  backgroundClip: 'text',
+                  textDecorationStyle: 'solid',
+                  textDecorationSkipInk: 'auto',
+                  textDecorationThickness: 'auto',
+                  textUnderlineOffset: 'auto',
+                  textUnderlinePosition: 'from-font'
                 }}
               >
                 {market.multiplierLeft}
               </div>
-              <div className="text-[#A1A3A4] text-sm font-medium leading-[145%]">
+              <div className="text-[#A1A3A4] text-[14px] font-[550] leading-[145%]">
                 {market.leftLabel}
               </div>
             </div>
             <div className="text-right">
               <div 
-                className="text-[28px] font-medium leading-[120%] underline mb-1"
+                className="text-right text-[28px] font-[550] leading-[120%] underline"
                 style={{
                   background: getMultiplierGradient(market.id),
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
+                  backgroundClip: 'text',
+                  textDecorationStyle: 'solid',
+                  textDecorationSkipInk: 'auto',
+                  textDecorationThickness: 'auto',
+                  textUnderlineOffset: 'auto',
+                  textUnderlinePosition: 'from-font'
                 }}
               >
                 {market.multiplierRight}
               </div>
-              <div className="text-[#A1A3A4] text-sm font-medium leading-[145%]">
+              <div className="text-[#A1A3A4] text-[14px] font-[550] leading-[145%]">
                 {market.rightLabel}
               </div>
             </div>
@@ -152,20 +162,20 @@ export default function PointsMarketCard({ market }: { market: Market }) {
         </div>
       </div>
 
-      <div className="bg-[#13181B] p-6 rounded-b-2xl">
+      <div className="p-6 rounded-b-2xl w-full">
         <div className="flex justify-between items-center mb-4">
-          <p className="text-[#A1A3A4] text-sm font-medium leading-[120%]">{market.pointsType}</p>
-          <p className="text-white text-sm font-medium leading-[120%] text-right">{market.pointsPerDay}</p>
+          <p className="text-[#A1A3A4] text-[14px] font-[550] leading-[120%]">{market.pointsType}</p>
+          <p className="text-white text-[14px] font-[550] leading-[120%] text-right">{market.pointsPerDay}</p>
         </div>
 
         <div className="flex justify-between items-center mb-4">
-          <p className="text-[#A1A3A4] text-sm font-medium leading-[120%]">Effective Exposure</p>
-          <p className="text-white text-sm font-medium leading-[120%] text-right">{market.exposure}</p>
+          <p className="text-[#A1A3A4] text-[14px] font-[550] leading-[120%]">Effective Exposure</p>
+          <p className="text-white text-[14px] font-[550] leading-[120%] text-right">{market.exposure}</p>
         </div>
 
         <div className="flex justify-between items-center">
-          <p className="text-[#A1A3A4] text-sm font-medium leading-[120%]">Maturity</p>
-          <p className="text-white text-sm font-medium leading-[120%] text-right">{market.expiry}</p>
+          <p className="text-[#A1A3A4] text-[14px] font-[550] leading-[120%]">Maturity</p>
+          <p className="text-white text-[14px] font-[550] leading-[120%] text-right">{market.expiry}</p>
         </div>
       </div>
     </div>
