@@ -139,7 +139,7 @@ export default function MarketPage() {
     // 计算每组TVL总和
     const groupArr = Object.entries(map).map(([groupName, arr]) => ({
       groupName,
-      arr,
+      arr: arr.sort((a, b) => Number(b.tvl) - Number(a.tvl)), // 分组内按TVL降序排序
       coinLogo: arr[0].groupLogo,
       coinName: arr[0].groupName,
       totalTvl: arr.reduce((sum, c) => sum + Number(c.tvl), 0),

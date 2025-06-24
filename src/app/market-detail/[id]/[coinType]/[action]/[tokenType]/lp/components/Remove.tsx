@@ -37,8 +37,8 @@ export default function Remove({ coinConfig }: Props) {
   const [error, setError] = useState<string>()
   const [ptValue, setPtValue] = useState("")
   const { account: currentAccount } = useWallet()
-  const [warning, setWarning] = useState<string>()
-  const [warningDetail, setWarningDetail] = useState<string>()
+  const [inputWarning, setInputWarning] = useState<string>()
+  const [outputWarning, setOutputWarning] = useState<string>()
   const [targetValue, setTargetValue] = useState("")
   const [isRemoving, setIsRemoving] = useState(false)
   const [errorDetail, setErrorDetail] = useState<string>()
@@ -57,8 +57,8 @@ export default function Remove({ coinConfig }: Props) {
     setTargetValue("")
     setPtValue("")
     setError(undefined)
-    setWarning(undefined)
-    setWarningDetail(undefined)
+    setInputWarning(undefined)
+    setOutputWarning(undefined)
     setErrorDetail(undefined)
 
     const params = new URLSearchParams(searchParams.toString())
@@ -171,7 +171,8 @@ export default function Remove({ coinConfig }: Props) {
     (value: string, decimal: number) => {
       const getSyOut = debounce(async () => {
         setError(undefined)
-        setWarning(undefined)
+        setInputWarning(undefined)
+        setOutputWarning(undefined)
         if (value && value !== "0" && decimal) {
           setIsInputLoading(true)
           try {
@@ -200,8 +201,10 @@ export default function Remove({ coinConfig }: Props) {
                 setTargetValue(targetValue)
               } catch (error) {
                 setTargetValue(outputValue)
-                setWarning(`Returning ${ptValue} PT ${coinConfig?.coinName}.`)
-                setWarningDetail(
+                setInputWarning(
+                  `Returning ${ptValue} PT ${coinConfig?.coinName}.`
+                )
+                setOutputWarning(
                   `PT could be sold at the market, or it could be redeemed after maturity with a fixed return.`
                 )
                 console.log("sellPtDryRun error", error)
@@ -379,14 +382,14 @@ export default function Remove({ coinConfig }: Props) {
         error={error}
         price={lpPrice}
         decimal={decimal}
-        warning={warning}
         amount={lpValue}
         isLoading={isLoading}
         onChange={setLpValue}
-        setWarning={setWarning}
+        warning={inputWarning}
         isConnected={isConnected}
         errorDetail={errorDetail}
         coinBalance={lpCoinBalance}
+        setWarning={setInputWarning}
         logo={coinConfig?.lpTokenLogo}
         maturity={coinConfig.maturity}
         name={`LP ${coinConfig?.coinName}`}
@@ -443,14 +446,14 @@ export default function Remove({ coinConfig }: Props) {
               />
             </div>
           }
-          warningDetail={warningDetail}
+          warningDetail={outputWarning}
         />
       ) : (
         <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
           <AmountOutput
             balance={coinBalance}
             loading={isInputLoading}
-            warningDetail={warningDetail}
+            warningDetail={outputWarning}
             price={coinConfig.underlyingPrice}
             className="bg-transparent rounded-none"
             name={

@@ -413,7 +413,7 @@ export default function Sell({ coinConfig }: Props) {
         warning={warning}
         amount={redeemValue}
         isLoading={isLoading}
-        coinBalance={coinBalance}
+        coinBalance={ytBalance}
         setWarning={setWarning}
         isConnected={isConnected}
         errorDetail={errorDetail}

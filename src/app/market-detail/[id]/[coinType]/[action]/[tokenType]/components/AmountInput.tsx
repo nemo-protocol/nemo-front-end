@@ -81,6 +81,7 @@ export default function AmountInput({
           <div className="grow">
             <input
               min={0}
+              step="any"
               type="number"
               value={amount}
               placeholder={"0"}
