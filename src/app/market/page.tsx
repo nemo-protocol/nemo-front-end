@@ -160,11 +160,11 @@ export default function MarketPage() {
 
   // 过滤列表数据
   const filteredList = useMemo(() => {
-    if (!searchQuery) return coinList
-    const query = searchQuery.toLowerCase()
-    return coinList.filter((item) =>
-      item.coinName.toLowerCase().includes(query)
+    const list = !searchQuery ? coinList : coinList.filter((item) =>
+      item.coinName.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    // 按TVL从大到小排序
+    return list.sort((a, b) => Number(b.tvl) - Number(a.tvl))
   }, [coinList, searchQuery])
 
   const handleTokenClick = (
