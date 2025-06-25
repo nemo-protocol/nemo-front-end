@@ -395,7 +395,7 @@ export default function PointsDetailPage() {
               </div>
             )}
             <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-[550] py-4 px-6 transition-colors flex items-center justify-center gap-2 md:w-[392px] md:h-[42px] min-h-9"
+              className="w-full bg-[#2E81FC]/90 hover:bg-[#2E81FC] text-white font-medium text-[14px] py-4 px-6 transition-colors flex items-center justify-center gap-2 md:w-[392px] md:h-[42px] min-h-9"
               style={{
                   borderRadius: "var(--corner-radius--full, 999px)",
               }}
