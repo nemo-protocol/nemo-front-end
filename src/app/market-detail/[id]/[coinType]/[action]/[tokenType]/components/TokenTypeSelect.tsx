@@ -18,7 +18,7 @@ interface TokenDisplayProps {
 function TokenDisplay({ name, logo, className }: TokenDisplayProps) {
   return (
     <div className={cn("flex items-center gap-x-1", className)} title={name}>
-      <span className="max-w-20 truncate text-xl">{name}</span>
+      <span className="max-w-40 truncate text-xl">{name}</span>
       {logo && <Image src={logo} alt={name} width={20} height={20} />}
     </div>
   )
