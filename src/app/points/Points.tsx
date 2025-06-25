@@ -74,7 +74,7 @@ export default function PointsPage() {
   const [activeTab, setActiveTab] = useState(categories[0]);
 
   return (
-    <div className="bg-[#080d16] text-white pl-6 pr-6" style={{ fontFamily: '"Season Serif TRIAL"' }}>
+    <div className="bg-[#080d16] text-white pl-6 pr-6" style={{ fontFamily: '"Season Sans TRIAL"' }}>
       <PointsHeader />
       <div className="flex p-6 pb-20 flex-col items-start gap-6 rounded-3xl bg-[rgba(252,252,252,0.03)]">
         <div className="flex gap-8 items-center">
