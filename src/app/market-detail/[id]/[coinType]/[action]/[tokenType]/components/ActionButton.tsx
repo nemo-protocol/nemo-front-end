@@ -1,5 +1,7 @@
 import React, { useMemo } from "react"
 import { ConnectModal, useWallet } from "@nemoprotocol/wallet-kit"
+import { useJwtStore } from "@/stores/jwt"
+import AuthorizeButton from "@/components/AuthorizeButton"
 
 interface ActionButtonProps {
   btnText: string
@@ -9,53 +11,57 @@ interface ActionButtonProps {
   type?: "green" | "red" | "blue" | "errorRed"
 }
 
-
-
 const ActionButton: React.FC<ActionButtonProps> = ({
   onClick,
   btnText,
   disabled,
   loading = false,
-  type = 'green',
+  type = "green",
 }) => {
   const { address } = useWallet()
-  const typeColor: Record<string, {
-    color: string,
-    hover: string,
-    icon: string,
-    disabled:string
-  }> = {
+  const { current } = useJwtStore()
+  
+  const typeColor: Record<
+    string,
+    {
+      color: string
+      hover: string
+      icon: string
+      disabled: string
+    }
+  > = {
     green: {
-      color: 'bg-[#4cc877e5]',
-      disabled: 'bg-[#4cc877a5]',
-      hover: 'hover:bg-[#4cc877c5]',
-      icon: '/buy-button-icon.svg'
+      color: "bg-[#4cc877e5]",
+      disabled: "bg-[#4cc877a5]",
+      hover: "hover:bg-[#4cc877c5]",
+      icon: "/buy-button-icon.svg",
     },
     red: {
-      color: 'bg-[#FF2E54E5]',
-      disabled: 'bg-[#FF2E54a5]',
-      hover: 'hover:bg-[#FF2E54c5]',
-      icon: '/sell-button-icon.svg'
-
+      color: "bg-[#FF2E54E5]",
+      disabled: "bg-[#FF2E54a5]",
+      hover: "hover:bg-[#FF2E54c5]",
+      icon: "/sell-button-icon.svg",
     },
     blue: {
-      color: 'bg-[#2E81FCE5]',
-      disabled: 'bg-[#2E81FCa5]',
-      hover: 'hover:bg-[#2E81FCc5]',
-      icon: '/connect-button-icon.svg'
-
+      color: "bg-[#2E81FCE5]",
+      disabled: "bg-[#2E81FCa5]",
+      hover: "hover:bg-[#2E81FCc5]",
+      icon: "/connect-button-icon.svg",
     },
     errorRed: {
-      color: 'bg-[#ff2e54e5]',
-      disabled: 'bg-[#ff2e54a5]',
+      color: "bg-[#ff2e54e5]",
+      disabled: "bg-[#ff2e54a5]",
 
-      hover: 'hover:bg-[#ff2e54c5]',
-      icon: '/error-button-icon.svg'
-
-    }
-
-  };
+      hover: "hover:bg-[#ff2e54c5]",
+      icon: "/error-button-icon.svg",
+    },
+  }
+  
   const isConnected = useMemo(() => !!address, [address])
+  
+  // 检查是否需要授权
+  const needsAuthorization = address && (!current || current.address !== address)
+  
   return (
     <>
       {!isConnected ? (
@@ -64,8 +70,18 @@ const ActionButton: React.FC<ActionButtonProps> = ({
             Connect Wallet
           </button>
         </ConnectModal>
+      ) : needsAuthorization ? (
+        <AuthorizeButton 
+          className="px-4 sm:px-8 rounded-full w-full h-[42px] text-sm font-[500] sm:text-base"
+          variant="default"
+          size="md"
+        >
+          Authorize
+        </AuthorizeButton>
       ) : disabled ? (
-        <div className={`px-4 sm:px-8 ${typeColor[type].disabled} text-white/70 gap-2  font-[500]  rounded-full w-full h-[42px] text-sm sm:text-base  flex items-center justify-center select-none`}>
+        <div
+          className={`px-4 sm:px-8 ${typeColor[type].disabled} text-white/70 gap-2  font-[500]  rounded-full w-full h-[42px] text-sm sm:text-base  flex items-center justify-center select-none`}
+        >
           {btnText}
         </div>
       ) : (
