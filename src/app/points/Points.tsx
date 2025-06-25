@@ -5,19 +5,19 @@ import PointsHeader from './PointsHeader';
 
 export const categories = [
   { label: 'ALL', key: 'all' },
-  { label: 'LSTs', key: 'lsts' },
-  { label: 'Stables', key: 'stables' },
-  { label: 'Lps', key: 'lps' }];
+  { label: 'LSTS', key: 'lsts' },
+  { label: 'STABLES', key: 'stables' },
+  { label: 'LPS', key: 'lps' }];
 
 const markets = [
   {
     id: 'zlp',
-    items: ['2x Z0 Points Boos', '2x Nemo Points Boost'],
+    items: ['2x ZO Points Boost', '2x Nemo Points Boost'],
     name: 'ZLP',
     content: 'ZO Finance',
     icon: '/points/zpl.svg',
     iconRight: '/points/zpl-right.svg',
-    pointsMultiplier: '2x Z0 Points Boos, 2x Nemo Points Boost',
+    pointsMultiplier: '2x ZO Points Boost, 2x Nemo Points Boost',
     pointsType: 'ZO Points/ZLP',
     pointsPerDay: '~100000 points/Day',
     exposure: '98.11x',
@@ -78,7 +78,7 @@ export default function PointsPage() {
       <PointsHeader />
       <div className="flex p-6 pb-20 flex-col items-start gap-6 rounded-3xl bg-[rgba(252,252,252,0.03)]">
         <div className="flex gap-8 items-center">
-          <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Assets</div>
+          <div className="text-[32px] font-serif font-normal text-[#FCFCFC]">Markets</div>
           <div className="flex space-x-2 text-[12px]">
             {categories.map((category) => (
               <button
@@ -115,6 +115,7 @@ export default function PointsPage() {
                   background: 'linear-gradient(90deg, #FFF 0%, #3F3F3F 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  fontFamily: 'SeasonSerifTRIAL',
                   backgroundClip: 'text'
                 }}
               >

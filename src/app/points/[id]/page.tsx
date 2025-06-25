@@ -175,7 +175,7 @@ export default function PointsDetailPage() {
   return (
     <div
       className="bg-[#080d16] text-white min-h-screen p-6"
-      style={{ fontFamily: '"Season Serif TRIAL"' }}
+      style={{ fontFamily: '"Season San TRIAL"' }}
     >
       <div className="mb-8">
         <button
@@ -204,7 +204,7 @@ export default function PointsDetailPage() {
                 <h1
                   className="text-white text-center"
                   style={{
-                    fontFamily: "Season Serif TRIAL",
+                    fontFamily: "SeasonSerifTRIAL",
                     fontSize: "32px",
                     fontWeight: 470,
                     lineHeight: "100%",
@@ -268,7 +268,7 @@ export default function PointsDetailPage() {
                 className="text-center"
                 style={{
                   color: "#FCFCFC",
-                  fontFamily: "Season Serif TRIAL",
+                  fontFamily: "SeasonSerifTRIAL",
                   fontSize: "56px",
                   fontWeight: 470,
                   lineHeight: "100%",
@@ -289,7 +289,7 @@ export default function PointsDetailPage() {
                 className="text-center"
                 style={{
                   color: "#FCFCFC",
-                  fontFamily: "Season Serif TRIAL",
+                  fontFamily: "SeasonSerifTRIAL",
                   fontSize: "56px",
                   fontWeight: 470,
                   lineHeight: "100%",
@@ -383,7 +383,7 @@ export default function PointsDetailPage() {
                 <div
                   className="text-white"
                   style={{
-                    fontFamily: "Season Serif TRIAL",
+                    fontFamily: "SeasonSerifTRIAL",
                     fontSize: "56px",
                     fontWeight: 470,
                     lineHeight: "100%",
@@ -395,9 +395,9 @@ export default function PointsDetailPage() {
               </div>
             )}
             <button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-[550] py-4 px-6 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-[550] py-4 px-6 transition-colors flex items-center justify-center gap-2 md:w-[392px] md:h-[42px] min-h-9"
               style={{
-                borderRadius: "999px",
+                  borderRadius: "var(--corner-radius--full, 999px)",
               }}
             >
               <Image

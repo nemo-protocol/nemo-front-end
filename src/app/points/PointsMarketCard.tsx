@@ -24,18 +24,18 @@ interface Market {
 
 export default function PointsMarketCard({ market }: { market: Market }) {
   const router = useRouter();
-  const getAccentColor = (id: string) => {
-    switch (id) {
-      case 'zlp':
-        return '#FF7B1A';
-      case 'vsui':
-        return '#3B82F6';
-      case 'sbusdt':
-        return '#6B7280';
-      default:
-        return '#FF7B1A';
-    }
-  };
+  // const getAccentColor = (id: string) => {
+  //   switch (id) {
+  //     case 'zlp':
+  //       return '#FF7B1A';
+  //     case 'vsui':
+  //       return '#3B82F6';
+  //     case 'sbusdt':
+  //       return '#6B7280';
+  //     default:
+  //       return '#FF7B1A';
+  //   }
+  // };
 
   const getBoostBadgeStyle = (id: string) => {
     switch (id) {
@@ -93,13 +93,13 @@ export default function PointsMarketCard({ market }: { market: Market }) {
 
         <div className="relative flex gap-2">
           {market.items.map((item, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="flex items-center rounded-[26px] px-[10px] py-[6px] gap-[4px] text-[14px] font-[550] leading-[120%]"
               style={getBoostBadgeStyle(market.id)}
             >
               <span className="truncate">{item}</span>
-              <img src="/points/star.svg" alt="star" className="w-[14px] h-[14px] flex-shrink-0" />
+              <img src={`/points/star-${market.id}.svg`} alt="star" className="w-[14px] h-[14px] flex-shrink-0" />
             </div>
           ))}
         </div>
