@@ -1,26 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import YieldChart from "../components/YieldChart"
+import Remove from "./components/Remove"
 import SimpleTabs from "../components/SimpleTabs"
 import { CoinConfig } from "@/queries/types/market"
 import AddLiquidity from "./components/AddLiquidity"
-import Remove from "./components/Remove"
+import { useSearchParams, useRouter } from "next/navigation"
 
 interface Props {
+  currentTab: string
   coinConfig: CoinConfig
   setCurrentTab: (newTab: "1" | "0") => void
-  currentTab: any
 }
 
-export default function LPMarketDetail({ coinConfig, currentTab, setCurrentTab }: Props) {
-
-  // 添加路由相关hooks
-  const searchParams = useSearchParams()
+export default function LPMarketDetail({
+  coinConfig,
+  currentTab,
+  setCurrentTab,
+}: Props) {
   const router = useRouter()
-
-
+  const searchParams = useSearchParams()
 
   const handleTabChange = (newTab: string) => {
     setCurrentTab(newTab as "1" | "0")
