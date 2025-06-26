@@ -4,7 +4,12 @@ import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 import type { CoinConfig } from "@/queries/types/market"
 import type { DebugInfo, LpPosition, MoveCallInfo, PyPosition } from "../types"
 import { ContractError } from "../types"
-import { initPyPosition, mergeLpPositions, redeemSyCoin } from "@/lib/txHelper"
+import {
+  mergeLpPositions,
+  redeemSyCoin,
+  swapExactPtForSy,
+} from "@/lib/txHelper"
+import { burnLp } from "@/lib/txHelper/lp"
 import Decimal from "decimal.js"
 import { bcs } from "@mysten/sui/bcs"
 import {
@@ -14,13 +19,13 @@ import {
 import { debugLog } from "@/config"
 import { burnSCoin, getCoinValue } from "@/lib/txHelper/coin"
 import { formatDecimalValue } from "@/lib/utils"
-import useBurnSCoinDryRun from "./useBurnSCoinDryRun"
+import { initPyPosition } from "@/lib/txHelper/position"
+import useBurnLpForSyCoinDryRun from "./syCoinValue/useBurnLpForSyCoinDryRun"
+import { getPriceVoucher } from "@/lib/txHelper/price"
 
 type BurnLpResult = {
   ptAmount: string
-  syAmount: string
   ptValue: string
-  syValue: string
   outputValue: string
   outputAmount: string
 }
@@ -29,37 +34,38 @@ interface BurnLpParams {
   lpAmount: string
   slippage: string
   vaultId?: string
+  isSwapPt?: boolean
+  minSyOut?: string
   pyPositions: PyPosition[]
   marketPositions: LpPosition[]
   receivingType?: "underlying" | "sy"
 }
 
 export default function useBurnLpDryRun(
-  outerCoinConfig?: CoinConfig,
+  coinConfig?: CoinConfig,
   debug: boolean = false
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
 
-  const { mutateAsync: burnSCoinDryRun } = useBurnSCoinDryRun(outerCoinConfig)
+  const { mutateAsync: burnLpForSyCoinDryRun } =
+    useBurnLpForSyCoinDryRun(coinConfig)
 
   return useMutation({
-    mutationFn: async (
-      {
-        lpAmount,
-        receivingType,
-        slippage,
-        vaultId,
-        pyPositions,
-        marketPositions,
-      }: BurnLpParams,
-      innerConfig?: CoinConfig
-    ): Promise<[BurnLpResult] | [BurnLpResult, DebugInfo]> => {
+    mutationFn: async ({
+      vaultId,
+      lpAmount,
+      slippage,
+      pyPositions,
+      receivingType,
+      minSyOut = "0",
+      marketPositions,
+      isSwapPt = false,
+    }: BurnLpParams): Promise<[BurnLpResult] | [BurnLpResult, DebugInfo]> => {
       if (!address) {
         throw new Error("Please connect wallet first")
       }
 
-      const coinConfig = innerConfig || outerCoinConfig
       if (!coinConfig) {
         throw new Error("Please select a pool")
       }
@@ -83,13 +89,11 @@ export default function useBurnLpDryRun(
       const tx = new Transaction()
       tx.setSender(address)
 
-      // Handle py position creation
-      let pyPosition
-      if (!pyPositions?.length) {
-        pyPosition = initPyPosition(tx, coinConfig)
-      } else {
-        pyPosition = tx.object(pyPositions[0].id)
-      }
+      const { pyPosition, created } = initPyPosition({
+        tx,
+        coinConfig,
+        pyPositions,
+      })
 
       const decimal = Number(coinConfig?.decimal)
 
@@ -103,52 +107,64 @@ export default function useBurnLpDryRun(
 
       const moveCallInfos: MoveCallInfo[] = []
 
-      const burnLpmoveCallInfo = {
-        target: `${coinConfig.nemoContractId}::market::burn_lp`,
-        arguments: [
-          { name: "version", value: coinConfig.version },
-          { name: "lp_amount", value: lpAmount },
-          {
-            name: "py_position",
-            value: pyPosition,
-          },
-          { name: "market_state", value: coinConfig.marketStateId },
-          { name: "market_position", value: marketPositions[0].id.id },
-          { name: "clock", value: "0x6" },
-        ],
-        typeArguments: [coinConfig.syCoinType],
-      }
+      const [syCoin, burnLpmoveCallInfo] = burnLp({
+        tx,
+        coinConfig,
+        lpAmount,
+        pyPosition,
+        marketPosition: mergedPosition,
+        returnDebugInfo: true,
+      })
 
       moveCallInfos.push(burnLpmoveCallInfo)
 
-      const syCoin = tx.moveCall({
-        target: burnLpmoveCallInfo.target,
-        arguments: [
-          tx.object(coinConfig.version),
-          tx.pure.u64(lpAmount),
-          pyPosition,
-          tx.object(coinConfig.marketStateId),
-          mergedPosition,
-          tx.object("0x6"),
-        ],
-        typeArguments: burnLpmoveCallInfo.typeArguments,
+      const {
+        ptAmount: _ptAmount,
+        syValue: _syValue,
+        syAmount: _syAmount,
+      } = await burnLpForSyCoinDryRun({
+        lpAmount,
+        pyPositions,
+        marketPositions,
       })
 
-      const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
-
-      if (
-        coinConfig.coinType ===
-          "0xb1b0650a8862e30e3f604fd6c5838bc25464b8d3d827fbd58af7cb9685b832bf::wwal::WWAL" &&
-        receivingType === "underlying"
-      ) {
-        throw new Error("Underlying protocol error, try to withdraw to wWAL.")
-      }
-
-      if (coinConfig.provider === "Cetus" && receivingType === "underlying") {
-        throw new Error(
-          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
+      let finalSyCoin = syCoin
+      if (isSwapPt) {
+        const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
+          tx,
+          coinConfig
         )
+        moveCallInfos.push(priceVoucherMoveCall)
+
+        const [syCoinFromSwapPt, swapExactPtForSyMoveCall] = swapExactPtForSy(
+          tx,
+          coinConfig,
+          _ptAmount,
+          pyPosition,
+          priceVoucher,
+          minSyOut,
+          true
+        )
+        moveCallInfos.push(swapExactPtForSyMoveCall)
+
+        finalSyCoin = tx.mergeCoins(syCoin, syCoinFromSwapPt)
+        moveCallInfos.push({
+          target: `0x2::coin::merge_coins`,
+          typeArguments: [],
+          arguments: [
+            { name: "destinationCoin", value: syCoin },
+            { name: "sourceCoins", value: syCoinFromSwapPt },
+          ],
+        })
       }
+
+      const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
+        tx,
+        coinConfig,
+        finalSyCoin,
+        true
+      )
+      moveCallInfos.push(redeemSyCoinMoveCall)
 
       const minValue =
         NEED_MIN_VALUE_LIST.find(
@@ -159,9 +175,14 @@ export default function useBurnLpDryRun(
 
       // Use coin::value to get the output amount based on receivingType
       if (receivingType === "underlying") {
-        const { coinValue, coinAmount: amount } = await burnSCoinDryRun({
-          lpAmount,
-        })
+        const { syValue: coinValue, syAmount: amount } = isSwapPt
+          ? await burnLpForSyCoinDryRun({
+              isSwapPt,
+              lpAmount,
+              pyPositions,
+              marketPositions,
+            })
+          : { syValue: _syValue, syAmount: _syAmount }
 
         if (new Decimal(coinValue).lt(minValue)) {
           const lpValue = new Decimal(lpAmount).div(Decimal.pow(10, decimal))
@@ -204,6 +225,10 @@ export default function useBurnLpDryRun(
           true
         )
         moveCallInfos.push(getCoinValueMoveCallInfo)
+      }
+
+      if (created) {
+        tx.transferObjects([pyPosition], address)
       }
 
       const result = await client.devInspectTransactionBlock({
@@ -250,28 +275,21 @@ export default function useBurnLpDryRun(
         .div(10 ** decimal)
         .toFixed(decimal)
 
-      const syAmount = result.events[0].parsedJson.sy_amount as string
-      const syValue = new Decimal(syAmount).div(10 ** decimal).toFixed(decimal)
-
       const ptAmount = result.events[0].parsedJson.pt_amount as string
       const ptValue = new Decimal(ptAmount).div(10 ** decimal).toFixed(decimal)
 
       debugInfo.parsedOutput = JSON.stringify({
-        syAmount,
-        ptAmount,
-        outputAmount,
-        outputValue,
-        syValue,
         ptValue,
+        ptAmount,
+        outputValue,
+        outputAmount,
       })
 
       const returnValue = {
-        syAmount,
-        ptAmount,
-        outputAmount,
-        outputValue,
-        syValue,
         ptValue,
+        ptAmount,
+        outputValue,
+        outputAmount,
       }
 
       return debug ? [returnValue, debugInfo] : [returnValue]

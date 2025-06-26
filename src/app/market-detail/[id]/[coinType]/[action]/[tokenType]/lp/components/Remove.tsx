@@ -44,7 +44,7 @@ export default function Remove({ coinConfig }: Props) {
   const [isRemoving, setIsRemoving] = useState(false)
   const [errorDetail, setErrorDetail] = useState<string>()
   const [isInputLoading, setIsInputLoading] = useState(false)
-  const [action, setAction] = useState<"swap" | "redeem">("redeem")
+  const [action, setAction] = useState<"swap" | "redeem">("swap")
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
@@ -184,47 +184,17 @@ export default function Remove({ coinConfig }: Props) {
           setIsInputLoading(true)
           try {
             const lpAmount = new Decimal(value).mul(10 ** decimal).toFixed(0)
-            const [{ ptAmount, ptValue, outputValue }] = await burnLpDryRun({
-              slippage,
+            const [{ ptValue, outputValue }] = await burnLpDryRun({
               vaultId,
               lpAmount,
+              slippage,
               receivingType,
               pyPositions: pyPositionData,
               marketPositions: lppMarketPositionData,
             })
 
-            if (action === "swap") {
-              try {
-                const { outputValue: swappedOutputValue, outputAmount } =
-                  await sellPtDryRun({
-                    vaultId,
-                    ptAmount,
-                    slippage,
-                    minSyOut: "0",
-                    receivingType,
-                    pyPositions: pyPositionData,
-                  })
-
-                setMinSyOut(outputAmount)
-
-                const targetValue = new Decimal(outputValue)
-                  .add(swappedOutputValue)
-                  .toFixed(decimal)
-                setTargetValue(targetValue)
-              } catch (error) {
-                setTargetValue(outputValue)
-                setInputWarning(
-                  `Returning ${ptValue} PT ${coinConfig?.coinName}.`
-                )
-                setOutputWarning(
-                  `PT could be sold at the market, or it could be redeemed after maturity with a fixed return.`
-                )
-                console.log("sellPtDryRun error", error)
-              }
-            } else {
-              setPtValue(ptValue)
-              setTargetValue(outputValue)
-            }
+            setPtValue(ptValue)
+            setTargetValue(outputValue)
           } catch (errorMsg) {
             const { error: msg, detail } = parseErrorMessage(
               (errorMsg as ContractError)?.message ?? errorMsg
@@ -389,7 +359,7 @@ export default function Remove({ coinConfig }: Props) {
   }, [targetValue, lpPrice, coinConfig.underlyingPrice, lpValue])
   return (
     <div className="flex flex-col items-center gap-y-6">
-      {/* <div className="flex gap-2 w-full">
+      <div className="flex gap-2 w-full">
         <button
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
             action === "swap"
@@ -410,7 +380,7 @@ export default function Remove({ coinConfig }: Props) {
         >
           {`redeem & remove`.toLocaleUpperCase()}
         </button>
-      </div> */}
+      </div>
       <AmountInput
         error={error}
         price={lpPrice}
