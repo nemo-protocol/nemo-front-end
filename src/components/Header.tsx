@@ -48,11 +48,7 @@ const MENU: {
 export default function Header({ className }: { className?: string }) {
   const toast = useToast()
   const location = usePathname()
-  const {
-    address,
-    disconnect,
-    account: currentAccount,
-  } = useWallet()
+  const { address, disconnect, account: currentAccount } = useWallet()
   const [open, setOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const { setActiveUser } = useJwtStore()
