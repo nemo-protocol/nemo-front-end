@@ -3,9 +3,9 @@
 import BackButton from '@/components/ui/back'
 import { ArrowUpRight, ExternalLink, RefreshCcw } from 'lucide-react'
 import Image from 'next/image'
-import MetricCard from '../components/MetricCard'
-import SectionBox from '../components/SectionBox'
-import DonutChart from '../components/DonutChart'
+import MetricCard from './MetricCard'
+import SectionBox from './SectionBox'
+import DonutChart from './DonutChart'
 
 export default function VaultsDetailPage() {
     // mock data
@@ -70,7 +70,7 @@ export default function VaultsDetailPage() {
                 <MetricCard label="Your Earnings" value="-" />
             </div>
 
-            {/* 中部三栏：LP Breakdown / Spacer / Deposit 面板 */}
+
             <div className="px-7.5 mt-6 flex flex-col lg:flex-row gap-6">
                 <div className="flex-1 flex flex-col gap-6">
 
