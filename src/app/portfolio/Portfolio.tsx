@@ -27,6 +27,8 @@ import { NO_SUPPORT_YT_COINS } from "@/lib/constants"
 import { showTransactionDialog } from "@/lib/dialog"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import { ContractError } from "@/hooks/types"
+import { useJwtStore } from "@/stores/jwt"
+import AuthorizeButton from "@/components/AuthorizeButton"
 
 export default function PortfolioPage() {
     const { data: list, isLoading } = usePortfolioList()
@@ -145,6 +147,9 @@ export default function PortfolioPage() {
             setClaimLoading(true)
         }
     }
+    const { current } = useJwtStore()
+
+    const needsAuthorization = address && (!current || current.address !== address)
 
     useEffect(() => {
         if (address && marketStates && pyPositionsMap && filteredLists) {
@@ -233,7 +238,7 @@ export default function PortfolioPage() {
                                     <div className="text-[56px] font-serif font-Medium text-[#FCFCFC]">
                                         {formatTVL(totalClaim)}
                                     </div>
-                                    <div>
+                                    {/* <div>
                                         <div
                                             className="text-[14px] font-[500] text-[#FCFCFC66] flex
                               transition-colors duration-200
@@ -243,7 +248,26 @@ export default function PortfolioPage() {
                                             <Download className="w-4 h-4" />
                                             Claim All
                                         </div>
-                                    </div>
+                                    </div> */}
+                                    {!needsAuthorization ? <div>
+                                        <div
+                                            className="text-[14px] font-[500] text-[#FCFCFC66] flex
+                              transition-colors duration-200
+                             cursor-pointer hover:text-white hover:bg-[rgba(252,252,252,0.10)] gap-2 px-4 py-2.5 items-center rounded-[24px]"
+                                            onClick={() => setOpen(true)}
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            Claim All
+                                        </div>
+                                    </div> : <div>
+                                        <AuthorizeButton
+                                            className="px-6  py-2.5 rounded-[24px] w-full h-[42px] text-[14px] font-[500] sm:text-base"
+                                            variant="default"
+                                            size="md"
+                                        >
+                                            Authorize
+                                        </AuthorizeButton>
+                                    </div>}
                                 </>
                             )}
                         </div>

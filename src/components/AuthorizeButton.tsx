@@ -69,7 +69,7 @@ ${now}`
   
   // 变体样式
   const variantClasses = {
-    default: "bg-[#0052F2] hover:bg-[#0052F2]/90 disabled:bg-[#0052F2]/50 text-white",
+    default: "bg-[#2E81FCE5] hover:hover:bg-[#2E81FCc5] disabled:bg-[#0052F2]/50 text-white",
     outline: "border border-[#0052F2] text-[#0052F2] hover:bg-[#0052F2]/10 disabled:opacity-50",
     ghost: "text-[#0052F2] hover:bg-[#0052F2]/10 disabled:opacity-50"
   }
