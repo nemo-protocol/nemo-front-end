@@ -97,8 +97,8 @@ export default function YieldChart({
         case "FIXED":
           return {
             label: "FIXED Price",
-            value: coinConfig.coinPrice
-              ? Number(coinConfig.coinPrice).toFixed(4)
+            value: coinConfig.ptPrice
+              ? Number(coinConfig.ptPrice).toFixed(4)
               : "—",
             delta: new Decimal(coinConfig.ptPriceRateChange)
               .mul(100)
