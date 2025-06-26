@@ -44,7 +44,7 @@ export default function Remove({ coinConfig }: Props) {
   const [isRemoving, setIsRemoving] = useState(false)
   const [errorDetail, setErrorDetail] = useState<string>()
   const [isInputLoading, setIsInputLoading] = useState(false)
-  const [action, setAction] = useState<"swap" | "redeem">("swap")
+  const [action, setAction] = useState<"swap" | "redeem">("redeem")
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
@@ -389,7 +389,7 @@ export default function Remove({ coinConfig }: Props) {
   }, [targetValue, lpPrice, coinConfig.underlyingPrice, lpValue])
   return (
     <div className="flex flex-col items-center gap-y-6">
-      <div className="flex gap-2 w-full">
+      {/* <div className="flex gap-2 w-full">
         <button
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-150 ${
             action === "swap"
@@ -410,7 +410,7 @@ export default function Remove({ coinConfig }: Props) {
         >
           {`redeem & remove`.toLocaleUpperCase()}
         </button>
-      </div>
+      </div> */}
       <AmountInput
         error={error}
         price={lpPrice}
