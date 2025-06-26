@@ -100,7 +100,24 @@ export default function PointsPage() {
         <div className="flex flex-col gap-6 w-full">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
             {markets.map(market => (
-              <PointsMarketCard key={market.id} market={market} />
+              <div key={market.id} className="relative w-full max-w-[413px]">
+                <PointsMarketCard market={market} />
+                {/* Coming Soon 蒙版层 */}
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[25px] rounded-2xl flex items-center justify-center z-10">
+                  <span 
+                    className="text-center text-[20px] font-[650] leading-[120%]"
+                    style={{
+                      background: 'linear-gradient(90deg, #FFF 0%, #3F3F3F 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      fontFamily: 'SeasonSerifTRIAL',
+                      backgroundClip: 'text'
+                    }}
+                  >
+                    Coming Soon...
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
