@@ -135,7 +135,7 @@ export default function SwapRemoveGuideModal() {
               <div className="col-start-4 row-start-2 flex justify-center items-center">
                 <div className="space-x-1 text-sm bg-light-gray/[0.03] py-1 px-1.5 rounded-lg">
                   <span>–</span>
-                  <span>TOKEN SPLIT</span>
+                  <span>TO WALLET</span>
                   <span>→</span>
                 </div>
               </div>

@@ -147,9 +147,10 @@ export default function YieldChart({
 
     const arr = data.data.map((d) => ({
       price: d.price,
-      apy: +d.apy,
+      apy: +d.apy * 100,
       ts: dayjs(d.timeLabel, "YYYY-MM-DD HH:mm:ss").valueOf(),
     }))
+    
     const apys = arr.map((v) => v.apy)
     const prices = arr.map((v) => v.price)
     const values = activeMetric === "apy" ? apys : prices
@@ -283,6 +284,15 @@ export default function YieldChart({
             axisLine={false}
             tickLine={false}
             tick={{ fill: "rgba(252,252,252,0.4)", fontSize: 10 }}
+            tickFormatter={(value) => {
+              if (activeMetric === "apy") {
+                // APY数据已经在数据处理阶段放大100倍，直接添加百分号
+                return `${value.toFixed(1)}%`
+              } else {
+                // 价格数据
+                return value.toFixed(2)
+              }
+            }}
           />
           <Tooltip
             content={({ active, payload, label }) => {
@@ -316,7 +326,7 @@ export default function YieldChart({
                     <span className="text-white text-sm">
                       {value
                         ? activeMetric === "apy"
-                          ? new Decimal(value).mul(100).toFixed(2) + "%"
+                          ? new Decimal(value).toFixed(2) + "%"
                           : new Decimal(value).toFixed(4)
                         : "—"}
                     </span>
