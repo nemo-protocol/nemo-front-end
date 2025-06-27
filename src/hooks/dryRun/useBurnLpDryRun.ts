@@ -107,20 +107,20 @@ export default function useBurnLpDryRun(
 
       const moveCallInfos: MoveCallInfo[] = []
 
-      const [syCoin, burnLpmoveCallInfo] = burnLp({
+      const [syCoin, burnLpMoveCallInfo] = burnLp({
         tx,
-        coinConfig,
         lpAmount,
+        coinConfig,
         pyPosition,
-        marketPosition: mergedPosition,
         returnDebugInfo: true,
+        marketPosition: mergedPosition,
       })
 
-      moveCallInfos.push(burnLpmoveCallInfo)
+      moveCallInfos.push(burnLpMoveCallInfo)
 
       const {
-        ptAmount: _ptAmount,
         syValue: _syValue,
+        ptAmount: _ptAmount,
         syAmount: _syAmount,
       } = await burnLpForSyCoinDryRun({
         lpAmount,
@@ -128,7 +128,6 @@ export default function useBurnLpDryRun(
         marketPositions,
       })
 
-      let finalSyCoin = syCoin
       if (isSwapPt) {
         const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
           tx,
@@ -147,7 +146,7 @@ export default function useBurnLpDryRun(
         )
         moveCallInfos.push(swapExactPtForSyMoveCall)
 
-        finalSyCoin = tx.mergeCoins(syCoin, syCoinFromSwapPt)
+        tx.mergeCoins(syCoin, [syCoinFromSwapPt])
         moveCallInfos.push({
           target: `0x2::coin::merge_coins`,
           typeArguments: [],
@@ -161,7 +160,7 @@ export default function useBurnLpDryRun(
       const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
         tx,
         coinConfig,
-        finalSyCoin,
+        syCoin,
         true
       )
       moveCallInfos.push(redeemSyCoinMoveCall)
@@ -181,6 +180,7 @@ export default function useBurnLpDryRun(
               lpAmount,
               pyPositions,
               marketPositions,
+              ptAmount: _ptAmount,
             })
           : { syValue: _syValue, syAmount: _syAmount }
 

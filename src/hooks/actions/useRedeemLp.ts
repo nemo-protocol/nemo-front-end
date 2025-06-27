@@ -11,7 +11,6 @@ import { Transaction } from "@mysten/sui/transactions"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { initPyPosition } from "@/lib/txHelper/position"
 import useBurnLpDryRun from "@/hooks/dryRun/useBurnLpDryRun"
-import useBurnSCoinDryRun from "../dryRun/useBurnSCoinDryRun"
 import useRedeemLpDryRun from "@/hooks/dryRun/useRedeemLpDryRun"
 import {
   LpPosition,
@@ -29,6 +28,7 @@ import {
 } from "@/lib/txHelper"
 import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 import useSellPtDryRun from "../dryRun/pt/useSellPtDryRun"
+import useBurnLpForSyCoinDryRun from "../dryRun/syCoinValue/useBurnLpForSyCoinDryRun"
 
 interface RedeemLpParams {
   lpAmount: string
@@ -43,6 +43,7 @@ interface RedeemLpParams {
   pyPositions: PyPosition[]
   minValue?: string | number
   txParam?: Transaction | null
+  isSwapPt?: boolean
   receivingType?: "underlying" | "sy"
 }
 
@@ -52,7 +53,6 @@ export default function useRedeemLp(
 ) {
   const { signAndExecuteTransaction, address } = useWallet()
   const { mutateAsync: burnLpDryRun } = useBurnLpDryRun(coinConfig)
-  const { mutateAsync: burnSCoinDryRun } = useBurnSCoinDryRun(coinConfig)
   const { mutateAsync: claimLpRewardMutation } = useClaimLpReward(coinConfig)
   const { mutateAsync: claimYtInterestMutation } =
     useClaimYtInterest(coinConfig)
@@ -62,6 +62,9 @@ export default function useRedeemLp(
   )
 
   const { mutateAsync: sellPtDryRun } = useSellPtDryRun(coinConfig)
+
+  const { mutateAsync: burnLpForSyCoinDryRun } =
+    useBurnLpForSyCoinDryRun(coinConfig)
 
   const redeemLp = useCallback(
     async ({
@@ -76,6 +79,7 @@ export default function useRedeemLp(
       minValue = 0,
       txParam = null,
       minSyOut = "0",
+      isSwapPt = false,
       receivingType = "underlying",
     }: RedeemLpParams) => {
       if (
@@ -85,6 +89,15 @@ export default function useRedeemLp(
         !lpPositions?.length
       ) {
         throw new Error("Invalid parameters for redeeming LP")
+      }
+
+      if (
+        receivingType === "underlying" &&
+        NO_SUPPORT_UNDERLYING_COINS.some(
+          (item) => item.coinType === coinConfig.coinType
+        )
+      ) {
+        throw new Error("Underlying protocol error, try to withdraw to sy")
       }
 
       if (!marketState) {
@@ -137,6 +150,7 @@ export default function useRedeemLp(
           pyPositions,
         })
 
+        // todo: merge coin
         if (
           receivingType === "underlying" &&
           new Decimal(ytRewardValue).gt(minValue) &&
@@ -159,15 +173,6 @@ export default function useRedeemLp(
         }
       }
 
-      const [{ ptAmount }] = await burnLpDryRun({
-        vaultId,
-        lpAmount,
-        slippage,
-        pyPositions,
-        receivingType,
-        marketPositions: lpPositions,
-      })
-
       const syCoinFromLp = burnLp(
         tx,
         coinConfig,
@@ -176,28 +181,24 @@ export default function useRedeemLp(
         mergedPositionId
       )
 
+      const { ptAmount, syAmount } = await burnLpForSyCoinDryRun({
+        lpAmount,
+        pyPositions,
+        marketPositions: lpPositions,
+      })
+
       const yieldTokenFromLp = redeemSyCoin(tx, coinConfig, syCoinFromLp)
 
-      const { coinValue: syCoinValue, coinAmount: syCoinAmount } =
-        await burnSCoinDryRun({
-          lpAmount,
-        })
       // Add conditional logic for receivingType
-      if (
-        receivingType === "underlying" &&
-        new Decimal(syCoinValue).gt(minValue) &&
-        !NO_SUPPORT_UNDERLYING_COINS.some(
-          (item) => item.coinType === coinConfig.coinType
-        )
-      ) {
+      if (receivingType === "underlying") {
         const underlyingCoin = await burnSCoin({
           tx,
           address,
           vaultId,
           slippage,
           coinConfig,
+          amount: syAmount,
           sCoin: yieldTokenFromLp,
-          amount: syCoinAmount,
         })
         tx.transferObjects([underlyingCoin], address)
       } else {
@@ -318,7 +319,7 @@ export default function useRedeemLp(
       marketState,
       burnLpDryRun,
       redeemLpDryRun,
-      burnSCoinDryRun,
+      burnLpForSyCoinDryRun,
       claimLpRewardMutation,
       claimYtInterestMutation,
       signAndExecuteTransaction,

@@ -227,7 +227,7 @@ export const redeemSyCoin = <T extends boolean = false>(
     target: `${coinConfig.nemoContractId}::sy::redeem`,
     arguments: [
       { name: "version", value: coinConfig.version },
-      { name: "sy_coin", value: "syCoin" },
+      { name: "sy_coin", value: syCoin },
       { name: "sy_state", value: coinConfig.syStateId },
     ],
     typeArguments: [coinConfig.coinType, coinConfig.syCoinType],

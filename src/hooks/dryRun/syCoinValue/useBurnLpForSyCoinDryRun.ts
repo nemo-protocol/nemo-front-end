@@ -111,7 +111,6 @@ export default function useBurnLpForSyCoinDryRun<T extends boolean = false>(
       moveCallInfos.push(burnLpMoveCallInfo)
 
       // Handle PT swap if needed
-      let finalSyCoin = syCoin
       if (isSwapPt) {
         const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
           tx,
@@ -130,7 +129,7 @@ export default function useBurnLpForSyCoinDryRun<T extends boolean = false>(
         )
         moveCallInfos.push(swapExactPtForSyMoveCall)
 
-        finalSyCoin = tx.mergeCoins(syCoin, syCoinFromSwapPt)
+        tx.mergeCoins(syCoin, [syCoinFromSwapPt])
         moveCallInfos.push({
           target: `0x2::coin::merge_coins`,
           typeArguments: [],
@@ -145,7 +144,7 @@ export default function useBurnLpForSyCoinDryRun<T extends boolean = false>(
       const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
         tx,
         coinConfig,
-        finalSyCoin,
+        syCoin,
         true
       )
       moveCallInfos.push(redeemSyCoinMoveCall)

@@ -190,6 +190,7 @@ export default function Remove({ coinConfig }: Props) {
               slippage,
               receivingType,
               pyPositions: pyPositionData,
+              isSwapPt: action === "swap",
               marketPositions: lppMarketPositionData,
             })
 
