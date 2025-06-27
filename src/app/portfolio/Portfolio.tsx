@@ -27,6 +27,8 @@ import { NO_SUPPORT_YT_COINS } from "@/lib/constants"
 import { showTransactionDialog } from "@/lib/dialog"
 import { parseErrorMessage } from "@/lib/errorMapping"
 import { ContractError } from "@/hooks/types"
+import { Tab, TabItem } from "@/components/ui/tab"
+import VaultsPositon from "./Vaults"
 
 export default function PortfolioPage() {
     const { data: list, isLoading } = usePortfolioList()
@@ -34,7 +36,24 @@ export default function PortfolioPage() {
     const { address } = useWallet()
     const [loading, setLoading] = useState(true)
     const [claimLoading, setClaimLoading] = useState(true)
+    const [tab, setTab] = useState<"Yield" | "Vault">("Yield")
 
+    const tabItems: TabItem[] = [
+        {
+            id: "Yield",
+            label: "Yield Asset",
+            active: tab === "Yield",
+            onChange: () => setTab("Yield"),
+            content: "View all available markets",
+            textSize: 'text-[24px]'
+        },
+        {
+            id: "Vault",
+            label: "Vault Positions",
+            active: tab === "Vault",
+            onChange: () => setTab("Vault"),
+            textSize: 'text-[24px]'
+        }]
     const [balance, setBalance] = useState("0")
     const [totalClaim, setTotalClaim] = useState("0")
     const [open, setOpen] = useState(false)
@@ -274,7 +293,10 @@ export default function PortfolioPage() {
                         </div>
                     </div>
                 </div>
-                <Assets
+                <div>
+                    <Tab items={tabItems} className="mb-4 gap-10 px-8 text-[24px]" />
+                </div>
+                {tab == 'Yield' ? <Assets
                     pyPositionsMap={pyPositionsMap}
                     marketStates={marketStates}
                     lpPositionsMap={lpPositionsMap}
@@ -287,7 +309,7 @@ export default function PortfolioPage() {
                         isPositionsLoading ||
                         isLoading
                     }
-                />
+                /> : <VaultsPositon />}
                 <Transactions />
                 <UnclaimedRewardModal
                     open={open}

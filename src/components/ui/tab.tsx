@@ -9,6 +9,7 @@ export interface TabItem {
   active?: boolean
   icon?: React.ReactNode
   content?: React.ReactNode
+  textSize?: string
 }
 
 interface TabProps {
@@ -25,7 +26,8 @@ export function Tab({ items, className }: TabProps) {
             <InfoTooltip active={item.active} content={item.content}>
               <button
                 className={cn(
-                  "text-[32px] font-normal font-serif",
+                  "font-normal font-serif",
+                  item?.textSize ? item?.textSize : 'text-[32px]',
                   item.active
                     ? "text-white [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]"
                     : "text-[rgba(255,255,255,0.20)]"
@@ -38,7 +40,8 @@ export function Tab({ items, className }: TabProps) {
           ) : (
             <button
               className={cn(
-                "text-[32px] font-normal font-serif",
+                "font-normal font-serif",
+                item?.textSize ? item?.textSize : 'text-[32px]',
                 item.active
                   ? "text-white [text-shadow:0px_0px_32px_rgba(239,244,252,0.56)]"
                   : "text-light-gray/40"

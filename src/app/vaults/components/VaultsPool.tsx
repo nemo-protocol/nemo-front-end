@@ -129,13 +129,7 @@ export default function VaultsPool() {
             className="h-8 w-40 rounded-[12px] bg-[#1E262A] pl-7 pr-3
               text-xs text-white placeholder:text-white/40 focus:outline-none"
           />
-          <Image
-            src="/icons/search.svg"
-            alt=""
-            width={14}
-            height={14}
-            className="absolute left-2 top-1/2 -translate-y-1/2 opacity-70"
-          />
+        
         </div>
       </div>
 

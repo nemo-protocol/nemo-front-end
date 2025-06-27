@@ -213,7 +213,7 @@ export default function Assets({
     }, [activeTab, sortedList]);
 
     return (
-        <div className="mt-2 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <div className="mt-2 mx-7.5  bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
             {/* Tabs */}
             <div className="flex gap-8 items-center">
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Assets</div>

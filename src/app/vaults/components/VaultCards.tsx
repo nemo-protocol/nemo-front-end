@@ -144,11 +144,11 @@ export default function VaultCards() {
                     />
 
 
-                    <div className="relative z-10 flex flex-wrap gap-1 px-5 pt-4">
+                    <div className="relative z-10 flex flex-wrap gap-2 px-4 pt-4">
                         {v.cardShowTagList.map((b) => (
                             <span
                                 key={b}
-                                className="flex items-center gap-1 rounded-full bg-[#1E262A] px-2 py-0.5 text-xs font-medium text-[#C8D1D3]"
+                                className="flex items-center gap-1 rounded-[24px] bg-gradient-to-r from-[#004BB9] to-[#000] px-4 py-1 text-[14px] font-[500] text-[rgba(255,255,255,0.80)]"
                             >
                                 {b}
                             </span>
@@ -156,16 +156,16 @@ export default function VaultCards() {
                     </div>
 
 
-                    <div className="relative z-10 mt-10 flex items-center px-5">
+                    <div className="relative z-10 mt-1 flex items-center px-4">
 
-                        <div className="-space-x-3 flex">
+                        <div className=" flex">
                             {[v.leftCoinLogo, v.rightCoinLogo].map((src, i) => (
                                 <img
                                     key={i}
                                     src={src}
                                     alt=""
-                                    width={32}
-                                    height={32}
+                                    width={46}
+                                    height={46}
                                     className={clsx(
                                         'rounded-full border border-[#13181B]',
                                         i === 0 && 'relative z-20'
@@ -174,38 +174,40 @@ export default function VaultCards() {
                             ))}
                         </div>
 
-                        <div className="ml-3">
-                            <p className="text-lg font-semibold text-white">{v.vaultName}</p>
-                            <p className="text-xs text-[#8A9499]">LP Vault</p>
+                        <div className="ml-2">
+                            <p className="text-[20px] font-[500] text-white">{v.vaultName}</p>
+                            <p className="text-[14px] font-[500] text-[#A1A3A4]">LP Vault</p>
                         </div>
 
                         {/* APY */}
                         <div className="ml-auto text-right">
-                            <p className="text-3xl font-bold text-white">
+                            <p className="text-[32px] font-[500] text-white [text-shadow:0_0_4px_#FCFCFC]">
                                 {formatApy(v.apy)}
                             </p>
-                            <p className="text-xs text-[#8A9499]">APY</p>
+                            <p  className="text-[14px] text-[rgba(252,252,252,0.50)]">APY</p>
                         </div>
                     </div>
 
                     {/* 底部信息与按钮 */}
-                    <div className="absolute bottom-0 w-full px-5 pb-5">
-                        <div className="mb-3 flex justify-between text-xs text-[#8A9499]">
+                    <div className="absolute bottom-0 w-full px-6 pb-5">
+                        <div className="mb-3 flex justify-between  text-[14px] font-[500] text-[#A1A3A4]">
                             <span>Source Protocol</span>
-                            <span className="font-medium text-white">
+                            <span className="font-[500] text-[#FCFCFC] text-[16px]">
                                 {v.sourceProtocol}
                             </span>
                         </div>
 
-                        <div className="mb-4 flex justify-between text-xs text-[#8A9499]">
+                        <div className="mb-4 flex justify-between text-[14px] font-[500] text-[#A1A3A4]">
                             <span>TVL</span>
-                            <span className="font-medium text-white">
+                            <span className="font-[500] text-[#FCFCFC] text-[16px]">
                                 {formatTvl(v.tvl)}
                             </span>
                         </div>
 
                         <button
-                            className="h-9 w-full rounded-md bg-gradient-to-r from-[#266EFF] to-[#11C7FF] text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                            className="h-9 
+                            bg-[rgba(252,252,252,0.06)]
+                            w-full rounded-[24px] text-[14px] font-[500] text-white transition hover:bg-[#2E81FCc5]"
                             onClick={() =>
                                { router.push("/vaults/detail")}
 

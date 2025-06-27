@@ -18,14 +18,14 @@ export default function MetricCard({
   return (
     <div
       className={clsx(
-        'flex flex-col justify-center rounded-[12px] bg-[#0F151C] h-[72px] px-6',
+        'flex flex-col justify-center gap-1 items-center rounded-[12px] bg-[rgba(252,252,252,0.03)] h-[78px] px-6',
         className,
       )}
     >
-      <span className="text-[14px] text-white font-semibold flex items-center gap-1">
-        {value} {icon}
+      <span className="text-[20px] text-white font-[470] flex items-center gap-1">
+        {value} 
       </span>
-      <span className="text-[11px] text-white/60">{label}</span>
+      <span className="text-[14px] text-[rgba(252,252,252,0.50)]">{label}</span>
     </div>
   )
 }
