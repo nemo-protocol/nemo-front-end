@@ -121,7 +121,7 @@ export const mergeLpPositions = (
   }
 
   if (accumulatedAmount.lt(lpAmount)) {
-    throw new Error("Insufficient LP amount")
+    throw new Error("Insufficient LP balance")
   }
 
   const mergedPosition = tx.object(positionsToMerge[0].id.id)

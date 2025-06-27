@@ -173,7 +173,7 @@ export default function useRedeemLp(
         }
       }
 
-      const syCoinFromLp = burnLp(
+      const syCoin = burnLp(
         tx,
         coinConfig,
         lpAmount,
@@ -181,29 +181,14 @@ export default function useRedeemLp(
         mergedPositionId
       )
 
-      const { ptAmount, syAmount } = await burnLpForSyCoinDryRun({
+      const { ptAmount, syAmount, syValue } = await burnLpForSyCoinDryRun({
         lpAmount,
         pyPositions,
         marketPositions: lpPositions,
       })
 
-      const yieldTokenFromLp = redeemSyCoin(tx, coinConfig, syCoinFromLp)
-
-      // Add conditional logic for receivingType
-      if (receivingType === "underlying") {
-        const underlyingCoin = await burnSCoin({
-          tx,
-          address,
-          vaultId,
-          slippage,
-          coinConfig,
-          amount: syAmount,
-          sCoin: yieldTokenFromLp,
-        })
-        tx.transferObjects([underlyingCoin], address)
-      } else {
-        tx.transferObjects([yieldTokenFromLp], address)
-      }
+      let syCoinValue = syValue
+      let syCoinAmount = syAmount
 
       if (new Decimal(coinConfig?.maturity).lt(Date.now())) {
         const [priceVoucherForOPY] = getPriceVoucher(tx, coinConfig)
@@ -258,7 +243,7 @@ export default function useRedeemLp(
           getPriceVoucher(tx, coinConfig, "useRedeemLp swapExactPtForSy", true)
         moveCalls.push(priceVoucherForSwapSyMoveCall)
 
-        const [syCoinFromSwapPT, swapExactPtForSyMoveCall] = swapExactPtForSy(
+        const [syCoinFromSwapPt, swapExactPtForSyMoveCall] = swapExactPtForSy(
           tx,
           coinConfig,
           ptAmount,
@@ -269,38 +254,45 @@ export default function useRedeemLp(
         )
         moveCalls.push(swapExactPtForSyMoveCall)
 
-        const yieldTokenFromSwapPT = redeemSyCoin(
-          tx,
-          coinConfig,
-          syCoinFromSwapPT
-        )
+        tx.mergeCoins(syCoin, [syCoinFromSwapPt])
 
-        const { outputValue, outputAmount } = await sellPtDryRun({
-          vaultId,
+        const { syValue, syAmount } = await burnLpForSyCoinDryRun({
+          lpAmount,
           ptAmount,
-          slippage,
           pyPositions,
-          minSyOut: "0",
-          receivingType,
+          isSwapPt: true,
+          marketPositions: lpPositions,
         })
 
-        if (
-          receivingType === "underlying" &&
-          new Decimal(outputValue).gt(minValue)
-        ) {
-          const underlyingCoin = await burnSCoin({
-            tx,
-            address,
-            vaultId,
-            slippage,
-            coinConfig,
-            amount: outputAmount,
-            sCoin: yieldTokenFromSwapPT,
-          })
-          tx.transferObjects([underlyingCoin], address)
-        } else {
-          tx.transferObjects([yieldTokenFromSwapPT], address)
-        }
+        syCoinValue = syValue
+        syCoinAmount = syAmount
+      }
+
+      const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
+        tx,
+        coinConfig,
+        syCoin,
+        true
+      )
+      moveCalls.push(redeemSyCoinMoveCall)
+
+      // Add conditional logic for receivingType
+      if (
+        receivingType === "underlying" &&
+        new Decimal(syCoinValue).gt(minValue)
+      ) {
+        const underlyingCoin = await burnSCoin({
+          tx,
+          address,
+          vaultId,
+          slippage,
+          coinConfig,
+          amount: syAmount,
+          sCoin: yieldToken,
+        })
+        tx.transferObjects([underlyingCoin], address)
+      } else {
+        tx.transferObjects([yieldToken], address)
       }
 
       if (created) {

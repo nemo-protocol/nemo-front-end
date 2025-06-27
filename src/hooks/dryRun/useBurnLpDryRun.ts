@@ -120,8 +120,8 @@ export default function useBurnLpDryRun(
 
       const {
         syValue: _syValue,
-        ptAmount: _ptAmount,
         syAmount: _syAmount,
+        ptAmount: _ptAmount,
       } = await burnLpForSyCoinDryRun({
         lpAmount,
         pyPositions,
