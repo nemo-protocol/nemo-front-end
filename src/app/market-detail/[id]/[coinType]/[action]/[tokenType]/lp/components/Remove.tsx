@@ -24,8 +24,8 @@ import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 import useCoinData from "@/hooks/query/useCoinData"
-import SwapSupplyGuideModal from "./SwapSupplyGuideModal"
-import MintSupplyGuideModal from "./MintSupplyGuideModal"
+import SwapRemoveGuideModal from "./SwapRemoveGuideModal"
+import RedeemRemoveGuideModal from "./RedeemRemoveGuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -536,7 +536,7 @@ export default function Remove({ coinConfig }: Props) {
         disabled={btnDisabled}
       />
 
-      {action === "swap" ? <SwapSupplyGuideModal /> : <MintSupplyGuideModal />}
+      {action === "swap" ? <SwapRemoveGuideModal /> : <RedeemRemoveGuideModal />}
     </div>
   )
 }
