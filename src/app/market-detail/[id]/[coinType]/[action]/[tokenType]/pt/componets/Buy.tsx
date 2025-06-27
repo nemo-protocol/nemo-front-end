@@ -565,7 +565,7 @@ export default function Buy({ coinConfig }: Props) {
 
       {/* 信息区块 6行 */}
       <div className="space-y-2 text-sm text-light-gray/40">
-        <div className="flex justify-between">
+        <div className="flex justify-between hidden">
           <span>Fixed APY Change</span>
           <span className="text-white">
             {ptYtData?.ptApy
