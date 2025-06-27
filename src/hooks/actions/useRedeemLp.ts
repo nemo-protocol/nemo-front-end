@@ -1,6 +1,5 @@
 import Decimal from "decimal.js"
 import { CoinData } from "@/types"
-import { useCallback } from "react"
 import { burnSCoin } from "@/lib/txHelper/coin"
 import useClaimLpReward from "./useClaimLpReward"
 import { useMutation } from "@tanstack/react-query"
@@ -10,8 +9,9 @@ import { claimYtInterest } from "@/lib/txHelper/yt"
 import { Transaction } from "@mysten/sui/transactions"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { initPyPosition } from "@/lib/txHelper/position"
-import useBurnLpDryRun from "@/hooks/dryRun/useBurnLpDryRun"
+import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 import useRedeemLpDryRun from "@/hooks/dryRun/useRedeemLpDryRun"
+import useBurnLpForSyCoinDryRun from "../dryRun/syCoinValue/useBurnLpForSyCoinDryRun"
 import {
   LpPosition,
   PyPosition,
@@ -26,9 +26,6 @@ import {
   mergeLpPositions,
   swapExactPtForSy,
 } from "@/lib/txHelper"
-import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
-import useSellPtDryRun from "../dryRun/pt/useSellPtDryRun"
-import useBurnLpForSyCoinDryRun from "../dryRun/syCoinValue/useBurnLpForSyCoinDryRun"
 
 interface RedeemLpParams {
   lpAmount: string
@@ -52,22 +49,18 @@ export default function useRedeemLp(
   marketState?: MarketState
 ) {
   const { signAndExecuteTransaction, address } = useWallet()
-  const { mutateAsync: burnLpDryRun } = useBurnLpDryRun(coinConfig)
   const { mutateAsync: claimLpRewardMutation } = useClaimLpReward(coinConfig)
   const { mutateAsync: claimYtInterestMutation } =
     useClaimYtInterest(coinConfig)
+  const { mutateAsync: burnLpForSyCoinDryRun } =
+    useBurnLpForSyCoinDryRun(coinConfig)
   const { mutateAsync: redeemLpDryRun } = useRedeemLpDryRun(
     coinConfig,
     marketState
   )
 
-  const { mutateAsync: sellPtDryRun } = useSellPtDryRun(coinConfig)
-
-  const { mutateAsync: burnLpForSyCoinDryRun } =
-    useBurnLpForSyCoinDryRun(coinConfig)
-
-  const redeemLp = useCallback(
-    async ({
+  return useMutation({
+    mutationFn: async ({
       action,
       vaultId,
       lpAmount,
@@ -79,7 +72,6 @@ export default function useRedeemLp(
       minValue = 0,
       txParam = null,
       minSyOut = "0",
-      isSwapPt = false,
       receivingType = "underlying",
     }: RedeemLpParams) => {
       if (
@@ -287,8 +279,8 @@ export default function useRedeemLp(
           vaultId,
           slippage,
           coinConfig,
-          amount: syAmount,
           sCoin: yieldToken,
+          amount: syCoinAmount,
         })
         tx.transferObjects([underlyingCoin], address)
       } else {
@@ -306,19 +298,5 @@ export default function useRedeemLp(
         return { digest }
       } else return { digest: null }
     },
-    [
-      address,
-      marketState,
-      burnLpDryRun,
-      redeemLpDryRun,
-      burnLpForSyCoinDryRun,
-      claimLpRewardMutation,
-      claimYtInterestMutation,
-      signAndExecuteTransaction,
-    ]
-  )
-
-  return useMutation({
-    mutationFn: redeemLp,
   })
 }

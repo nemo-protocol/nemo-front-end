@@ -608,7 +608,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
       )}
 
       <div className="w-full divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
-        <p className="flex justify-between text-sm pb-2">
+        <p className="flex justify-between text-sm pb-2 hidden">
           <span>Pool APY Change</span>
           <span className="text-white">X% - Y%</span>
         </p>
