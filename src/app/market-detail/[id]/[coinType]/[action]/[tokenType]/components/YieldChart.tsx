@@ -50,7 +50,7 @@ export default function YieldChart({
   tokenType,
 }: {
   coinConfig: CoinConfig
-  h: number
+  h?: number
   tokenType: TokenType
 }) {
   const [activeTab, setActiveTab] = useState(0)
@@ -65,29 +65,29 @@ export default function YieldChart({
         case "FIXED":
           return {
             label: "FIXED APY",
-            value: new Decimal(coinConfig.fixedApy).mul(100).toFixed(2),
-            delta: new Decimal(coinConfig.fixedApyRateChange)
+            value: new Decimal(coinConfig?.fixedApy).mul(100).toFixed(2),
+            delta: new Decimal(coinConfig?.fixedApyRateChange)
               .mul(100)
               .toFixed(2),
-            positive: new Decimal(coinConfig.fixedApyRateChange).gt(0),
+            positive: new Decimal(coinConfig?.fixedApyRateChange).gt(0),
           }
         case "YIELD":
           return {
             label: "YIELD APY",
-            value: new Decimal(coinConfig.yieldApy).mul(100).toFixed(2),
-            delta: new Decimal(coinConfig.yieldApyRateChange)
+            value: new Decimal(coinConfig?.yieldApy).mul(100).toFixed(2),
+            delta: new Decimal(coinConfig?.yieldApyRateChange)
               .mul(100)
               .toFixed(2),
-            positive: new Decimal(coinConfig.yieldApyRateChange).gt(0),
+            positive: new Decimal(coinConfig?.yieldApyRateChange).gt(0),
           }
         case "POOL":
           return {
             label: "POOL APY",
-            value: new Decimal(coinConfig.poolApy).mul(100).toFixed(2),
-            delta: new Decimal(coinConfig.poolApyRateChange)
+            value: new Decimal(coinConfig?.poolApy).mul(100).toFixed(2),
+            delta: new Decimal(coinConfig?.poolApyRateChange)
               .mul(100)
               .toFixed(2),
-            positive: new Decimal(coinConfig.poolApyRateChange).gt(0),
+            positive: new Decimal(coinConfig?.poolApyRateChange).gt(0),
           }
         default:
           return { label: "", value: "—", delta: "", positive: true }
