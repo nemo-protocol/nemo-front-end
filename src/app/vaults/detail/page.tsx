@@ -10,6 +10,7 @@ import YieldChart from '@/app/market-detail/[id]/[coinType]/[action]/[tokenType]
 import SimpleTabs from '@/app/market-detail/[id]/[coinType]/[action]/[tokenType]/components/SimpleTabs'
 import TradeVaults from './components/TradeVaults'
 import { useState } from 'react'
+import { CoinConfig } from '@/queries/types/market'
 
 export default function VaultsDetailPage() {
     // mock data
@@ -226,7 +227,8 @@ export default function VaultsDetailPage() {
                     </div>
                     <div className="rounded-[12px] flex flex-col bg-[#0F151C]  mt-4 p-6">
                         <YieldChart
-                            coinConfig={{ marketStateId: '0x50f457c30c02bb4cf186276a8798dfc5683aa16e54316d9e52d7b2ff8d23eed3', yieldApy: '1', fixedApyRateChange: '1' }}
+                        //@ts-ignore
+                            coinConfig={{ marketStateId: '0x50f457c30c02bb4cf186276a8798dfc5683aa16e54316d9e52d7b2ff8d23eed3', yieldApy: '1', fixedApyRateChange: '1' } as CoinConfig}
                             h={400}
                             tokenType={"YIELD"}
                         />
