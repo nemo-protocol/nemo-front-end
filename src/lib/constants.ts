@@ -180,7 +180,7 @@ export const AFTERMATH = {
 
 export function getTreasury(coinType: string) {
   const treasury = SCALLOP.S_COIN.find(
-    (item) => item.coinType === coinType,
+    (item) => item.coinType === coinType
   )?.treasury
   if (!treasury) {
     throw new Error("Scallop scoin treasury not found")
@@ -369,8 +369,6 @@ export const WWAL = {
     "0x10b9d30c28448939ce6c4d6c6e0ffce4a7f8a4ada8248bdad09ef8b70e4a3904",
 } as const
 
-export const UNSUPPORTED_UNDERLYING_COINS: string[] = []
-
 export const CETUS_VAULT_ID_LIST = [
   {
     coinType:
@@ -419,10 +417,8 @@ export const NO_SUPPORT_UNDERLYING_COINS = [
   },
 ]
 
-
 export const NO_SUPPORT_YT_COINS = [
-
   "0x622345b3f80ea5947567760eec7b9639d0582adcfd6ab9fccb85437aeda7c0d0::scallop_wal::SCALLOP_WAL",
   "0xb490d6fa9ead588a9d72da07a02914da42f6b5b1339b8118a90011a42b67a44f::lp_token::LP_TOKEN",
-  "0x0c8a5fcbe32b9fc88fe1d758d33dd32586143998f68656f43f3a6ced95ea4dc3::lp_token::LP_TOKEN"
+  "0x0c8a5fcbe32b9fc88fe1d758d33dd32586143998f68656f43f3a6ced95ea4dc3::lp_token::LP_TOKEN",
 ]

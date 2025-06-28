@@ -21,15 +21,17 @@ import useRedeemPYDryRun from "@/hooks/dryRun/useRedeemPYDryRun"
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useCoinData from "@/hooks/query/useCoinData"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 import { useRouter, useSearchParams } from "next/navigation"
+import { burnSCoin } from "@/lib/txHelper/coin"
+import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 
 interface Props {
   coinConfig: CoinConfig
 }
 
 export default function Redeem({ coinConfig }: Props) {
-  const [syValue, setSyValue] = useState("")
+  const [outputValue, setOutputValue] = useState("")
   const [redeemValue, setRedeemValue] = useState("")
   const [isRedeeming, setIsRedeeming] = useState(false)
   const { address, signAndExecuteTransaction } = useWallet()
@@ -37,7 +39,7 @@ export default function Redeem({ coinConfig }: Props) {
   const [receivingType, setReceivingType] = useState<"underlying" | "sy">(
     "underlying"
   )
-  
+
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -125,29 +127,21 @@ export default function Redeem({ coinConfig }: Props) {
               .mul(new Decimal(10).pow(coinConfig.decimal))
               .toString()
 
-            const { syValue } = await redeemDryRun({
+            const { outputValue } = await redeemDryRun({
               ptAmount: amount,
               ytAmount: amount,
               pyPositions: pyPositionData,
+              receivingType,
             })
-
-            if (receivingType === "underlying") {
-              setSyValue(
-                new Decimal(syValue)
-                  .mul(coinConfig.conversionRate)
-                  .toFixed(decimal)
-              )
-            } else {
-              setSyValue(syValue)
-            }
+            setOutputValue(outputValue)
           } catch (error) {
             console.error("Dry run error:", error)
-            setSyValue("")
+            setOutputValue("")
           } finally {
             setIsInputLoading(false)
           }
         } else {
-          setSyValue("")
+          setOutputValue("")
         }
       }, 500)
 
@@ -165,6 +159,17 @@ export default function Redeem({ coinConfig }: Props) {
   }, [redeemValue, decimal, debouncedGetRedeemOut])
 
   async function redeem() {
+    if (
+      receivingType === "underlying" &&
+      (coinConfig?.provider === "Cetus" ||
+        NO_SUPPORT_UNDERLYING_COINS.some(
+          (item) => item.coinType === coinConfig?.coinType
+        ))
+    ) {
+      throw new Error(
+        `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
+      )
+    }
     if (
       !insufficientPtBalance &&
       !insufficientYtBalance &&
@@ -200,7 +205,20 @@ export default function Redeem({ coinConfig }: Props) {
 
         const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
 
-        tx.transferObjects([yieldToken], address)
+        if (receivingType === "underlying") {
+          const underlyingCoin = await burnSCoin({
+            tx,
+            address,
+            coinConfig,
+            amount: "0",
+            vaultId: "0",
+            slippage: "0",
+            sCoin: yieldToken,
+          })
+          tx.transferObjects([underlyingCoin], address)
+        } else {
+          tx.transferObjects([yieldToken], address)
+        }
 
         if (created) {
           tx.transferObjects([pyPosition], address)
@@ -295,12 +313,15 @@ export default function Redeem({ coinConfig }: Props) {
           className="bg-transparent rounded-none"
         />
       </div>
-      <div className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors" onClick={handleModeSwitch}>
+      <div
+        className="self-center bg-[#FCFCFC]/[0.03] rounded-full p-3 -my-10 cursor-pointer hover:bg-[#FCFCFC]/[0.06] transition-colors"
+        onClick={handleModeSwitch}
+      >
         <ArrowUpDown className="w-5 h-5" />
       </div>
       <AmountOutput
         name={coinName}
-        amount={syValue}
+        amount={outputValue}
         balance={coinBalance}
         loading={isInputLoading}
         title={"Underlying asset".toUpperCase()}
@@ -308,6 +329,11 @@ export default function Redeem({ coinConfig }: Props) {
           receivingType === "underlying"
             ? coinConfig.underlyingCoinLogo
             : coinConfig.coinLogo
+        }
+        price={
+          receivingType === "underlying"
+            ? coinConfig.underlyingPrice
+            : coinConfig.coinPrice
         }
         coinNameComponent={
           <TokenTypeSelect
@@ -346,7 +372,7 @@ export default function Redeem({ coinConfig }: Props) {
           redeemValue === "" || insufficientPtBalance || insufficientYtBalance
         }
       />
-      <GuideModal imageUrl="/assets/images/guide/mint.png" />
+      <GuideModal />
     </div>
   )
 }

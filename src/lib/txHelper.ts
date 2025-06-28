@@ -30,7 +30,7 @@ export function splitCoinHelper(
   tx: Transaction,
   coinData: CoinData[],
   amounts: string[],
-  coinType?: string,
+  coinType?: string
 ) {
   debugLog("splitCoinHelper params:", {
     coinData,
@@ -40,7 +40,7 @@ export function splitCoinHelper(
 
   const totalTargetAmount = amounts.reduce(
     (sum, amount) => sum.add(new Decimal(amount)),
-    new Decimal(0),
+    new Decimal(0)
   )
 
   if (
@@ -52,7 +52,7 @@ export function splitCoinHelper(
   ) {
     const totalBalance = coinData.reduce(
       (sum, coin) => sum.add(coin.balance),
-      new Decimal(0),
+      new Decimal(0)
     )
 
     if (totalBalance.lt(totalTargetAmount)) {
@@ -88,7 +88,7 @@ export function splitCoinHelper(
 
     tx.mergeCoins(
       tx.object(coinsToUse[0]),
-      coinsToUse.slice(1).map((id) => tx.object(id)),
+      coinsToUse.slice(1).map((id) => tx.object(id))
     )
     return tx.splitCoins(coinsToUse[0], amounts)
   }
@@ -98,7 +98,7 @@ export const mergeLpPositions = (
   tx: Transaction,
   coinConfig: CoinConfig,
   lpPositions: LpPosition[],
-  lpAmount: string,
+  lpAmount: string
 ) => {
   debugLog("mergeLppMarketPositions params:", {
     lpPositions,
@@ -106,7 +106,7 @@ export const mergeLpPositions = (
   })
 
   const sortedPositions = [...lpPositions].sort(
-    (a, b) => Number(b.lp_amount) - Number(a.lp_amount),
+    (a, b) => Number(b.lp_amount) - Number(a.lp_amount)
   )
 
   let accumulatedAmount = new Decimal(0)
@@ -121,7 +121,7 @@ export const mergeLpPositions = (
   }
 
   if (accumulatedAmount.lt(lpAmount)) {
-    throw new Error("Insufficient LP amount")
+    throw new Error("Insufficient LP balance")
   }
 
   const mergedPosition = tx.object(positionsToMerge[0].id.id)
@@ -151,7 +151,7 @@ export function depositSyCoin(
   tx: Transaction,
   coinConfig: CoinConfig,
   splitCoin: TransactionArgument,
-  coinType: string,
+  coinType: string
 ) {
   const depositMoveCall = {
     target: `${coinConfig.nemoContractId}::sy::deposit`,
@@ -178,7 +178,7 @@ export const mintPY = <T extends boolean = false>(
   syCoin: TransactionArgument,
   priceVoucher: TransactionArgument,
   pyPosition: TransactionArgument,
-  returnDebugInfo?: T,
+  returnDebugInfo?: T
 ): T extends true ? [TransactionResult, MoveCallInfo] : TransactionResult => {
   const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::yield_factory::mint_py`,
@@ -221,13 +221,13 @@ export const redeemSyCoin = <T extends boolean = false>(
   tx: Transaction,
   coinConfig: CoinConfig,
   syCoin: TransactionArgument,
-  returnDebugInfo?: T,
+  returnDebugInfo?: T
 ): T extends true ? [TransactionResult, MoveCallInfo] : TransactionResult => {
   const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::sy::redeem`,
     arguments: [
       { name: "version", value: coinConfig.version },
-      { name: "sy_coin", value: "syCoin" },
+      { name: "sy_coin", value: syCoin },
       { name: "sy_state", value: coinConfig.syStateId },
     ],
     typeArguments: [coinConfig.coinType, coinConfig.syCoinType],
@@ -255,7 +255,7 @@ export const burnLp = (
   coinConfig: CoinConfig,
   lpAmount: string,
   pyPosition: TransactionArgument,
-  mergedPositionId: TransactionArgument,
+  mergedPositionId: TransactionArgument
 ) => {
   const burnLpMoveCall = {
     target: `${coinConfig.nemoContractId}::market::burn_lp`,
@@ -293,7 +293,7 @@ export const swapExactPtForSy = <T extends boolean = false>(
   pyPosition: TransactionArgument,
   priceVoucher: TransactionArgument,
   minSyOut: string,
-  returnDebugInfo?: T,
+  returnDebugInfo?: T
 ): T extends true ? [TransactionResult, MoveCallInfo] : TransactionResult => {
   const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::market::swap_exact_pt_for_sy`,
@@ -301,9 +301,9 @@ export const swapExactPtForSy = <T extends boolean = false>(
       { name: "version", value: coinConfig.version },
       { name: "pt_amount", value: ptAmount },
       { name: "min_sy_out", value: minSyOut },
-      { name: "py_position", value: "pyPosition" },
+      { name: "py_position", value: pyPosition },
       { name: "py_state", value: coinConfig.pyStateId },
-      { name: "price_voucher", value: "priceVoucher" },
+      { name: "price_voucher", value: priceVoucher },
       {
         name: "market_factory_config",
         value: coinConfig.marketFactoryConfigId,
@@ -346,7 +346,7 @@ export const swapExactYtForSy = <T extends boolean = false>(
   pyPosition: TransactionArgument,
   priceVoucher: TransactionArgument,
   minSyOut: string,
-  returnDebugInfo?: T,
+  returnDebugInfo?: T
 ): T extends true ? [TransactionResult, MoveCallInfo] : TransactionResult => {
   const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::router::swap_exact_yt_for_sy`,
@@ -402,7 +402,7 @@ export const redeemPy = <T extends boolean = false>(
   priceVoucher: TransactionArgument,
   pyPosition: TransactionArgument,
   returnDebugInfo?: T,
-  caller?: string,
+  caller?: string
 ): T extends true ? [TransactionResult, MoveCallInfo] : TransactionResult => {
   const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::yield_factory::redeem_py`,
@@ -419,7 +419,7 @@ export const redeemPy = <T extends boolean = false>(
     typeArguments: [coinConfig.syCoinType],
   }
 
-  console.log(caller,"redeem_py move call:", debugInfo)
+  console.log(caller, "redeem_py move call:", debugInfo)
 
   const txMoveCall = {
     target: debugInfo.target,
@@ -448,7 +448,7 @@ export const redeemPy = <T extends boolean = false>(
 export const getPrice = (
   tx: Transaction,
   coinConfig: CoinConfig,
-  priceVoucher: TransactionArgument,
+  priceVoucher: TransactionArgument
 ) => {
   const moveCall = {
     target: `${coinConfig.oracleVoucherPackageId}::oracle_voucher::get_price`,
@@ -469,7 +469,7 @@ export const mergeAllLpPositions = (
   tx: Transaction,
   coinConfig: CoinConfig,
   lpPositions: LpPosition[],
-  marketPosition: TransactionArgument,
+  marketPosition: TransactionArgument
 ) => {
   debugLog("mergeAllLpPositions params:", {
     tx,
@@ -519,7 +519,7 @@ export const swapExactSyForPt = <T extends boolean = false>(
   pyPosition: TransactionArgument,
   minPtOut: string,
   approxPtOut: string,
-  returnDebugInfo?: T,
+  returnDebugInfo?: T
 ): T extends true ? MoveCallInfo : void => {
   const debugInfo: MoveCallInfo = {
     target: `${coinConfig.nemoContractId}::router::swap_exact_sy_for_pt`,
@@ -571,7 +571,7 @@ export const mergeAllCoins = async (
   tx: Transaction,
   address: string,
   coins: CoinData[],
-  coinType: string = "0x2::sui::SUI",
+  coinType: string = "0x2::sui::SUI"
 ) => {
   debugLog("mergeAllCoins params:", {
     coinType,
@@ -591,7 +591,7 @@ export const mergeAllCoins = async (
   if (coinType === "0x2::sui::SUI") {
     const [mergedCoin] = tx.splitCoins(tx.gas, [
       tx.pure.u64(
-        coins.reduce((total, coin) => total + Number(coin.balance), 0),
+        coins.reduce((total, coin) => total + Number(coin.balance), 0)
       ),
     ])
 

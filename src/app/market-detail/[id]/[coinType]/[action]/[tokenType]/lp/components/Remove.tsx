@@ -24,7 +24,8 @@ import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import { debounce, isValidAmount, formatDecimalValue } from "@/lib/utils"
 import useCoinData from "@/hooks/query/useCoinData"
-import GuideModal from "../../components/GuideModal"
+import SwapRemoveGuideModal from "./SwapRemoveGuideModal"
+import RedeemRemoveGuideModal from "./RedeemRemoveGuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -33,11 +34,12 @@ interface Props {
 export default function Remove({ coinConfig }: Props) {
   const [lpValue, setLpValue] = useState("")
   const [slippage, setSlippage] = useState("0.5")
+  const [minSyOut, setMinSyOut] = useState("0")
   const [error, setError] = useState<string>()
   const [ptValue, setPtValue] = useState("")
   const { account: currentAccount } = useWallet()
-  const [warning, setWarning] = useState<string>()
-  const [warningDetail, setWarningDetail] = useState<string>()
+  const [inputWarning, setInputWarning] = useState<string>()
+  const [outputWarning, setOutputWarning] = useState<string>()
   const [targetValue, setTargetValue] = useState("")
   const [isRemoving, setIsRemoving] = useState(false)
   const [errorDetail, setErrorDetail] = useState<string>()
@@ -56,8 +58,8 @@ export default function Remove({ coinConfig }: Props) {
     setTargetValue("")
     setPtValue("")
     setError(undefined)
-    setWarning(undefined)
-    setWarningDetail(undefined)
+    setInputWarning(undefined)
+    setOutputWarning(undefined)
     setErrorDetail(undefined)
 
     const params = new URLSearchParams(searchParams.toString())
@@ -170,45 +172,30 @@ export default function Remove({ coinConfig }: Props) {
     (value: string, decimal: number) => {
       const getSyOut = debounce(async () => {
         setError(undefined)
-        setWarning(undefined)
-        if (value && value !== "0" && decimal) {
+        setInputWarning(undefined)
+        setOutputWarning(undefined)
+        if (
+          value &&
+          value !== "0" &&
+          decimal &&
+          pyPositionData &&
+          lppMarketPositionData
+        ) {
           setIsInputLoading(true)
           try {
             const lpAmount = new Decimal(value).mul(10 ** decimal).toFixed(0)
-            const [{ ptAmount, ptValue, outputValue }] = await burnLpDryRun({
-              slippage,
+            const [{ ptValue, outputValue }] = await burnLpDryRun({
               vaultId,
               lpAmount,
+              slippage,
               receivingType,
+              pyPositions: pyPositionData,
+              isSwapPt: action === "swap",
+              marketPositions: lppMarketPositionData,
             })
 
-            if (action === "swap") {
-              try {
-                const { outputValue: swappedOutputValue } = await sellPtDryRun({
-                  slippage,
-                  vaultId,
-                  ptAmount,
-                  minSyOut: "0",
-                  receivingType,
-                  pyPositions: pyPositionData,
-                })
-
-                const targetValue = new Decimal(outputValue)
-                  .add(swappedOutputValue)
-                  .toFixed(decimal)
-                setTargetValue(targetValue)
-              } catch (error) {
-                setTargetValue(outputValue)
-                setWarning(`Returning ${ptValue} PT ${coinConfig?.coinName}.`)
-                setWarningDetail(
-                  `PT could be sold at the market, or it could be redeemed after maturity with a fixed return.`
-                )
-                console.log("sellPtDryRun error", error)
-              }
-            } else {
-              setPtValue(ptValue)
-              setTargetValue(outputValue)
-            }
+            setPtValue(ptValue)
+            setTargetValue(outputValue)
           } catch (errorMsg) {
             const { error: msg, detail } = parseErrorMessage(
               (errorMsg as ContractError)?.message ?? errorMsg
@@ -235,8 +222,10 @@ export default function Remove({ coinConfig }: Props) {
       receivingType,
       pyPositionData,
       coinConfig?.coinName,
+      lppMarketPositionData,
     ]
   )
+
   const btnText = useMemo(() => {
     if (insufficientBalance) {
       return `Insufficient LP ${coinConfig?.coinName} balance`
@@ -254,6 +243,7 @@ export default function Remove({ coinConfig }: Props) {
     coinConfig?.coinName,
     coinConfig?.tradeStatus,
   ])
+
   const btnDisabled = useMemo(() => {
     return (
       !!error ||
@@ -263,16 +253,20 @@ export default function Remove({ coinConfig }: Props) {
       coinConfig?.tradeStatus === "0"
     )
   }, [error, lpValue, insufficientBalance, coinConfig?.tradeStatus])
+
   useEffect(() => {
     const cancelFn = debouncedGetSyOut(lpValue, decimal ?? 0)
     return () => {
       cancelFn()
     }
   }, [lpValue, decimal, debouncedGetSyOut, receivingType])
+
   const refreshData = useCallback(async () => {
     await Promise.all([refetchLpPosition(), refetchPyPosition()])
   }, [refetchLpPosition, refetchPyPosition])
+
   const { mutateAsync: redeemLp } = useRedeemLp(coinConfig, marketState)
+
   const convertReceivingValue = useCallback(
     (value: string, fromType: string, toType: string) => {
       if (!value || !decimal || !coinConfig?.conversionRate) return ""
@@ -309,9 +303,11 @@ export default function Remove({ coinConfig }: Props) {
         setIsRemoving(true)
         const lpAmount = new Decimal(lpValue).mul(10 ** decimal).toFixed(0)
         const { digest } = await redeemLp({
+          action,
           vaultId,
           slippage,
           lpAmount,
+          minSyOut,
           ytBalance,
           coinConfig,
           receivingType,
@@ -320,9 +316,9 @@ export default function Remove({ coinConfig }: Props) {
         })
         if (digest)
           showTransactionDialog({
-            status: "Success",
             network,
             txId: digest,
+            status: "Success",
             onClose: async () => {
               await refreshData()
               await refreshPtYt()
@@ -350,6 +346,18 @@ export default function Remove({ coinConfig }: Props) {
     console.log("action", action)
   }, [action])
 
+  const priceImpact = useMemo(() => {
+    if (!lpValue || !coinConfig?.underlyingPrice || !targetValue || !lpPrice) {
+      return undefined
+    }
+    const inputValue = new Decimal(lpPrice).mul(lpValue)
+    const value = new Decimal(coinConfig.underlyingPrice).mul(
+      formatDecimalValue(targetValue, decimal)
+    )
+    const ratio = value.minus(inputValue).div(inputValue).mul(100)
+
+    return { value, ratio }
+  }, [targetValue, lpPrice, coinConfig.underlyingPrice, lpValue])
   return (
     <div className="flex flex-col items-center gap-y-6">
       <div className="flex gap-2 w-full">
@@ -377,15 +385,15 @@ export default function Remove({ coinConfig }: Props) {
       <AmountInput
         error={error}
         price={lpPrice}
-        decimal={decimal}
-        warning={warning}
         amount={lpValue}
+        decimal={decimal}
         isLoading={isLoading}
         onChange={setLpValue}
-        setWarning={setWarning}
+        warning={inputWarning}
         isConnected={isConnected}
         errorDetail={errorDetail}
         coinBalance={lpCoinBalance}
+        setWarning={setInputWarning}
         logo={coinConfig?.lpTokenLogo}
         maturity={coinConfig.maturity}
         name={`LP ${coinConfig?.coinName}`}
@@ -402,6 +410,7 @@ export default function Remove({ coinConfig }: Props) {
           balance={coinBalance}
           loading={isInputLoading}
           price={coinConfig.underlyingPrice}
+          priceImpact={priceImpact}
           name={
             receivingType === "underlying"
               ? coinConfig?.underlyingCoinName || ""
@@ -442,14 +451,14 @@ export default function Remove({ coinConfig }: Props) {
               />
             </div>
           }
-          warningDetail={warningDetail}
+          warningDetail={outputWarning}
         />
       ) : (
         <div className="w-full bg-[#FCFCFC]/[0.03] rounded-2xl">
           <AmountOutput
             balance={coinBalance}
             loading={isInputLoading}
-            warningDetail={warningDetail}
+            warningDetail={outputWarning}
             price={coinConfig.underlyingPrice}
             className="bg-transparent rounded-none"
             name={
@@ -508,7 +517,7 @@ export default function Remove({ coinConfig }: Props) {
       )}
 
       <div className="w-full divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
-        <p className="flex justify-between text-sm pb-2">
+        <p className="flex justify-between text-sm pb-2 hidden">
           <span>Pool APY Change</span>
           <span className="text-white">X% - Y%</span>
         </p>
@@ -527,13 +536,7 @@ export default function Remove({ coinConfig }: Props) {
         disabled={btnDisabled}
       />
 
-      <GuideModal
-        imageUrl={
-          action === "swap"
-            ? "/assets/images/guide/swap&supply.png"
-            : "/assets/images/guide/mint&supply.png"
-        }
-      />
+      {action === "swap" ? <SwapRemoveGuideModal /> : <RedeemRemoveGuideModal />}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import Decimal from "decimal.js"
-import { ContractError } from "../types"
-import type { DebugInfo } from "../types"
-import type { PyPosition } from "../types"
+import { ContractError } from "@/hooks/types"
+import type { DebugInfo, MoveCallInfo } from "@/hooks/types"
+import type { PyPosition } from "@/hooks/types"
 import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
 import { getPriceVoucher } from "@/lib/txHelper/price"
@@ -9,10 +9,13 @@ import { redeemPy, redeemSyCoin } from "@/lib/txHelper"
 import type { CoinConfig } from "@/queries/types/market"
 import { initPyPosition } from "@/lib/txHelper/position"
 import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
+import { burnSCoin, getCoinValue } from "@/lib/txHelper/coin"
+import { bcs } from "@mysten/sui/bcs"
+import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 
 type RedeemResult = {
-  syValue: string
-  syAmount: string
+  outputAmount: string
+  outputValue: string
 }
 
 type DryRunResult<T extends boolean> = T extends true
@@ -31,17 +34,34 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
       ptAmount,
       ytAmount,
       pyPositions,
+      receivingType,
     }: {
       ptAmount: string
       ytAmount: string
       pyPositions?: PyPosition[]
+      receivingType: "underlying" | "sy"
     }): Promise<DryRunResult<T>> => {
       if (!address) {
         throw new Error("Please connect wallet first")
       }
+
       if (!coinConfig) {
         throw new Error("Please select a pool")
       }
+
+      if (
+        receivingType === "underlying" &&
+        (coinConfig?.provider === "Cetus" ||
+          NO_SUPPORT_UNDERLYING_COINS.some(
+            (item) => item.coinType === coinConfig?.coinType
+          ))
+      ) {
+        throw new Error(
+          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
+        )
+      }
+
+      const moveCallInfos: MoveCallInfo[] = []
 
       const tx = new Transaction()
       tx.setSender(address)
@@ -54,22 +74,52 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
 
       const [priceVoucher] = getPriceVoucher(tx, coinConfig)
 
-      const syCoin = redeemPy(
+      const [syCoin, redeemPyMoveCallInfo] = redeemPy(
         tx,
         coinConfig,
         ytAmount,
         ptAmount,
         priceVoucher,
-        pyPosition
+        pyPosition,
+        true
       )
+      moveCallInfos.push(redeemPyMoveCallInfo)
 
       const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
+
+      if (receivingType === "underlying") {
+        const [underlyingCoin, burnMoveCallInfo] = await burnSCoin({
+          tx,
+          address,
+          coinConfig,
+          debug: true,
+          amount: "0",
+          vaultId: "0",
+          slippage: "0",
+          sCoin: yieldToken,
+        })
+        moveCallInfos.push(...burnMoveCallInfo)
+
+        const [, getCoinValueMoveCallInfo] = getCoinValue(
+          tx,
+          underlyingCoin,
+          coinConfig.underlyingCoinType,
+          true
+        )
+        moveCallInfos.push(getCoinValueMoveCallInfo)
+      } else {
+        const [, getCoinValueMoveCallInfo] = getCoinValue(
+          tx,
+          yieldToken,
+          coinConfig.coinType,
+          true
+        )
+        moveCallInfos.push(getCoinValueMoveCallInfo)
+      }
 
       if (created) {
         tx.transferObjects([pyPosition], address)
       }
-
-      tx.transferObjects([yieldToken], address)
 
       const result = await client.devInspectTransactionBlock({
         sender: address,
@@ -79,31 +129,8 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
         }),
       })
 
-      console.log("redeem_py dry run result:", result)
-
-      const moveCallInfo = {
-        target: `${coinConfig.nemoContractId}::yield_factory::redeem_py`,
-        arguments: [
-          { name: "version", value: coinConfig.version },
-          { name: "yt_amount", value: ytAmount },
-          { name: "pt_amount", value: ptAmount },
-          { name: "price_voucher", value: "priceVoucher" },
-          {
-            name: "py_position",
-            value: created ? "pyPosition" : pyPosition,
-          },
-          { name: "py_state", value: coinConfig.pyStateId },
-          {
-            name: "yield_factory_config",
-            value: coinConfig.yieldFactoryConfigId,
-          },
-          { name: "clock", value: "0x6" },
-        ],
-        typeArguments: [coinConfig.syCoinType],
-      }
-
-      const dryRunDebugInfo: DebugInfo = {
-        moveCall: [moveCallInfo],
+      const debugInfo: DebugInfo = {
+        moveCall: moveCallInfos,
         rawResult: {
           error: result?.error,
           results: result?.results,
@@ -111,33 +138,34 @@ export default function useRedeemPYDryRun<T extends boolean = false>(
       }
 
       if (result?.error) {
-        throw new ContractError(result.error, dryRunDebugInfo)
+        throw new ContractError(result.error, debugInfo)
       }
 
-      if (!result?.events?.[2]?.parsedJson) {
-        const message = "Failed to get redeem PY data"
-        dryRunDebugInfo.rawResult = {
-          error: message,
-          results: result?.results,
-        }
-        throw new ContractError(message, dryRunDebugInfo)
+      if (
+        result.results[result.results.length - 1].returnValues[0][1] !== "u64"
+      ) {
+        const message = "useBurnLpDryRun Failed to get output amount"
+        debugInfo.rawResult.error = message
+        throw new ContractError(message, debugInfo)
       }
 
-      const syAmount = result.events[2].parsedJson.amount_out as string
+      const outputAmount = bcs.U64.parse(
+        new Uint8Array(
+          result.results[result.results.length - 1].returnValues[0][0]
+        )
+      )
 
-      const decimal = Number(coinConfig?.decimal) || 0
+      const decimal = Number(coinConfig?.decimal)
 
-      const syValue = new Decimal(syAmount)
-        .div(new Decimal(10).pow(decimal))
-        .toString()
+      const outputValue = new Decimal(outputAmount)
+        .div(10 ** decimal)
+        .toFixed(decimal)
 
-      dryRunDebugInfo.parsedOutput = syAmount
+      debugInfo.parsedOutput = outputValue
 
-      const returnValue = { syAmount, syValue }
+      const returnValue = { outputAmount, outputValue }
 
-      return (
-        debug ? [returnValue, dryRunDebugInfo] : returnValue
-      ) as DryRunResult<T>
+      return (debug ? [returnValue, debugInfo] : returnValue) as DryRunResult<T>
     },
   })
 }

@@ -17,8 +17,8 @@ interface AmountOutputProps {
   className?: string
   warningDetail?: string
   priceImpact?: {
-    value: Decimal;
-    ratio: Decimal;
+    value: Decimal
+    ratio: Decimal
   }
   coinNameComponent?: React.ReactNode
 }
@@ -92,30 +92,21 @@ export const AmountOutput = ({
           <div className="flex flex-col gap-y-1">
             {loading ? (
               <Skeleton className="h-3 w-16 sm:w-20 bg-[rgba(252,252,252,0.10)]" />
-            ) : priceImpact?.value ?
-              (
-                <span
-                  className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)]  truncate"
-
-                >
-                  ${formatDecimalValue(priceImpact?.value, 6)}
-                  <span className="text-[#F80] ml-2">
-                    {`(${formatDecimalValue(priceImpact.ratio, 2)}%)`}
-                  </span>
+            ) : priceImpact?.value ? (
+              <span className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)]  truncate">
+                ${formatDecimalValue(priceImpact?.value, 6)}
+                <span className="text-[#F80] ml-2">
+                  {`(${formatDecimalValue(priceImpact.ratio, 2)}%)`}
                 </span>
-
-              ) : (
-                <span
-                  className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)]  truncate"
-
-                >
-                  {isValidAmount(price) && isValidAmount(amount)
-                    ? formatDecimalValue(new Decimal(price).mul(amount), 6)
-                    : "0"}
-                </span>
-
-
-              )}
+              </span>
+            ) : (
+              <span className="text-[10px] sm:text-xs text-[rgba(252,252,252,0.40)]  truncate">
+                $
+                {isValidAmount(price) && isValidAmount(amount)
+                  ? formatDecimalValue(new Decimal(price).mul(amount), 6)
+                  : "0"}
+              </span>
+            )}
             {warningDetail && (
               <div className="text-xs text-yellow-400 break-words">
                 {warningDetail}

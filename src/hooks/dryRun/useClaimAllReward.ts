@@ -1,43 +1,43 @@
 import Decimal from "decimal.js"
-import { bcs } from "@mysten/sui/bcs"
-import { formatDecimalValue, isValidAmount } from "@/lib/utils"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
 import type { CoinConfig, PortfolioItem } from "@/queries/types/market"
 import { initPyPosition, redeemSyCoin } from "@/lib/txHelper"
 import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
-import { ContractError, LpPosition, type DebugInfo, type PyPosition } from "../types"
+import { LpPosition, type PyPosition } from "../types"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import useCustomSignAndExecuteTransaction from "@/hooks/useCustomSignAndExecuteTransaction"
 import { debugLog } from "@/config"
 import { burnSCoin } from "@/lib/txHelper/coin"
-import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST, UNSUPPORTED_UNDERLYING_COINS } from "@/lib/constants"
-import useCoinData from "../query/useCoinData"
-import useQueryConversionRate from "../query/useQueryConversionRate"
-import { useAddLiquiditySingleSy } from "../actions/useAddLiquiditySingleSy"
+import { CETUS_VAULT_ID_LIST, NEED_MIN_VALUE_LIST, NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 import { MarketStateMap } from "../query/useMultiMarketState"
-type DryRunResult<T extends boolean> = T extends true ? DebugInfo : void
 
 interface ClaimYtRewardParams {
   filteredYTLists: PortfolioItem[]
-  pyPositionsMap?: Record<string, {
-    ptBalance: string;
-    ytBalance: string;
-    pyPositions: PyPosition[];
-  }>
+  pyPositionsMap?: Record<
+    string,
+    {
+      ptBalance: string
+      ytBalance: string
+      pyPositions: PyPosition[]
+    }
+  >
   addLiqudity: boolean
   filteredLPLists: PortfolioItem[]
-  lpPositionsMap: Record<string, {
-    lpBalance: string;
-    lpPositions: LpPosition[];
-  }>
+  lpPositionsMap: Record<
+    string,
+    {
+      lpBalance: string
+      lpPositions: LpPosition[]
+    }
+  >
   ytReward?: Record<string, string>
   marketStates: MarketStateMap
 }
 
 export default function useClaimAllReward<T extends boolean = false>(
   coinConfig?: CoinConfig,
-  debug: T = false as T,
+  debug: T = false as T
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
@@ -45,25 +45,30 @@ export default function useClaimAllReward<T extends boolean = false>(
   const { mutateAsync: signAndExecuteTransaction } =
     useCustomSignAndExecuteTransaction()
 
-
-
-
-  async function claimAll(tx: Transaction, addLiqudity: boolean, params: ClaimYtRewardParams) {
+  async function claimAll(
+    tx: Transaction,
+    addLiqudity: boolean,
+    params: ClaimYtRewardParams
+  ) {
     params.filteredYTLists.map(async (item: PortfolioItem) => {
       const coinConfig = item
       const pyPositions = params.pyPositionsMap?.[item.id]?.pyPositions
       const ytBalance = params.pyPositionsMap?.[item.id]?.ytBalance
       const ytReward = params.ytReward?.[item.id]
 
-      const vaultId = coinConfig?.underlyingProtocol === "Cetus" ? CETUS_VAULT_ID_LIST.find((item) => item.coinType === coinConfig?.coinType,)?.vaultId
-        : ""
+      const vaultId =
+        coinConfig?.underlyingProtocol === "Cetus"
+          ? CETUS_VAULT_ID_LIST.find(
+              (item) => item.coinType === coinConfig?.coinType
+            )?.vaultId
+          : ""
 
-      const minValue = NEED_MIN_VALUE_LIST.find(
-        (item) =>
-          item.provider === coinConfig.provider ||
-          item.coinType === coinConfig.coinType,
-      )?.minValue || 0
-
+      const minValue =
+        NEED_MIN_VALUE_LIST.find(
+          (item) =>
+            item.provider === coinConfig.provider ||
+            item.coinType === coinConfig.coinType
+        )?.minValue || 0
 
       const decimal = Number(coinConfig?.decimal || 0)
 
@@ -96,7 +101,7 @@ export default function useClaimAllReward<T extends boolean = false>(
         let minAddLpValue = new Decimal(0)
 
         minAddLpValue = new Decimal(ytReward).mul(
-          Number(coinConfig?.underlyingPrice),
+          Number(coinConfig?.underlyingPrice)
         )
         const [syCoin] = tx.moveCall({
           ...redeemMoveCall,
@@ -113,7 +118,9 @@ export default function useClaimAllReward<T extends boolean = false>(
           const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
           if (
             new Decimal(ytReward).gt(minValue) &&
-            !UNSUPPORTED_UNDERLYING_COINS.includes(coinConfig?.coinType)
+            !NO_SUPPORT_UNDERLYING_COINS.some(
+              (item) => item.coinType === coinConfig?.coinType
+            )
           ) {
             const underlyingCoin = await burnSCoin({
               tx,
@@ -136,14 +143,10 @@ export default function useClaimAllReward<T extends boolean = false>(
           const addAmount = new Decimal(Number(ytReward))
             .mul(10 ** decimal)
             .toFixed(0)
-
-
         }
-
-
       }
     })
-    params.filteredLPLists.map(item => {
+    params.filteredLPLists.map((item) => {
       const coinConfig = item
       const marketState = params.marketStates[item.marketStateId]
       const lpPositions = params.lpPositionsMap?.[item.id]?.lpPositions
@@ -171,7 +174,6 @@ export default function useClaimAllReward<T extends boolean = false>(
         })
 
         address && tx.transferObjects([coin], address)
-
       })
     })
   }
@@ -197,10 +199,7 @@ export default function useClaimAllReward<T extends boolean = false>(
         transaction: tx,
       })
 
-     
       return digest
-    }
+    },
   })
-
-
 }

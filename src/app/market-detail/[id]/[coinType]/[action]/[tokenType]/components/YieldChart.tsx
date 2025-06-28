@@ -15,7 +15,6 @@ import { CoinConfig, Granularity, TokenType } from "@/queries/types/market"
 
 import Image from "next/image"
 import { useApyHistory } from "@/hooks/useApyHistory"
-import { useParams } from "next/navigation"
 import React from "react"
 import {
   Select,
@@ -25,6 +24,7 @@ import {
   SelectGroup,
   SelectItem,
 } from "@/components/ui/select"
+import Decimal from "decimal.js"
 
 const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
   { label: "1m", granularity: "MINUTELY", seconds: 60 * 60 },
@@ -38,25 +38,24 @@ const METRICS = [
   { label: "Price", value: "price" },
 ] as const
 const tokenTypeMap = {
-  YIELD: 'YT',
-  FIXED: 'PT',
-  POOL: 'LP',
-  TVL: "LP"
+  YIELD: "YT",
+  FIXED: "PT",
+  POOL: "LP",
+  TVL: "LP",
 }
 
-function formatPercent(num?: string | number, digits = 2) {
-  if (num == null) return "—"
-  const n = +num
-  if (Number.isNaN(n)) return "—"
-  return `${(n * 1).toFixed(digits)}%` // *1 兼容字符串科学计数
-}
-
-export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: CoinConfig, h: number, tokenType: TokenType }) {
+export default function YieldChart({
+  coinConfig,
+  h,
+  tokenType,
+}: {
+  coinConfig: CoinConfig
+  h: number
+  tokenType: TokenType
+}) {
   const [activeTab, setActiveTab] = useState(0)
   const [activeMetric, setActiveMetric] =
     useState<(typeof METRICS)[number]["value"]>("apy")
-
-
 
   // const [open, setOpen] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
@@ -66,23 +65,29 @@ export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: C
         case "FIXED":
           return {
             label: "FIXED APY",
-            value: formatPercent(coinConfig.fixedApy),
-            delta: formatPercent(coinConfig.fixedApyRateChange),
-            positive: Number(coinConfig.fixedApyRateChange) >= 0,
+            value: new Decimal(coinConfig.fixedApy).mul(100).toFixed(2),
+            delta: new Decimal(coinConfig.fixedApyRateChange)
+              .mul(100)
+              .toFixed(2),
+            positive: new Decimal(coinConfig.fixedApyRateChange).gt(0),
           }
         case "YIELD":
           return {
             label: "YIELD APY",
-            value: formatPercent(coinConfig.yieldApy),
-            delta: formatPercent(coinConfig.yieldApyRateChange),
-            positive: Number(coinConfig.yieldApyRateChange) >= 0,
+            value: new Decimal(coinConfig.yieldApy).mul(100).toFixed(2),
+            delta: new Decimal(coinConfig.yieldApyRateChange)
+              .mul(100)
+              .toFixed(2),
+            positive: new Decimal(coinConfig.yieldApyRateChange).gt(0),
           }
         case "POOL":
           return {
             label: "POOL APY",
-            value: formatPercent(coinConfig.poolApy),
-            delta: formatPercent(coinConfig.poolApyRateChange),
-            positive: Number(coinConfig.poolApyRateChange) >= 0,
+            value: new Decimal(coinConfig.poolApy).mul(100).toFixed(2),
+            delta: new Decimal(coinConfig.poolApyRateChange)
+              .mul(100)
+              .toFixed(2),
+            positive: new Decimal(coinConfig.poolApyRateChange).gt(0),
           }
         default:
           return { label: "", value: "—", delta: "", positive: true }
@@ -92,23 +97,35 @@ export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: C
         case "FIXED":
           return {
             label: "FIXED Price",
-            value: coinConfig.coinPrice ? Number(coinConfig.coinPrice).toFixed(4) : "—",
-            delta: formatPercent(coinConfig.ptPriceRateChange),
-            positive: true,
+            value: coinConfig.ptPrice
+              ? Number(coinConfig.ptPrice).toFixed(4)
+              : "—",
+            delta: new Decimal(coinConfig.ptPriceRateChange)
+              .mul(100)
+              .toNumber(),
+            positive: new Decimal(coinConfig.ptPriceRateChange).gt(0),
           }
         case "YIELD":
           return {
             label: "YIELD Price",
-            value: coinConfig.ytPrice ? Number(coinConfig.ytPrice).toFixed(4) : "—",
-            delta: formatPercent(coinConfig.ytPriceRateChange),
-            positive: true,
+            value: coinConfig.ytPrice
+              ? Number(coinConfig.ytPrice).toFixed(4)
+              : "—",
+            delta: new Decimal(coinConfig.ytPriceRateChange)
+              .mul(100)
+              .toNumber(),
+            positive: new Decimal(coinConfig.ytPriceRateChange).gt(0),
           }
         case "POOL":
           return {
             label: "POOL Price",
-            value: coinConfig.lpPrice ? Number(coinConfig.lpPrice).toFixed(4) : "—",
-            delta: formatPercent(coinConfig.lpPriceRateChange),
-            positive: true,
+            value: coinConfig.lpPrice
+              ? Number(coinConfig.lpPrice).toFixed(4)
+              : "—",
+            delta: new Decimal(coinConfig.lpPriceRateChange)
+              .mul(100)
+              .toNumber(),
+            positive: new Decimal(coinConfig.lpPriceRateChange).gt(0),
           }
         default:
           return { label: "", value: "—", delta: "", positive: true }
@@ -130,9 +147,10 @@ export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: C
 
     const arr = data.data.map((d) => ({
       price: d.price,
-      apy: +d.apy,
+      apy: +d.apy * 100,
       ts: dayjs(d.timeLabel, "YYYY-MM-DD HH:mm:ss").valueOf(),
     }))
+    
     const apys = arr.map((v) => v.apy)
     const prices = arr.map((v) => v.price)
     const values = activeMetric === "apy" ? apys : prices
@@ -198,22 +216,26 @@ export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: C
               {/* <span className="text-xs text-white/40 font-medium">
                   {mainMetric.label}
                 </span> */}
-              <p className="text-[20px] font-[500]">{mainMetric.value}</p>
+              <p className="text-[20px] font-[500]">
+                {mainMetric.value}
+                {activeMetric === "apy" ? "%" : ""}
+              </p>
               {!!mainMetric.delta && (
                 <span
                   className={`
                   text-xs py-1 px-1.5 rounded-lg font-[600] flex items-center gap-1
-                  ${mainMetric.positive
+                  ${
+                    mainMetric.positive
                       ? "bg-[#4CC8771A] text-[#4CC877]"
                       : "bg-[#FF2E541A] text-[#FF2E54]"
-                    }
+                  }
                 `}
                 >
-                  {mainMetric.positive ? "+" : ""}
-                  {mainMetric.delta}
+                  {mainMetric.delta}%
                   <Image
-                    src={`/arrow-${mainMetric.positive ? "up" : "down"
-                      }-right.svg`}
+                    src={`/arrow-${
+                      mainMetric.positive ? "up" : "down"
+                    }-right.svg`}
                     alt={""}
                     width={16}
                     height={16}
@@ -262,6 +284,15 @@ export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: C
             axisLine={false}
             tickLine={false}
             tick={{ fill: "rgba(252,252,252,0.4)", fontSize: 10 }}
+            tickFormatter={(value) => {
+              if (activeMetric === "apy") {
+                // APY数据已经在数据处理阶段放大100倍，直接添加百分号
+                return `${value.toFixed(1)}%`
+              } else {
+                // 价格数据
+                return value.toFixed(2)
+              }
+            }}
           />
           <Tooltip
             content={({ active, payload, label }) => {
@@ -293,9 +324,11 @@ export default function YieldChart({ coinConfig, h, tokenType }: { coinConfig: C
                       {activeMetric === "apy" ? "Yield APY" : "Price"}
                     </span>
                     <span className="text-white text-sm">
-                      {activeMetric === "apy"
-                        ? formatPercent(Number(value), 2)
-                        : Number(value).toFixed(4)}
+                      {value
+                        ? activeMetric === "apy"
+                          ? new Decimal(value).toFixed(2) + "%"
+                          : new Decimal(value).toFixed(4)
+                        : "—"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">

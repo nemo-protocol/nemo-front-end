@@ -2,27 +2,30 @@ import { useMutation } from "@tanstack/react-query"
 import { Transaction } from "@mysten/sui/transactions"
 import { useSuiClient, useWallet } from "@nemoprotocol/wallet-kit"
 import type { CoinConfig } from "@/queries/types/market"
-import type { DebugInfo, MoveCallInfo, PyPosition } from "../types"
+import type { DebugInfo, LpPosition, MoveCallInfo, PyPosition } from "../types"
 import { ContractError } from "../types"
-import useFetchLpPosition from "../useFetchLpPosition"
-import useFetchPyPosition from "../useFetchPyPosition"
-import { initPyPosition, mergeLpPositions, redeemSyCoin } from "@/lib/txHelper"
+import {
+  mergeLpPositions,
+  redeemSyCoin,
+  swapExactPtForSy,
+} from "@/lib/txHelper"
+import { burnLp } from "@/lib/txHelper/lp"
 import Decimal from "decimal.js"
 import { bcs } from "@mysten/sui/bcs"
 import {
   NEED_MIN_VALUE_LIST,
-  UNSUPPORTED_UNDERLYING_COINS,
+  NO_SUPPORT_UNDERLYING_COINS,
 } from "@/lib/constants"
 import { debugLog } from "@/config"
 import { burnSCoin, getCoinValue } from "@/lib/txHelper/coin"
 import { formatDecimalValue } from "@/lib/utils"
-import useBurnSCoinDryRun from "./useBurnSCoinDryRun"
+import { initPyPosition } from "@/lib/txHelper/position"
+import useBurnLpForSyCoinDryRun from "./syCoinValue/useBurnLpForSyCoinDryRun"
+import { getPriceVoucher } from "@/lib/txHelper/price"
 
 type BurnLpResult = {
   ptAmount: string
-  syAmount: string
   ptValue: string
-  syValue: string
   outputValue: string
   outputAmount: string
 }
@@ -31,38 +34,53 @@ interface BurnLpParams {
   lpAmount: string
   slippage: string
   vaultId?: string
+  isSwapPt?: boolean
+  minSyOut?: string
+  pyPositions: PyPosition[]
+  marketPositions: LpPosition[]
   receivingType?: "underlying" | "sy"
 }
 
 export default function useBurnLpDryRun(
-  outerCoinConfig?: CoinConfig,
-  debug: boolean = false,
+  coinConfig?: CoinConfig,
+  debug: boolean = false
 ) {
   const client = useSuiClient()
   const { address } = useWallet()
-  const { mutateAsync: fetchLpPositionAsync } =
-    useFetchLpPosition(outerCoinConfig)
-  const { mutateAsync: fetchPyPositionAsync } =
-    useFetchPyPosition(outerCoinConfig)
 
-  const { mutateAsync: burnSCoinDryRun } = useBurnSCoinDryRun(outerCoinConfig)
+  const { mutateAsync: burnLpForSyCoinDryRun } =
+    useBurnLpForSyCoinDryRun(coinConfig)
 
   return useMutation({
-    mutationFn: async (
-      { lpAmount, receivingType, slippage, vaultId }: BurnLpParams,
-      innerConfig?: CoinConfig,
-    ): Promise<[BurnLpResult] | [BurnLpResult, DebugInfo]> => {
+    mutationFn: async ({
+      vaultId,
+      lpAmount,
+      slippage,
+      pyPositions,
+      receivingType,
+      minSyOut = "0",
+      marketPositions,
+      isSwapPt = false,
+    }: BurnLpParams): Promise<[BurnLpResult] | [BurnLpResult, DebugInfo]> => {
       if (!address) {
         throw new Error("Please connect wallet first")
       }
 
-      const coinConfig = innerConfig || outerCoinConfig
       if (!coinConfig) {
         throw new Error("Please select a pool")
       }
 
-      const marketPositions = await fetchLpPositionAsync()
-      const [pyPositions] = (await fetchPyPositionAsync()) as [PyPosition[]]
+      if (
+        receivingType === "underlying" &&
+        (coinConfig?.provider === "Cetus" ||
+          NO_SUPPORT_UNDERLYING_COINS.some(
+            (item) => item.coinType === coinConfig?.coinType
+          ))
+      ) {
+        throw new Error(
+          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
+        )
+      }
 
       if (!marketPositions?.length) {
         throw new Error("No LP market position found")
@@ -71,13 +89,11 @@ export default function useBurnLpDryRun(
       const tx = new Transaction()
       tx.setSender(address)
 
-      // Handle py position creation
-      let pyPosition
-      if (!pyPositions?.length) {
-        pyPosition = initPyPosition(tx, coinConfig)
-      } else {
-        pyPosition = tx.object(pyPositions[0].id)
-      }
+      const { pyPosition, created } = initPyPosition({
+        tx,
+        coinConfig,
+        pyPositions,
+      })
 
       const decimal = Number(coinConfig?.decimal)
 
@@ -86,73 +102,87 @@ export default function useBurnLpDryRun(
         tx,
         coinConfig,
         marketPositions,
-        lpAmount,
+        lpAmount
       )
 
       const moveCallInfos: MoveCallInfo[] = []
 
-      const burnLpmoveCallInfo = {
-        target: `${coinConfig.nemoContractId}::market::burn_lp`,
-        arguments: [
-          { name: "version", value: coinConfig.version },
-          { name: "lp_amount", value: lpAmount },
-          {
-            name: "py_position",
-            value: pyPosition,
-          },
-          { name: "market_state", value: coinConfig.marketStateId },
-          { name: "market_position", value: marketPositions[0].id.id },
-          { name: "clock", value: "0x6" },
-        ],
-        typeArguments: [coinConfig.syCoinType],
-      }
-
-      moveCallInfos.push(burnLpmoveCallInfo)
-
-      const syCoin = tx.moveCall({
-        target: burnLpmoveCallInfo.target,
-        arguments: [
-          tx.object(coinConfig.version),
-          tx.pure.u64(lpAmount),
-          pyPosition,
-          tx.object(coinConfig.marketStateId),
-          mergedPosition,
-          tx.object("0x6"),
-        ],
-        typeArguments: burnLpmoveCallInfo.typeArguments,
+      const [syCoin, burnLpMoveCallInfo] = burnLp({
+        tx,
+        lpAmount,
+        coinConfig,
+        pyPosition,
+        returnDebugInfo: true,
+        marketPosition: mergedPosition,
       })
 
-      const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
+      moveCallInfos.push(burnLpMoveCallInfo)
 
-      if (
-        coinConfig.coinType ===
-          "0xb1b0650a8862e30e3f604fd6c5838bc25464b8d3d827fbd58af7cb9685b832bf::wwal::WWAL" &&
-        receivingType === "underlying"
-      ) {
-        throw new Error("Underlying protocol error, try to withdraw to wWAL.")
-      }
+      const {
+        syValue: _syValue,
+        syAmount: _syAmount,
+        ptAmount: _ptAmount,
+      } = await burnLpForSyCoinDryRun({
+        lpAmount,
+        pyPositions,
+        marketPositions,
+      })
 
-      if (coinConfig.provider === "Cetus" && receivingType === "underlying") {
-        throw new Error(
-          `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`,
+      if (isSwapPt) {
+        const [priceVoucher, priceVoucherMoveCall] = getPriceVoucher(
+          tx,
+          coinConfig
         )
+        moveCallInfos.push(priceVoucherMoveCall)
+
+        const [syCoinFromSwapPt, swapExactPtForSyMoveCall] = swapExactPtForSy(
+          tx,
+          coinConfig,
+          _ptAmount,
+          pyPosition,
+          priceVoucher,
+          minSyOut,
+          true
+        )
+        moveCallInfos.push(swapExactPtForSyMoveCall)
+
+        tx.mergeCoins(syCoin, [syCoinFromSwapPt])
+        moveCallInfos.push({
+          target: `0x2::coin::merge_coins`,
+          typeArguments: [],
+          arguments: [
+            { name: "destinationCoin", value: syCoin },
+            { name: "sourceCoins", value: syCoinFromSwapPt },
+          ],
+        })
       }
+
+      const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
+        tx,
+        coinConfig,
+        syCoin,
+        true
+      )
+      moveCallInfos.push(redeemSyCoinMoveCall)
 
       const minValue =
         NEED_MIN_VALUE_LIST.find(
           (item) =>
             item.provider === coinConfig.provider ||
-            item.coinType === coinConfig?.coinType,
+            item.coinType === coinConfig?.coinType
         )?.minValue || 0
 
       // Use coin::value to get the output amount based on receivingType
-      if (
-        receivingType === "underlying" &&
-        !UNSUPPORTED_UNDERLYING_COINS.includes(coinConfig?.coinType)
-      ) {
-        const { coinValue, coinAmount: amount } = await burnSCoinDryRun({
-          lpAmount,
-        })
+      if (receivingType === "underlying") {
+        const { syValue: coinValue, syAmount: amount } = isSwapPt
+          ? await burnLpForSyCoinDryRun({
+              isSwapPt,
+              lpAmount,
+              pyPositions,
+              marketPositions,
+              ptAmount: _ptAmount,
+            })
+          : { syValue: _syValue, syAmount: _syAmount }
 
         if (new Decimal(coinValue).lt(minValue)) {
           const lpValue = new Decimal(lpAmount).div(Decimal.pow(10, decimal))
@@ -160,9 +190,11 @@ export default function useBurnLpDryRun(
           throw new Error(
             `Please at least enter ${formatDecimalValue(
               new Decimal(lpValue).mul(minValue).div(coinValue),
-              decimal,
-            )} LP ${coinConfig.coinName} or try to withdraw to ${coinConfig.coinName}
-            .`,
+              decimal
+            )} LP ${coinConfig.coinName} or try to withdraw to ${
+              coinConfig.coinName
+            }
+            .`
           )
         }
 
@@ -182,7 +214,7 @@ export default function useBurnLpDryRun(
           tx,
           underlyingCoin,
           coinConfig.underlyingCoinType,
-          true,
+          true
         )
         moveCallInfos.push(getCoinValueMoveCallInfo)
       } else {
@@ -190,9 +222,13 @@ export default function useBurnLpDryRun(
           tx,
           yieldToken,
           coinConfig.coinType,
-          true,
+          true
         )
         moveCallInfos.push(getCoinValueMoveCallInfo)
+      }
+
+      if (created) {
+        tx.transferObjects([pyPosition], address)
       }
 
       const result = await client.devInspectTransactionBlock({
@@ -231,36 +267,29 @@ export default function useBurnLpDryRun(
 
       const outputAmount = bcs.U64.parse(
         new Uint8Array(
-          result.results[result.results.length - 1].returnValues[0][0],
-        ),
+          result.results[result.results.length - 1].returnValues[0][0]
+        )
       )
 
       const outputValue = new Decimal(outputAmount)
         .div(10 ** decimal)
         .toFixed(decimal)
 
-      const syAmount = result.events[0].parsedJson.sy_amount as string
-      const syValue = new Decimal(syAmount).div(10 ** decimal).toFixed(decimal)
-
       const ptAmount = result.events[0].parsedJson.pt_amount as string
       const ptValue = new Decimal(ptAmount).div(10 ** decimal).toFixed(decimal)
 
       debugInfo.parsedOutput = JSON.stringify({
-        syAmount,
-        ptAmount,
-        outputAmount,
-        outputValue,
-        syValue,
         ptValue,
+        ptAmount,
+        outputValue,
+        outputAmount,
       })
 
       const returnValue = {
-        syAmount,
-        ptAmount,
-        outputAmount,
-        outputValue,
-        syValue,
         ptValue,
+        ptAmount,
+        outputValue,
+        outputAmount,
       }
 
       return debug ? [returnValue, debugInfo] : [returnValue]

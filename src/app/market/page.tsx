@@ -139,7 +139,7 @@ export default function MarketPage() {
     // 计算每组TVL总和
     const groupArr = Object.entries(map).map(([groupName, arr]) => ({
       groupName,
-      arr,
+      arr: arr.sort((a, b) => Number(b.tvl) - Number(a.tvl)), // 分组内按TVL降序排序
       coinLogo: arr[0].groupLogo,
       coinName: arr[0].groupName,
       totalTvl: arr.reduce((sum, c) => sum + Number(c.tvl), 0),
@@ -160,11 +160,11 @@ export default function MarketPage() {
 
   // 过滤列表数据
   const filteredList = useMemo(() => {
-    if (!searchQuery) return coinList
-    const query = searchQuery.toLowerCase()
-    return coinList.filter((item) =>
-      item.coinName.toLowerCase().includes(query)
+    const list = !searchQuery ? coinList : coinList.filter((item) =>
+      item.coinName.toLowerCase().includes(searchQuery.toLowerCase())
     )
+    // 按TVL从大到小排序
+    return list.sort((a, b) => Number(b.tvl) - Number(a.tvl))
   }, [coinList, searchQuery])
 
   const handleTokenClick = (

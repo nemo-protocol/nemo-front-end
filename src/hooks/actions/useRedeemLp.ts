@@ -1,6 +1,5 @@
 import Decimal from "decimal.js"
 import { CoinData } from "@/types"
-import { useCallback } from "react"
 import { burnSCoin } from "@/lib/txHelper/coin"
 import useClaimLpReward from "./useClaimLpReward"
 import { useMutation } from "@tanstack/react-query"
@@ -10,50 +9,59 @@ import { claimYtInterest } from "@/lib/txHelper/yt"
 import { Transaction } from "@mysten/sui/transactions"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { initPyPosition } from "@/lib/txHelper/position"
-import useBurnLpDryRun from "@/hooks/dryRun/useBurnLpDryRun"
-import useBurnSCoinDryRun from "../dryRun/useBurnSCoinDryRun"
+import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 import useRedeemLpDryRun from "@/hooks/dryRun/useRedeemLpDryRun"
-import { LpPosition, PyPosition, MarketState } from "@/hooks/types"
+import useBurnLpForSyCoinDryRun from "../dryRun/syCoinValue/useBurnLpForSyCoinDryRun"
+import {
+  LpPosition,
+  PyPosition,
+  MarketState,
+  MoveCallInfo,
+} from "@/hooks/types"
 import useClaimYtInterest from "@/hooks/dryRun/yt/useClaimYtInterest"
 import {
   burnLp,
   redeemPy,
   redeemSyCoin,
   mergeLpPositions,
+  swapExactPtForSy,
 } from "@/lib/txHelper"
-import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 
 interface RedeemLpParams {
   lpAmount: string
   slippage: string
   vaultId?: string
+  minSyOut?: string
   ytBalance: string
+  ptCoins?: CoinData[]
   coinConfig: CoinConfig
+  action: "swap" | "redeem"
   lpPositions: LpPosition[]
   pyPositions: PyPosition[]
-  receivingType?: "underlying" | "sy"
-  txParam?: Transaction | null
-  ptCoins?: CoinData[]
   minValue?: string | number
+  txParam?: Transaction | null
+  isSwapPt?: boolean
+  receivingType?: "underlying" | "sy"
 }
 
 export default function useRedeemLp(
   coinConfig?: CoinConfig,
-  marketState?: MarketState,
+  marketState?: MarketState
 ) {
   const { signAndExecuteTransaction, address } = useWallet()
-  const { mutateAsync: burnLpDryRun } = useBurnLpDryRun(coinConfig)
-  const { mutateAsync: burnSCoinDryRun } = useBurnSCoinDryRun(coinConfig)
   const { mutateAsync: claimLpRewardMutation } = useClaimLpReward(coinConfig)
   const { mutateAsync: claimYtInterestMutation } =
     useClaimYtInterest(coinConfig)
+  const { mutateAsync: burnLpForSyCoinDryRun } =
+    useBurnLpForSyCoinDryRun(coinConfig)
   const { mutateAsync: redeemLpDryRun } = useRedeemLpDryRun(
     coinConfig,
-    marketState,
+    marketState
   )
 
-  const redeemLp = useCallback(
-    async ({
+  return useMutation({
+    mutationFn: async ({
+      action,
       vaultId,
       lpAmount,
       slippage,
@@ -63,6 +71,7 @@ export default function useRedeemLp(
       pyPositions,
       minValue = 0,
       txParam = null,
+      minSyOut = "0",
       receivingType = "underlying",
     }: RedeemLpParams) => {
       if (
@@ -74,9 +83,20 @@ export default function useRedeemLp(
         throw new Error("Invalid parameters for redeeming LP")
       }
 
+      if (
+        receivingType === "underlying" &&
+        NO_SUPPORT_UNDERLYING_COINS.some(
+          (item) => item.coinType === coinConfig.coinType
+        )
+      ) {
+        throw new Error("Underlying protocol error, try to withdraw to sy")
+      }
+
       if (!marketState) {
         throw new Error("Market state is not available")
       }
+
+      const moveCalls: MoveCallInfo[] = []
 
       const tx = txParam ? txParam : new Transaction()
 
@@ -102,7 +122,7 @@ export default function useRedeemLp(
         tx,
         coinConfig,
         lpPositions,
-        lpAmount,
+        lpAmount
       )
 
       if (new Decimal(ytBalance).gt(0)) {
@@ -122,11 +142,12 @@ export default function useRedeemLp(
           pyPositions,
         })
 
+        // todo: merge coin
         if (
           receivingType === "underlying" &&
           new Decimal(ytRewardValue).gt(minValue) &&
           !NO_SUPPORT_UNDERLYING_COINS.some(
-            (item) => item.coinType === coinConfig.coinType,
+            (item) => item.coinType === coinConfig.coinType
           )
         ) {
           const underlyingCoin = await burnSCoin({
@@ -144,48 +165,22 @@ export default function useRedeemLp(
         }
       }
 
-      const [{ ptAmount }] = await burnLpDryRun({
-        vaultId,
-        lpAmount,
-        slippage,
-        receivingType,
-      })
-
-      const syCoinFromLp = burnLp(
+      const syCoin = burnLp(
         tx,
         coinConfig,
         lpAmount,
         pyPosition,
-        mergedPositionId,
+        mergedPositionId
       )
 
-      const yieldTokenFromLp = redeemSyCoin(tx, coinConfig, syCoinFromLp)
+      const { ptAmount, syAmount, syValue } = await burnLpForSyCoinDryRun({
+        lpAmount,
+        pyPositions,
+        marketPositions: lpPositions,
+      })
 
-      const { coinValue: syCoinValue, coinAmount: syCoinAmount } =
-        await burnSCoinDryRun({
-          lpAmount,
-        })
-      // Add conditional logic for receivingType
-      if (
-        receivingType === "underlying" &&
-        new Decimal(syCoinValue).gt(minValue) &&
-        !NO_SUPPORT_UNDERLYING_COINS.some(
-          (item) => item.coinType === coinConfig.coinType,
-        )
-      ) {
-        const underlyingCoin = await burnSCoin({
-          tx,
-          address,
-          vaultId,
-          slippage,
-          coinConfig,
-          sCoin: yieldTokenFromLp,
-          amount: syCoinAmount,
-        })
-        tx.transferObjects([underlyingCoin], address)
-      } else {
-        tx.transferObjects([yieldTokenFromLp], address)
-      }
+      let syCoinValue = syValue
+      let syCoinAmount = syAmount
 
       if (new Decimal(coinConfig?.maturity).lt(Date.now())) {
         const [priceVoucherForOPY] = getPriceVoucher(tx, coinConfig)
@@ -196,7 +191,7 @@ export default function useRedeemLp(
           "0",
           ptAmount,
           priceVoucherForOPY,
-          pyPosition,
+          pyPosition
         )
 
         const yieldTokenFromPT = redeemSyCoin(tx, coinConfig, syCoinFromPT)
@@ -219,7 +214,7 @@ export default function useRedeemLp(
           receivingType === "underlying" &&
           new Decimal(syCoinFromPTValue).gt(minValue) &&
           !NO_SUPPORT_UNDERLYING_COINS.some(
-            (item) => item.coinType === coinConfig.coinType,
+            (item) => item.coinType === coinConfig.coinType
           )
         ) {
           const underlyingCoin = await burnSCoin({
@@ -235,12 +230,67 @@ export default function useRedeemLp(
         } else {
           tx.transferObjects([yieldTokenFromPT], address)
         }
+      } else if (action === "swap") {
+        const [priceVoucherForSwapSy, priceVoucherForSwapSyMoveCall] =
+          getPriceVoucher(tx, coinConfig, "useRedeemLp swapExactPtForSy", true)
+        moveCalls.push(priceVoucherForSwapSyMoveCall)
+
+        const [syCoinFromSwapPt, swapExactPtForSyMoveCall] = swapExactPtForSy(
+          tx,
+          coinConfig,
+          ptAmount,
+          pyPosition,
+          priceVoucherForSwapSy,
+          minSyOut,
+          true
+        )
+        moveCalls.push(swapExactPtForSyMoveCall)
+
+        tx.mergeCoins(syCoin, [syCoinFromSwapPt])
+
+        const { syValue, syAmount } = await burnLpForSyCoinDryRun({
+          lpAmount,
+          ptAmount,
+          pyPositions,
+          isSwapPt: true,
+          marketPositions: lpPositions,
+        })
+
+        syCoinValue = syValue
+        syCoinAmount = syAmount
+      }
+
+      const [yieldToken, redeemSyCoinMoveCall] = redeemSyCoin(
+        tx,
+        coinConfig,
+        syCoin,
+        true
+      )
+      moveCalls.push(redeemSyCoinMoveCall)
+
+      // Add conditional logic for receivingType
+      if (
+        receivingType === "underlying" &&
+        new Decimal(syCoinValue).gt(minValue)
+      ) {
+        const underlyingCoin = await burnSCoin({
+          tx,
+          address,
+          vaultId,
+          slippage,
+          coinConfig,
+          sCoin: yieldToken,
+          amount: syCoinAmount,
+        })
+        tx.transferObjects([underlyingCoin], address)
+      } else {
+        tx.transferObjects([yieldToken], address)
       }
 
       if (created) {
         tx.transferObjects([pyPosition], address)
       }
-      
+
       if (!txParam) {
         const { digest } = await signAndExecuteTransaction({
           transaction: tx,
@@ -248,19 +298,5 @@ export default function useRedeemLp(
         return { digest }
       } else return { digest: null }
     },
-    [
-      address,
-      marketState,
-      burnLpDryRun,
-      redeemLpDryRun,
-      burnSCoinDryRun,
-      claimLpRewardMutation,
-      claimYtInterestMutation,
-      signAndExecuteTransaction,
-    ],
-  )
-
-  return useMutation({
-    mutationFn: redeemLp,
   })
 }

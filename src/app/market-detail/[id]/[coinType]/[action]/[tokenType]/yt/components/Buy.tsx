@@ -41,7 +41,7 @@ import { mintSCoin } from "@/lib/txHelper/coin"
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { debugLog } from "@/config"
 import Calculator from "../../components/Calculator"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 import useTradeRatio from "@/hooks/actions/useTradeRatio"
 
 interface Props {
@@ -618,7 +618,7 @@ export default function Buy({ coinConfig }: Props) {
       />
 
       <div className="text-sm text-slate-400 flex flex-col gap-2">
-        <div className="flex justify-between">
+        <div className="flex justify-between hidden">
           <span className="text-light-gray/40">Yield APY Change</span>
           <span className="text-white">
             {ptYtData?.ytApy
@@ -626,7 +626,7 @@ export default function Buy({ coinConfig }: Props) {
               : "--"}
           </span>
         </div>
-        <div className="border-b border-light-gray/10"></div>
+        <div className="border-b border-light-gray/10 hidden"></div>
         <div className="flex justify-between">
           <span className="text-light-gray/40">Price</span>
           <span className="text-white">
@@ -674,7 +674,7 @@ export default function Buy({ coinConfig }: Props) {
           Calculate
         </div>
       </div>
-      <GuideModal imageUrl="/assets/images/guide/yt.png" />
+      <GuideModal />
     </div>
   )
 }

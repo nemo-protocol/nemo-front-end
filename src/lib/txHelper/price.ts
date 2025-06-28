@@ -19,14 +19,17 @@ export const getPriceVoucher = <T extends boolean = true>(
   tx: Transaction,
   coinConfig: BaseCoinInfo,
   caller: string = "default",
-  returnDebugInfo: T = true as T,
+  returnDebugInfo: T = true as T
 ): T extends true
   ? [TransactionArgument, MoveCallInfo]
   : TransactionArgument => {
   let moveCall: MoveCallInfo
-  if (coinConfig.provider === "SpringSui" ||coinConfig.provider === "Liquid Agents") {
+  if (
+    coinConfig.provider === "SpringSui" ||
+    coinConfig.provider === "Liquid Agents"
+  ) {
     const lstInfo = SPRING_SUI_STAKING_INFO_LIST.find(
-      (item) => item.coinType === coinConfig.coinType,
+      (item) => item.coinType === coinConfig.coinType
     )?.value
 
     if (!lstInfo) {
@@ -63,7 +66,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       : TransactionArgument
   } else if (coinConfig.provider === "Winter") {
     const blizzardStaking = Winter_Blizzard_Staking_List.find(
-      (item) => item.coinType === coinConfig.coinType,
+      (item) => item.coinType === coinConfig.coinType
     )?.value
 
     if (!blizzardStaking) {
@@ -95,7 +98,7 @@ export const getPriceVoucher = <T extends boolean = true>(
     if (!returnDebugInfo) {
       debugLog(
         `[${caller}] get_price_voucher_from_blizzard move call:`,
-        moveCall,
+        moveCall
       )
     }
     const [priceVoucher] = tx.moveCall({
@@ -182,7 +185,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_cetus_vault move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -219,7 +222,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_ssbuck move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -321,7 +324,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_spring move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -355,7 +358,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_spring move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -392,7 +395,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_spring move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -447,7 +450,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_cetus_vault move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -502,7 +505,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_cetus_vault move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({
@@ -538,7 +541,7 @@ export const getPriceVoucher = <T extends boolean = true>(
       if (!returnDebugInfo) {
         debugLog(
           `[${caller}] get_price_voucher_from_x_oracle move call:`,
-          moveCall,
+          moveCall
         )
       }
       const [priceVoucher] = tx.moveCall({

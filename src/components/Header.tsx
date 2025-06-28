@@ -1,7 +1,7 @@
 "use client"
 import { cn } from "@/lib/utils"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import copy from "clipboard-copy"
 import { IS_DEV } from "@/config"
 import { motion } from "framer-motion"
@@ -20,35 +20,39 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 import RpcSelectorMenu from "./RpcSelectorMenu"
+import { useJwtStore } from "@/stores/jwt"
 const MENU: {
   label: string
   href: string
   icon?: string
   liCls?: string
 }[] = [
-    { label: "Markets", href: "/market", icon: "/header/markets.svg" },
-    { label: "My Portfolio", href: "/portfolio", icon: "/header/portfolio.svg" },
-    // { label: "Swap", href: "/swap", icon: "/header/swap.svg" },
-    // { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
-    {
-      label: "Leaderboard",
-      href: "/leaderboard",
-      icon: "/header/leaderboard.svg",
-    },
-    {
-      label: "Vaults",
-      href: "/vaults",
-      icon: "/header/vaults.svg",
-    },
-    // { label: "Airdrop", href: "/airdrop", icon: "/header/airdrop.svg" },
-  ]
+  { label: "Markets", href: "/market", icon: "/header/markets.svg" },
+  { label: "My Portfolio", href: "/portfolio", icon: "/header/portfolio.svg" },
+  { label: "Points", href: "/points", icon: "/header/star.svg" },
+  // { label: "Swap", href: "/swap", icon: "/header/swap.svg" },
+  { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
+  {
+    label: "Leaderboard",
+    href: "/leaderboard",
+    icon: "/header/leaderboard.svg",
+  },
+  // {
+  //   label: "Vaults",
+  //   href: "/vaults",
+  //   icon: "/header/vaults.svg",
+  // },
+  // { label: "Airdrop", href: "/airdrop", icon: "/header/airdrop.svg" },
+]
 
 export default function Header({ className }: { className?: string }) {
   const toast = useToast()
   const location = usePathname()
-  const { account: currentAccount, disconnect } = useWallet()
+  const { address, disconnect, account: currentAccount } = useWallet()
   const [open, setOpen] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const { setActiveUser } = useJwtStore()
+
   const copyToClipboard = async (text: string) => {
     try {
       await copy(text)
@@ -57,6 +61,13 @@ export default function Header({ className }: { className?: string }) {
       toast.error("Failed to copy address")
     }
   }
+
+  useEffect(() => {
+    // 当地址改变时，设置活跃用户
+    if (address) {
+      setActiveUser(address)
+    }
+  }, [address, setActiveUser])
 
   return (
     <header className={cn("h-24.5 shrink-0", className)}>
@@ -86,10 +97,11 @@ export default function Header({ className }: { className?: string }) {
                     className={`
                 flex items-center gap-x-2 px-3 py-2 rounded-full
                 transition-colors duration-200
-                ${active
-                        ? "bg-gradient-to-r from-white/10 to-white/5 text-white"
-                        : "text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5"
-                      }
+                ${
+                  active
+                    ? "bg-gradient-to-r from-white/10 to-white/5 text-white"
+                    : "text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5"
+                }
               `}
                   >
                     {icon && (
@@ -116,8 +128,10 @@ export default function Header({ className }: { className?: string }) {
             ].join(" ")}
           ></span>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex hover:text-white text-white/60 transition-colors rounded-full
-            duration-200 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 p-2 items-center gap-x-1 border-none outline-none">
+            <DropdownMenuTrigger
+              className="flex hover:text-white text-white/60 transition-colors rounded-full
+            duration-200 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 p-2 items-center gap-x-1 border-none outline-none"
+            >
               <Settings className="size-4.5 " />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur animate-fade-in">
@@ -126,8 +140,10 @@ export default function Header({ className }: { className?: string }) {
           </DropdownMenu>
           {location === "/swap" ? null : currentAccount?.address ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex text-white/60 hover:text-white  text-[14px] font-[500] transition-colors duration-200 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 
-              items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full  px-3 py-2">
+              <DropdownMenuTrigger
+                className="flex text-white/60 hover:text-white  text-[14px] font-[500] transition-colors duration-200 hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 
+              items-center gap-x-2 border-none outline-none bg-light-gray/[0.03] rounded-full  px-3 py-2"
+              >
                 {currentAccount?.address ? (
                   <div className="size-4 bg-[#F80] rounded-full"></div>
                 ) : (
@@ -148,7 +164,7 @@ export default function Header({ className }: { className?: string }) {
                 className="rounded-xl border border-[#3F3F3F] bg-[#0E1520] backdrop-blur animate-fade-in"
                 align="end"
               >
-                <DropdownMenuItem className='p-1'>
+                <DropdownMenuItem className="p-1">
                   <button
                     onClick={() => disconnect()}
                     className="px-2 py-1.5 hover:bg-[#131520]  transition-colors text-white/60 hover:bg-gray-700/60 hover:text-white rounded-md cursor-pointer text-center w-full h-8"
@@ -156,7 +172,7 @@ export default function Header({ className }: { className?: string }) {
                     Disconnect
                   </button>
                 </DropdownMenuItem>
-                <DropdownMenuItem className='p-1'>
+                <DropdownMenuItem className="p-1">
                   <button
                     onClick={() =>
                       copyToClipboard(currentAccount?.address || "")
@@ -173,17 +189,17 @@ export default function Header({ className }: { className?: string }) {
               theme="dark"
               open={open}
               onOpenChange={(isOpen: boolean) => setOpen(isOpen)}
-            // trigger={
-            //   <button
-            //     disabled={!!currentAccount}
-            //     className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
-            //   >
-            //     <span className="hidden md:inline-block">Connect Wallet</span>
-            //     <span className="inline-block md:hidden text-xs">
-            //       Connect
-            //     </span>
-            //   </button>
-            // }
+              // trigger={
+              //   <button
+              //     disabled={!!currentAccount}
+              //     className="text-white outline-none py-2 px-3 rounded-3xl bg-[#0052F2]"
+              //   >
+              //     <span className="hidden md:inline-block">Connect Wallet</span>
+              //     <span className="inline-block md:hidden text-xs">
+              //       Connect
+              //     </span>
+              //   </button>
+              // }
             >
               <button
                 disabled={!!currentAccount}

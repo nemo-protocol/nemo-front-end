@@ -42,7 +42,7 @@ import {
 import { getPriceVoucher } from "@/lib/txHelper/price"
 import { mintSCoin } from "@/lib/txHelper/coin"
 import { redeemPt } from "@/lib/txHelper/pt"
-import GuideModal from "../../components/GuideModal"
+import GuideModal from "./GuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -565,7 +565,7 @@ export default function Buy({ coinConfig }: Props) {
 
       {/* 信息区块 6行 */}
       <div className="space-y-2 text-sm text-light-gray/40">
-        <div className="flex justify-between">
+        <div className="flex justify-between hidden">
           <span>Fixed APY Change</span>
           <span className="text-white">
             {ptYtData?.ptApy
@@ -639,7 +639,7 @@ export default function Buy({ coinConfig }: Props) {
         type="green"
       />
 
-      <GuideModal imageUrl="/assets/images/guide/pt.png" />
+      <GuideModal />
     </div>
   )
 }

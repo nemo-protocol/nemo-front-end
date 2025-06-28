@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "d": "NODE_ENV=prod next dev -p 6368",
     "dd": "NODE_ENV=development next dev -p 6368",
+    "b": "next build",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "dp": "vercel --prod"
+    "dp": "test $(git branch --show-current) = main && vercel --prod || vercel --target=preview",
+    "deploy": "test $(git branch --show-current) = main && vercel --prod || vercel --target=preview"
   },
   "dependencies": {
     "@cetusprotocol/terminal": "^0.1.7",

@@ -1,25 +1,22 @@
 // components/layout/Footer.tsx
-'use client';
+"use client"
 
-import Image from 'next/image';
-import Link from 'next/link';
+import Image from "next/image"
 
 export default function Footer() {
   return (
     <footer className="w-full bg-[#080E16] mt-6">
-
       <div className="flex items-center justify-between px-6 pb-10">
         <a
           href="https://sui.io"
           target="_blank"
           rel="noreferrer"
-       
           className="inline-flex items-center gap-2 text-sm 
                      rounded-full px-4 py-3 bg-gradient-to-r from-white/5 to-white/1 text-white/60"
         >
           Powered&nbsp;by
           <Image
-            src="/sui.svg"    
+            src="/sui.svg"
             alt="Sui"
             width={36}
             height={36}
@@ -29,15 +26,16 @@ export default function Footer() {
 
         {/* 右侧链接组 */}
         <div className="flex items-center gap-6 text-sm">
-          <Link
-            href="/terms"
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href="https://docs.nemoprotocol.com/resources/terms-of-use"
             className="text-slate-400 hover:text-white transition"
           >
             Terms&nbsp;&amp;&nbsp;Agreements
-          </Link>
-          {/* 如还有隐私政策等可继续加 */}
+          </a>
         </div>
       </div>
     </footer>
-  );
+  )
 }

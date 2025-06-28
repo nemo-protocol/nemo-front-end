@@ -67,7 +67,13 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className="font-sans">
+      <head>
+        <link rel="icon" href="/icon.png" type="image/png" />
+        <link rel="shortcut icon" href="/icon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+        <title>Nemo Protocol</title>
+      </head>
+      <body className="font-sans min-h-screen flex flex-col">
         <QueryClientProvider client={queryClient}>
           <SuiClientProvider
             networks={networkConfig}
@@ -79,7 +85,9 @@ export default function RootLayout({
                   <Toaster />
                   <AnimatePresence>
                     <Header key="header" />
-                    <section>{children}</section>
+                    <section className="flex-1">
+                      {children}
+                    </section>
                     <Footer key="footer" />
                   </AnimatePresence>
                 </TooltipProvider>

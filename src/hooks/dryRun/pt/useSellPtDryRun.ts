@@ -13,6 +13,7 @@ import { getPriceVoucher } from "@/lib/txHelper/price"
 import { CoinData } from "@/types"
 import { burnPt } from "@/lib/txHelper/pt"
 import { initPyPosition } from "@/lib/txHelper/position"
+import { NO_SUPPORT_UNDERLYING_COINS } from "@/lib/constants"
 
 interface SellPtParams {
   minSyOut: string
@@ -106,7 +107,13 @@ export default function useSellPtDryRun<T extends boolean = false>(
 
       const yieldToken = redeemSyCoin(tx, coinConfig, syCoin)
 
-      if (coinConfig.provider === "Cetus" && receivingType === "underlying") {
+      if (
+        receivingType === "underlying" &&
+        coinConfig.provider === "Cetus" &&
+        NO_SUPPORT_UNDERLYING_COINS.some(
+          (item) => item.coinType === coinConfig.underlyingCoinType
+        )
+      ) {
         throw new Error(
           `Underlying protocol error, try to withdraw to ${coinConfig.coinName}.`
         )

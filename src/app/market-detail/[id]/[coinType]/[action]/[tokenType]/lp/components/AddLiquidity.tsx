@@ -30,7 +30,8 @@ import Decimal from "decimal.js"
 import { TokenTypeSelect } from "../../components/TokenTypeSelect"
 import useLpMarketPositionData from "@/hooks/useLpMarketPositionData"
 import Image from "next/image"
-import GuideModal from "../../components/GuideModal"
+import SwapSupplyGuideModal from "./SwapSupplyGuideModal"
+import MintSupplyGuideModal from "./MintSupplyGuideModal"
 
 interface Props {
   coinConfig: CoinConfig
@@ -465,6 +466,27 @@ export default function AddLiquidity({ coinConfig }: Props) {
     }
   }, [marketStateData?.lpSupply, searchParams, router])
 
+  const priceImpact = useMemo(() => {
+    if (
+      !lpValue ||
+      !coinConfig?.lpPrice ||
+      !addValue||
+      !price
+    ) {
+      return undefined
+    }
+    const inputValue = new Decimal(addValue).mul(price)
+    const value = new Decimal(coinConfig.lpPrice).mul(formatDecimalValue(lpValue, decimal))
+    const ratio = value.minus(inputValue).div(inputValue).mul(100)
+  
+
+    return { value, ratio }
+  }, [
+    addValue,
+    price,
+    coinConfig.lpPrice,
+    lpValue,
+  ])
   return (
     <div className="flex flex-col items-center gap-y-6">
       {/* 二级Tab */}
@@ -540,6 +562,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
           loading={isCalculating}
           price={coinConfig.lpPrice}
           logo={coinConfig.lpTokenLogo}
+          priceImpact={priceImpact}
           maturity={coinConfig.maturity}
           unit={`LP ${coinConfig.coinName}`}
           name={`LP ${coinConfig.coinName}`}
@@ -585,7 +608,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
       )}
 
       <div className="w-full divide-y-1 space-y-2 divide-white/10 text-sm text-white/40">
-        <p className="flex justify-between text-sm pb-2">
+        <p className="flex justify-between text-sm pb-2 hidden">
           <span>Pool APY Change</span>
           <span className="text-white">X% - Y%</span>
         </p>
@@ -618,13 +641,7 @@ export default function AddLiquidity({ coinConfig }: Props) {
         loading={isAdding || isCalculating}
       />
 
-      <GuideModal
-        imageUrl={
-          action === "swap"
-            ? "/assets/images/guide/swap&supply.png"
-            : "/assets/images/guide/mint&supply.png"
-        }
-      />
+      {action === "swap" ? <SwapSupplyGuideModal /> : <MintSupplyGuideModal />}
     </div>
   )
 }

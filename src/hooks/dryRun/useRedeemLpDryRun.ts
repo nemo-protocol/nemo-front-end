@@ -91,6 +91,8 @@ export default function useRedeemLp<T extends boolean = false>(
         lpAmount,
         slippage,
         receivingType,
+        pyPositions,
+        marketPositions: lpPositions,
       })
 
       const tx = txParam ? txParam : new Transaction()
