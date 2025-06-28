@@ -29,6 +29,7 @@ import { parseErrorMessage } from "@/lib/errorMapping"
 import { ContractError } from "@/hooks/types"
 import { Tab, TabItem } from "@/components/ui/tab"
 import VaultsPositon from "./Vaults"
+import { useUserVaultInfo } from "@/hooks/useUserVaultInfo"
 
 export default function PortfolioPage() {
     const { data: list, isLoading } = usePortfolioList()
@@ -74,7 +75,12 @@ export default function PortfolioPage() {
     )
     const { data: marketStates = {}, isLoading: isMarketStatesLoading } =
         useMultiMarketState(marketStateIds)
-
+    const {
+        data: vaultData,
+        loading: vaultLoading,
+        error,
+        setPageIndex,
+    } = useUserVaultInfo();
     const filteredLists = useMemo(() => {
         if (!list?.length) return { pt: [], yt: [], lp: [] }
 
@@ -309,7 +315,66 @@ export default function PortfolioPage() {
                         isPositionsLoading ||
                         isLoading
                     }
-                /> : <VaultsPositon />}
+                /> : <VaultsPositon
+                    vaults={[{
+                        apy: "0.123",
+                        coinType: "0x123::vault::VAULT",
+                        deploymentUnix: "Vault is xxxxxxxxx",
+                        fee: "string",
+                        cardShowTagList: [
+                            'Sui Incentives',
+                            'MMT Bricks'
+                        ],
+                        leftCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+                        leftCoinName: "sui",
+                        leftCoinPrice: "1.6789",
+                        leftCoinType: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+                        leftTokenAmount: "12345.6789",
+                        maturity: "string",
+                        rightCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+                        rightCoinName: "wal",
+                        rightCoinPrice: "1.6789",
+                        rightCoinType: "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+                        rightTokenAmount: "12345.6789",
+                        sourceProtocol: "Momentum",
+                        sourceProtocolLogoUrl: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+                        sourceProtocolUrl: "string",
+                        tvl: "12345.67",
+                        vaultAddress: "0x12345678",
+                        vaultName: "suiUSDT-USDC",
+                        vaultOverview: "Vault is xxxxxxxxx",
+                        earnings: '12.34'
+                    },
+                    {
+                        apy: "0.123",
+                        coinType: "0x123::vault::VAULT",
+                        deploymentUnix: "Vault is xxxxxxxxx",
+                        fee: "string",
+                        cardShowTagList: [
+                            'Sui Incentives',
+                            'MMT Bricks'
+                        ],
+                        leftCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+                        leftCoinName: "sui",
+                        leftCoinPrice: "1.6789",
+                        leftCoinType: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+                        leftTokenAmount: "12345.6789",
+                        maturity: "string",
+                        rightCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+                        rightCoinName: "wal",
+                        rightCoinPrice: "1.6789",
+                        rightCoinType: "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+                        rightTokenAmount: "12345.6789",
+                        sourceProtocol: "Momentum",
+                        sourceProtocolLogoUrl: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+                        sourceProtocolUrl: "string",
+                        tvl: "12345.67",
+                        vaultAddress: "0x12345678",
+                        vaultName: "suiUSDT-USDC",
+                        vaultOverview: "Vault is xxxxxxxxx",
+                        earnings: '12.34'
+                    }]}
+                />}
                 <Transactions />
                 <UnclaimedRewardModal
                     open={open}

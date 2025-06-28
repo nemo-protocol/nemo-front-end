@@ -11,6 +11,7 @@ import Decimal from 'decimal.js';
 import { ArrowUpRight, Router } from 'lucide-react';
 import Link from 'next/link';
 import EmptyData from '@/components/ui/empty';
+import { VaultInfo } from '@/hooks/useUserVaultInfo';
 
 
 
@@ -42,32 +43,12 @@ export interface VaultRow {
     earnings?: number                            // 用户收益
     source: 'Momentum' | '其他协议'
 }
-const MOCK_DATA: VaultRow[] = [
-    {
-        key: '1',
-        name: 'SUI-haSUI',
-        category: 'pt',
-        tokens: ['/icons/sui.svg', '/icons/hasui.svg'],
-        tvl: 3_200_000,
-        apy: 0.1689,
-        position: 0,
-        earnings: 0,
-        source: 'Momentum',
-    },
-    {
-        key: '2',
-        name: 'SUI-haSUI',
-        category: 'pt',
-        tokens: ['/icons/sui.svg', '/icons/hasui.svg'],
-        tvl: 230_230,
-        apy: 0.1689,
-        source: 'Momentum',
-    },
-
-]
 
 
-export default function VaultsPositon() {
+
+export default function VaultsPositon({ vaults }: {
+    vaults?: VaultInfo[]
+}) {
     const [activeTab, setActiveTab] = useState(categories[0])
     const [search, setSearch] = useState('')
     const [sortKey, setSortKey] = useState<'default' | 'apy' | 'tvl'>('default')
@@ -75,31 +56,29 @@ export default function VaultsPositon() {
 
 
     const list = useMemo(() => {
-        let data = MOCK_DATA
+        if (!vaults)
+            return
+        let data = vaults
 
 
         if (activeTab.key !== 'all')
-            data = data.filter(d => d.category === activeTab.key)
+            data = data.filter(d => d.apy === activeTab.key)
 
         // 搜索框模糊匹配
-        if (search.trim())
-            data = data.filter(d =>
-                d.name.toLowerCase().includes(search.trim().toLowerCase())
-            )
 
         // 排序
-        if (sortKey !== 'default') {
-            data = [...data].sort((a, b) => {
-                const v1 = sortKey === 'apy' ? a.apy : a.tvl
-                const v2 = sortKey === 'apy' ? b.apy : b.tvl
-                return sortOrder === 'asc' ? v1 - v2 : v2 - v1
-            })
-        }
+        // if (sortKey !== 'default') {
+        //     data = [...data].sort((a, b) => {
+        //         const v1 = sortKey === 'apy' ? a.apy : a.tvl
+        //         const v2 = sortKey === 'apy' ? b.apy : b.tvl
+        //         return sortOrder === 'asc' ? v1 - v2 : v2 - v1
+        //     })
+        // }
         return data
     }, [activeTab, search, sortKey, sortOrder])
 
     const loading = false
-    const empty = !loading && list.length === 0
+    const empty = !loading && list?.length === 0
 
     return (
         <div className="mt-2 mx-7.5 bg-[rgba(252,252,252,0.03)] rounded-[24px] py-6 px-6">
@@ -121,17 +100,6 @@ export default function VaultsPositon() {
                     ))}
                 </div>
 
-                {/* 搜索框占位：flex-grow 后靠右 */}
-                <div className="ml-auto relative">
-                    <input
-                        placeholder="Search"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="h-8 w-40 rounded-[12px] bg-[#1E262A] pl-7 pr-3
-              text-xs text-white placeholder:text-white/40 focus:outline-none"
-                    />
-
-                </div>
             </div>
 
             {/* 表格 */}
@@ -139,83 +107,116 @@ export default function VaultsPositon() {
                 <table className="w-max min-w-[calc(100vw-128px)] border-collapse border-spacing-y-0.5">
                     <thead className="text-white/60 text-[12px] font-[600]">
                         <tr>
-                            <th className="py-2 w-[15%] text-left">VAULTS</th>
-                            <th className="py-2 w-[15%] text-left cursor-pointer"
+                            <th className="py-2 w-[18%] text-left">VAULTS</th>
+                            <th className="py-2 w-[18%] text-left cursor-pointer"
                                 onClick={() => toggleSort('tvl')}>
-                                TVL
+                                LP AMOUNT
                             </th>
-                            <th className="py-2 w-[13%] text-left cursor-pointer"
+                            <th className="py-2 w-[20%] text-left cursor-pointer"
                                 onClick={() => toggleSort('apy')}>
-                                VAULT&nbsp;APY&nbsp;
+                                TOKEN AMOUNT
                                 {/* 你的 SortIcon 组件自行复用 */}
                             </th>
-                            <th className="py-2 w-[10%] text-left">YOUR POSITION</th>
                             <th className="py-2 w-[13%] text-left">YOUR EARNINGS</th>
+                            <th className="py-2 w-[10%] text-left">APY</th>
                             <th className="py-2 w-[12%] text-left">SOURCE PROTOCOL</th>
                             <th className="py-2 text-left"></th>
                         </tr>
                     </thead>
 
                     <tbody className="bg-[#0F151C]">
-                        {!loading && list.map((item, idx) => (
-                            <tr key={item.key} className="h-[48px]">
+                        {!loading && list?.map((item, idx) => (
+                            <tr key={item.coinType} className="h-[48px]">
                                 {/* VAULT 名称 + icon */}
                                 <td className="py-2">
                                     <div className="flex items-center gap-2">
                                         <div className="flex -space-x-1">
-                                            {item.tokens.map((icon, i) => (
+                                            {[item.leftCoinLogo, item.rightCoinLogo].map((icon, i) => (
                                                 <img
                                                     key={i}
                                                     src={icon}
                                                     alt=""
-                                                    width={18}
-                                                    height={18}
+                                                    width={24}
+                                                    height={24}
                                                     className="rounded-full border border-[#0F151C]"
                                                 />
                                             ))}
                                         </div>
-                                        <span className="text-sm text-white">{item.name}</span>
+                                        <span className="text-[20px] font-[500] text-[#FCFCFC]">{item.vaultName}</span>
                                     </div>
                                 </td>
 
                                 {/* TVL */}
-                                <td className="text-sm text-white">{formatTVL(item.tvl.toString())}</td>
+                                <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
+                                    <span>{new Decimal(432333.00).mul(1).lt(0.01) && '<'}{formatPortfolioNumber(new Decimal(432333.00).mul(1))}</span>
+                                    <span className="text-[rgba(252,252,252,0.4)] ml-2">
+                                        ~{new Decimal(432333.00).mul(1).lt(0.01) && '<'}$
+                                        {formatPortfolioNumber(new Decimal(432333.00).mul(1))}
+                                    </span>
+                                </td>
+
 
                                 {/* APY */}
-                                <td className="text-sm text-white">
-                                    {(item.apy * 100).toFixed(2)}%
+                                <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
+                                    <div className='flex flex-col gap-1'>
+                                        <div className='flex'>
+                                            <img
+                                                src={item.leftCoinLogo}
+                                                alt=""
+                                                width={24}
+                                                height={24}
+                                            />
+                                            <span>{new Decimal(432333.00).mul(1).lt(0.01) && '<'}{formatPortfolioNumber(new Decimal(432333.00).mul(1))}</span>
+                                            <span className="text-[rgba(252,252,252,0.4)] ml-2">
+                                                ~{new Decimal(432333.00).mul(1).lt(0.01) && '<'}$
+                                                {formatPortfolioNumber(new Decimal(432333.00).mul(1))}
+                                            </span>
+                                        </div>
+                                        <div className='flex'>
+                                            <img
+                                                src={item.rightCoinLogo}
+                                                alt=""
+                                                width={24}
+                                                height={24}
+                                            />
+                                            <span>{new Decimal(432333.00).mul(1).lt(0.01) && '<'}{formatPortfolioNumber(new Decimal(432333.00).mul(1))}</span>
+                                            <span className="text-[rgba(252,252,252,0.4)] ml-2">
+                                                ~{new Decimal(432333.00).mul(1).lt(0.01) && '<'}$
+                                                {formatPortfolioNumber(new Decimal(432333.00).mul(1))}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </td>
 
                                 {/* 用户仓位 / 收益 */}
-                                <td className="text-sm text-white/80">
-                                    {item.position ? formatTVL(item.position.toString()) : '-'}
+                                <td className="text-[14px] font-[500] text-[#4CC877]">
+                                    +{item.earnings ? formatTVL(item.earnings.toString()) : '-'}
                                 </td>
-                                <td className="text-sm text-white/80">
-                                    {item.earnings ? formatTVL(item.earnings.toString()) : '-'}
+                                <td className="py-3 font-[500] text-[14px] text-[#FCFCFC]">
+                                    {item.apy}
                                 </td>
 
                                 {/* Source Protocol */}
-                                <td className="text-sm">
+                                <td className="py-3 font-[500] text-[16px] text-[#FCFCFC]">
                                     <span className="flex items-center gap-1 text-white">
                                         <Image
-                                            src="/icons/momentum.svg"
+                                            src={item.sourceProtocolLogoUrl}
                                             alt=""
-                                            width={16}
-                                            height={16}
+                                            width={24}
+                                            height={24}
                                         />
-                                        {item.source}
+                                        {item.sourceProtocol}
                                     </span>
                                 </td>
 
                                 {/* Deposit 按钮 */}
-                                <td>
-                                    <button
-                                        className="h-8 w-[88px] rounded-[12px]
-                      bg-gradient-to-r from-[#266EFF] to-[#11C7FF]
-                      text-xs font-semibold text-white hover:opacity-80"
-                                    >
-                                        Deposit
-                                    </button>
+                                <td className="py-3 text-[14px] text-right font-[500]">
+                                    <div className="cursor-pointer px-2.5 py-1.5 items-center rounded-[16px] transition-colors duration-200 inline-flex text-[rgba(252,252,252,0.4)] hover:text-white hover:bg-[rgba(252,252,252,0.10)]">
+                                        <Link href={``} className="inline-flex gap-1 items-center">
+                                            <ArrowUpRight className="w-4 h-4" />
+                                            Trade
+                                        </Link>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

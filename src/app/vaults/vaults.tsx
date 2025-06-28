@@ -39,7 +39,64 @@ export default function VaultsPage() {
           />How it works?</Link>
       </div>
       <VaultCards />
-      <VaultsPool />
+      <VaultsPool vaults={[{
+        apy: "0.123",
+        coinType: "0x123::vault::VAULT",
+        deploymentUnix: "Vault is xxxxxxxxx",
+        fee: "string",
+        cardShowTagList: [
+          'Sui Incentives',
+          'MMT Bricks'
+        ],
+        leftCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+        leftCoinName: "sui",
+        leftCoinPrice: "1.6789",
+        leftCoinType: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+        leftTokenAmount: "12345.6789",
+        maturity: "string",
+        rightCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+        rightCoinName: "wal",
+        rightCoinPrice: "1.6789",
+        rightCoinType: "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+        rightTokenAmount: "12345.6789",
+        sourceProtocol: "Momentum",
+        sourceProtocolLogoUrl: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+        sourceProtocolUrl: "string",
+        tvl: "12345.67",
+        vaultAddress: "0x12345678",
+        vaultName: "suiUSDT-USDC",
+        vaultOverview: "Vault is xxxxxxxxx",
+        earnings: '12.34'
+      },
+      {
+        apy: "0.123",
+        coinType: "0x123::vault::VAULT",
+        deploymentUnix: "Vault is xxxxxxxxx",
+        fee: "string",
+        cardShowTagList: [
+          'Sui Incentives',
+          'MMT Bricks'
+        ],
+        leftCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+        leftCoinName: "sui",
+        leftCoinPrice: "1.6789",
+        leftCoinType: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+        leftTokenAmount: "12345.6789",
+        maturity: "string",
+        rightCoinLogo: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+        rightCoinName: "wal",
+        rightCoinPrice: "1.6789",
+        rightCoinType: "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+        rightTokenAmount: "12345.6789",
+        sourceProtocol: "Momentum",
+        sourceProtocolLogoUrl: "https://app.nemoprotocol.com/static/pureUsdc.svg",
+        sourceProtocolUrl: "string",
+        tvl: "12345.67",
+        vaultAddress: "0x12345678",
+        vaultName: "suiUSDT-USDC",
+        vaultOverview: "Vault is xxxxxxxxx",
+        earnings: '12.34'
+      }]} />
     </div>
   );
 }

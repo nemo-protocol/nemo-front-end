@@ -42,12 +42,12 @@ export default function VaultCards() {
     }
 
 
-    const vaults =  [{
+    const vaults = [{
         apy: "0.123",
         coinType: "0x123::vault::VAULT",
         deploymentUnix: "Vault is xxxxxxxxx",
         fee: "string",
-        cardShowTagList:[
+        cardShowTagList: [
             'Sui Incentives',
             'MMT Bricks'
         ],
@@ -75,7 +75,7 @@ export default function VaultCards() {
         coinType: "0x123::vault::VAULT",
         deploymentUnix: "Vault is xxxxxxxxx",
         fee: "string",
-        cardShowTagList:[
+        cardShowTagList: [
             'Sui Incentives',
             'MMT Bricks'
         ],
@@ -96,12 +96,12 @@ export default function VaultCards() {
         vaultAddress: "0x12345678",
         vaultName: "suiUSDT-USDC",
         vaultOverview: "Vault is xxxxxxxxx"
-    },{
+    }, {
         apy: "0.123",
         coinType: "0x123::vault::VAULT",
         deploymentUnix: "Vault is xxxxxxxxx",
         fee: "string",
-        cardShowTagList:[
+        cardShowTagList: [
             'Sui Incentives',
             'MMT Bricks'
         ],
@@ -148,9 +148,17 @@ export default function VaultCards() {
                         {v.cardShowTagList.map((b) => (
                             <span
                                 key={b}
-                                className="flex items-center gap-1 rounded-[24px] bg-gradient-to-r from-[#004BB9] to-[#000] px-4 py-1 text-[14px] font-[500] text-[rgba(255,255,255,0.80)]"
+                                className="flex items-center gap-2 rounded-[24px] bg-gradient-to-r from-[#004BB9] to-[#000] px-3 py-1 text-[14px] font-[500] text-[rgba(255,255,255,0.80)]"
                             >
                                 {b}
+                                <Image
+                                    src="/assets/images/gift.svg"
+                                    alt=""
+                                    width={12}
+                                    height={12}
+                                    
+                                />
+                               
                             </span>
                         ))}
                     </div>
@@ -184,7 +192,7 @@ export default function VaultCards() {
                             <p className="text-[32px] font-[500] text-white [text-shadow:0_0_4px_#FCFCFC]">
                                 {formatApy(v.apy)}
                             </p>
-                            <p  className="text-[14px] text-[rgba(252,252,252,0.50)]">APY</p>
+                            <p className="text-[14px] text-[rgba(252,252,252,0.50)]">APY</p>
                         </div>
                     </div>
 
@@ -208,8 +216,7 @@ export default function VaultCards() {
                             className="h-9 
                             bg-[rgba(252,252,252,0.06)]
                             w-full rounded-[24px] text-[14px] font-[500] text-white transition hover:bg-[#2E81FCc5]"
-                            onClick={() =>
-                               { router.push("/vaults/detail")}
+                            onClick={() => { router.push("/vaults/detail") }
 
                             }
                         >
