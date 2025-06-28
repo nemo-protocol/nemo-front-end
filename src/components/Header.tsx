@@ -31,17 +31,17 @@ const MENU: {
   { label: "My Portfolio", href: "/portfolio", icon: "/header/portfolio.svg" },
   { label: "Points", href: "/points", icon: "/header/star.svg" },
   // { label: "Swap", href: "/swap", icon: "/header/swap.svg" },
-  { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
+  // { label: 'Learn', href: '/learn', icon: '/header/learn.svg' },
   {
     label: "Leaderboard",
     href: "/leaderboard",
     icon: "/header/leaderboard.svg",
   },
-  // {
-  //   label: "Vaults",
-  //   href: "/vaults",
-  //   icon: "/header/vaults.svg",
-  // },
+  {
+    label: "Vaults",
+    href: "/vaults",
+    icon: "/header/vaults.svg",
+  },
   // { label: "Airdrop", href: "/airdrop", icon: "/header/airdrop.svg" },
 ]
 
