@@ -210,7 +210,6 @@ export default function Assets({
         console.log(sortedList, shouldBeEmpty)
         setEmpty(shouldBeEmpty);
     }, [activeTab, sortedList]);
-
     return (
         <div className={`bg-[rgba(252,252,252,0.03)] rounded-[24px] ${isMobile ? 'p-[18px]' : 'mt-2 mx-7.5 px-4 p-6'}`}>
             {/* Tabs */}
@@ -240,7 +239,7 @@ export default function Assets({
                 <div className="w-full mt-6">
                     {!loading && sortedList.map((item, index) => (
                         <MobileCard
-                            key={item.id}
+                            // key={crypto.randomUUID()}
                             item={item}
                             activeTab={activeTab}
                             pyPositionsMap={pyPositionsMap}
@@ -292,7 +291,7 @@ export default function Assets({
                                         case 'pt':
                                             return (
                                                 <PTRow
-                                                    key={item.id}
+                                                    key={crypto.randomUUID()}
                                                     activeTab={activeTab}
                                                     item={item}
                                                     pyPositionsMap={pyPositionsMap}
@@ -302,7 +301,7 @@ export default function Assets({
                                         case 'yt':
                                             return (
                                                 <YTRow
-                                                    key={item.id}
+                                                    key={crypto.randomUUID()}
                                                     activeTab={activeTab}
                                                     item={item}
                                                     pyPositionsMap={pyPositionsMap}
@@ -312,7 +311,7 @@ export default function Assets({
                                         case 'lp':
                                             return (
                                                 <LPRow
-                                                    key={item.id}
+                                                    key={crypto.randomUUID()}
                                                     activeTab={activeTab}
                                                     item={item}
                                                     pyPositionsMap={pyPositionsMap}
