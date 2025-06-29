@@ -292,7 +292,7 @@ export default function Redeem({ coinConfig }: Props) {
           maturity={coinConfig.maturity}
           name={`PT ${coinConfig.coinName}`}
           className="bg-transparent rounded-none"
-          title={"Principle Token".toUpperCase()}
+          title={"Principal Token".toUpperCase()}
         />
         <div className="px-4">
           <div className="border-t border-light-gray/10" />

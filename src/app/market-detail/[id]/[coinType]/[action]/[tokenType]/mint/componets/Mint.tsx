@@ -328,7 +328,7 @@ export default function Mint({ coinConfig }: Props) {
           logo={coinConfig.ptTokenLogo}
           maturity={coinConfig.maturity}
           name={`PT ${coinConfig.coinName}`}
-          title={"Principle Token".toUpperCase()}
+          title={"Principal Token".toUpperCase()}
           className="bg-transparent rounded-none"
           amount={
             isInputLoading
