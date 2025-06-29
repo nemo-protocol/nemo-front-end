@@ -6,7 +6,7 @@ import { PortfolioItem } from '@/queries/types/market';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import dayjs from 'dayjs';
-import { formatDecimalValue, formatPortfolioNumber, formatTVL } from '@/lib/utils';
+import { formatDecimalValue, formatPortfolioNumber, formatTVL, getIsMobile } from '@/lib/utils';
 import Decimal from 'decimal.js';
 import { ArrowUpRight, Router } from 'lucide-react';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ import EmptyData from '@/components/ui/empty';
 import PTRow from './PTRow';
 import YTRow from './YTRow';
 import LPRow from './LPRow';
+import MobileCard from './MobileCard';
 import { useWallet } from '@nemoprotocol/wallet-kit';
 
 export const isExpired = (maturityTime: string) => {
@@ -72,6 +73,7 @@ export default function Assets({
     lpReward,
     loading
 }: AssetsParams) {
+    const isMobile = getIsMobile();
     const [activeTab, setActiveTab] = useState(categories[0]);
     const [list, setList] = useState<RankedPortfolioItem[]>([])
     const [empty, setEmpty] = useState(false)
@@ -213,21 +215,22 @@ export default function Assets({
     }, [activeTab, sortedList]);
 
     return (
-        <div className="mt-2 mx-7.5 px-4 bg-[rgba(252,252,252,0.03)] py-6 px-6 rounded-[24px]">
+        <div className={`bg-[rgba(252,252,252,0.03)] rounded-[24px] ${isMobile ? 'p-[18px]' : 'mt-2 mx-7.5 px-4 p-6'}`}>
             {/* Tabs */}
-            <div className="flex gap-8 items-center">
+            <div className={`flex ${isMobile ? 'flex-col gap-6' : 'items-center gap-8'}`}>
                 <div className="text-[32px] font-serif font-normal font-[470] text-[#FCFCFC]">Assets</div>
-                <div className="flex space-x-2 text-[12px]">
+                <div className={`flex ${isMobile ? 'gap-2' : 'space-x-2'} text-[12px]`}>
                     {categories.map((category) => (
                         <button
                             key={category.key}
                             onClick={() => setActiveTab(category)}
-                            className={`h-8 px-2 cursor-pointer select-none rounded-[12px]
-                        flex items-center justify-center font-[600]
+                            className={`cursor-pointer select-none rounded-[12px]
+                        flex items-center justify-center
                         transition-colors
+                        ${isMobile ? 'w-max whitespace-nowrap px-[6px] h-6 uppercase tracking-[0.12px] leading-[100%] font-[650]' : 'h-8 px-2 font-[600]'}
                         ${activeTab.key === category.key
-                                    ? 'bg-gradient-to-r from-white/10 to-white/5 text-white'
-                                    : 'text-white/60 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5'}
+                                    ? `bg-gradient-to-r from-white/10 to-white/5 text-white ${isMobile ? 'text-[#FCFCFC]' : ''}`
+                                    : `${isMobile ? 'text-light-gray/40' : 'text-white/60'} hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5`}
                         `}
                         >
                             {category.label}
@@ -236,92 +239,115 @@ export default function Assets({
                 </div>
             </div>
             {/* Assets Table */}
-            <div className='w-full mt-6'>
-                <table className={`w-max min-w-[calc(100vw-128px)] border-collapse  border-separate ${loading ? 'border-spacing-y-4' : "border-spacing-y-0.5"}`}>
-                    <thead className="text-white/60">
-                        <tr>
-                            <th className="py-2  w-[15%] text-left text-[12px] font-[600]">ASSET</th>
-                            <th className="py-2  w-[15%] text-left text-[12px] font-[600]">TYPE</th>
-                            <th className="py-2  w-[13%] text-left text-[12px] font-[600] cursor-pointer select-none"
-                                onClick={() => toggleSort('maturity')}>
-                                MATURITY
-                                <SortIcon column="maturity" />
-                            </th>
-                            <th className="py-2  w-[10%] text-left text-[12px] font-[600]">PRICE</th>
-                            <th className="py-2 w-[13%] text-left text-[12px] font-[600] cursor-pointer select-none"
-                                onClick={() => toggleSort('value')}>
-                                AMOUNT
-                                <SortIcon column="value" />
-                            </th>
-                            <th className="py-2 w-[12%] text-left text-[12px] font-[600] cursor-pointer select-none"
-                                onClick={() => toggleSort('incentive')}>
-                                INCENTIVE
-                                <SortIcon column="incentive" /></th>
-                            <th className="py-2 text-left text-[12px] font-[600]  cursor-pointer select-none"
-                                onClick={() => toggleSort('accruedYield')}>
-                                ACCRUED YIELD
-                                <SortIcon column="accruedYield" /></th>
-                            <th className="py-2 text-left text-[12px] font-[600]"></th>
+            {isMobile ? (
+                <div className="w-full mt-6">
+                    {!loading && sortedList.map((item, index) => (
+                        <MobileCard
+                            key={crypto.randomUUID()}
+                            item={item}
+                            activeTab={activeTab}
+                            pyPositionsMap={pyPositionsMap}
+                            lpPositionsMap={lpPositionsMap}
+                            marketStates={marketStates}
+                            ytReward={ytReward}
+                            lpReward={lpReward}
+                        />
+                    ))}
+                    {loading && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                        <div key={index} className="bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] rounded-[12px] p-4 mb-3 h-[80px] animate-pulse">
+                        </div>
+                    ))}
+                    {empty && <EmptyData />}
+                </div>
+                ) : (
+                    <div className='w-full mt-6'>
+                        <table className={`w-max min-w-[calc(100vw-128px)] border-collapse  border-separate ${loading ? 'border-spacing-y-4' : "border-spacing-y-0.5"}`}>
+                            <thead className="text-white/60">
+                                <tr>
+                                    <th className="py-2  w-[15%] text-left text-[12px] font-[600]">ASSET</th>
+                                    <th className="py-2  w-[15%] text-left text-[12px] font-[600]">TYPE</th>
+                                    <th className="py-2  w-[13%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                                        onClick={() => toggleSort('maturity')}>
+                                        MATURITY
+                                        <SortIcon column="maturity" />
+                                    </th>
+                                    <th className="py-2  w-[10%] text-left text-[12px] font-[600]">PRICE</th>
+                                    <th className="py-2 w-[13%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                                        onClick={() => toggleSort('value')}>
+                                        AMOUNT
+                                        <SortIcon column="value" />
+                                    </th>
+                                    <th className="py-2 w-[12%] text-left text-[12px] font-[600] cursor-pointer select-none"
+                                        onClick={() => toggleSort('incentive')}>
+                                        INCENTIVE
+                                        <SortIcon column="incentive" /></th>
+                                    <th className="py-2 text-left text-[12px] font-[600]  cursor-pointer select-none"
+                                        onClick={() => toggleSort('accruedYield')}>
+                                        ACCRUED YIELD
+                                        <SortIcon column="accruedYield" /></th>
+                                    <th className="py-2 text-left text-[12px] font-[600]"></th>
 
-                        </tr>
-                    </thead>
-                    <tbody className="bg-[#0f151c] ">
-                        {!loading && sortedList.map((item, index) => {
-                            switch (item.listType) {
-                                case 'pt':
-                                    return (
-                                        <PTRow
-                                            key={crypto.randomUUID()}
-                                            activeTab={activeTab}
-                                            item={item}
-                                            pyPositionsMap={pyPositionsMap}
-                                            marketStates={marketStates}
-                                        />
-                                    );
-                                case 'yt':
-                                    return (
-                                        <YTRow
-                                            key={crypto.randomUUID()}
-                                            activeTab={activeTab}
-                                            item={item}
-                                            pyPositionsMap={pyPositionsMap}
-                                            ytReward={ytReward}
-                                        />
-                                    );
-                                case 'lp':
-                                    return (
-                                        <LPRow
-                                            key={crypto.randomUUID()}
-                                            activeTab={activeTab}
-                                            item={item}
-                                            pyPositionsMap={pyPositionsMap}
-                                            lpPositionsMap={lpPositionsMap}
-                                            lpReward={lpReward}
-                                            marketStates={marketStates}
-                                        />
-                                    );
-                                default:
-                                    return null;
-                            }
-                        })}
-                        {(loading) && [0, 0, 0, 0, 0, 0].map((item, index) => (
-                            <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
-                        ))}
-                    </tbody>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-[#0f151c] ">
+                                {!loading && sortedList.map((item, index) => {
+                                    switch (item.listType) {
+                                        case 'pt':
+                                            return (
+                                                <PTRow
+                                                    key={crypto.randomUUID()}
+                                                    activeTab={activeTab}
+                                                    item={item}
+                                                    pyPositionsMap={pyPositionsMap}
+                                                    marketStates={marketStates}
+                                                />
+                                            );
+                                        case 'yt':
+                                            return (
+                                                <YTRow
+                                                    key={crypto.randomUUID()}
+                                                    activeTab={activeTab}
+                                                    item={item}
+                                                    pyPositionsMap={pyPositionsMap}
+                                                    ytReward={ytReward}
+                                                />
+                                            );
+                                        case 'lp':
+                                            return (
+                                                <LPRow
+                                                    key={crypto.randomUUID()}
+                                                    activeTab={activeTab}
+                                                    item={item}
+                                                    pyPositionsMap={pyPositionsMap}
+                                                    lpPositionsMap={lpPositionsMap}
+                                                    lpReward={lpReward}
+                                                    marketStates={marketStates}
+                                                />
+                                            );
+                                        default:
+                                            return null;
+                                    }
+                                })}
+                                {(loading) && [0, 0, 0, 0, 0, 0].map((item, index) => (
+                                    <tr key={index} className="w-full h-[42px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4 overflow-hidden">
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                ))}
+                            </tbody>
 
-                </table>
-                <div className='w-full flex items-center'>{(empty) && <EmptyData />}</div>
-            </div>
+                        </table>
+                        <div className='w-full flex items-center'>{(empty) && <EmptyData />}</div>
+                    </div>
+                )
+            }
         </div >
     );
 }

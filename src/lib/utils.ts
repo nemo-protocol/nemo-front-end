@@ -7,6 +7,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export const getIsMobile = () => {
+  if (typeof window === "undefined") return false
+  return window && window.innerWidth < 500
+}
+
 export const truncateStr = (str: string, charsPerSide = 4) => {
   if (str.length < charsPerSide * 4) {
     return str

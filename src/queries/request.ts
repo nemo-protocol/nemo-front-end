@@ -1,5 +1,4 @@
-
-const baseUrl = process.env.NEXT_PUBLIC_HOST || ""
+const baseUrl = process.env.NEXT_PUBLIC_HOST || "https://app.nemoprotocol.com"
 
 type OptionParams = Record<string, string | number | undefined>
 

@@ -8,10 +8,11 @@ import { useCoinInfoList } from "@/queries"
 import StripedBar from "./components/StripedBar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DataTable } from "@/components/ui/data-table"
+import { MobileDataCard } from "@/components/ui/mobile-data-card"
 import { Tab, type TabItem } from "@/components/ui/tab"
 import React, { useState, useMemo, useEffect } from "react"
 import { ChevronDown, Plus, Inbox, X } from "lucide-react"
-import { formatLargeNumber, formatTimeDiff, truncate } from "@/lib/utils"
+import { formatLargeNumber, formatTimeDiff, truncate, getIsMobile } from "@/lib/utils"
 import type { ExtendedColumnDef } from "@/components/ui/data-table"
 import type {
   Action,
@@ -64,7 +65,7 @@ export default function MarketPage() {
     },
     {
       id: "search",
-      label: "Search Markets",
+      label: getIsMobile() ? "Search" : "Search Markets",
       active: tab === "search",
       onChange: () => setTab("search"),
       icon: (
@@ -377,6 +378,147 @@ export default function MarketPage() {
       ),
     },
   ]
+
+  if (getIsMobile()) {
+    return (
+      listMode === undefined ? (
+        <div className="min-h-screen bg-[#080E16]"></div>
+      ) : (
+        <div className="bg-[#080E16] min-h-screen text-white py-2 px-[15px] mt-6">
+          <Tab items={tabItems} className="mb-4 gap-6" />
+          <p className="text-light-gray/40 mb-6 font-[550] text-[14px] leading-[145%] tracking-[0.14px]">
+            Dive into the yield trading market and maximize your profit
+            potential.
+          </p>
+          {
+            tab !== "all" && (
+              <div className="relative w-full mb-6">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-full text-sm bg-light-gray/[0.03] pl-[16px] py-[12px]
+                  placeholder:text-white/40    
+                  text-white border-none outline-none h-[42px] pr-9"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition"
+                    onClick={() => setSearchQuery("")}
+                    tabIndex={-1}
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+                {/* 搜索浮层结果列表 */}
+                {searchQuery && filteredList.length > 0 && (
+                  <div className="absolute left-0 w-full px-8 py-4 mt-2 z-30 backdrop-blur-[90px] h-[800px] bg-transparent">
+                    <DataTable columns={columns} data={filteredList} />
+                  </div>
+                )}
+              </div>
+            )
+          }
+          <div className="space-y-4">
+            {isLoading ? (
+              listMode === "list" ? (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)] mb-4"
+                  />
+                ))
+              ) : (
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-6 bg-light-gray/[0.03] p-6"
+                  >
+                    <Skeleton className="w-[60px] h-[60px] rounded-full flex-shrink-0 bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                    <div className="flex flex-col justify-center flex-1 gap-6">
+                      <Skeleton className="h-[60px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                      <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                      <Skeleton className="h-[36px] w-full rounded-2xl bg-[linear-gradient(90deg,rgba(38,48,66,0.5)_0%,rgba(15,23,33,0.5)_100%)]" />
+                    </div>
+                  </div>
+                ))
+              )
+            ) : listMode === "list" ? (
+              filteredList.length === 0 ? (
+                <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
+                  <Inbox size={48} className="text-white/40" />
+                  <p className="text-white/40 text-lg">No data available</p>
+                </div>
+              ) : (
+                <MobileDataCard
+                  data={filteredList}
+                  onTokenClick={handleTokenClick}
+                  tooltipOpen={tooltipOpen}
+                  onTooltipChange={(id, open) =>
+                    setTooltipOpen((prev) => ({ ...prev, [id]: open }))
+                  }
+                />
+              )
+            ) : filteredGroups.length === 0 ? (
+              <div className="rounded-3xl bg-light-gray/[0.03] p-8 flex flex-col items-center justify-center gap-4">
+                <Inbox size={48} className="text-white/40" />
+                <p className="text-white/40 text-lg">No data available</p>
+              </div>
+            ) : (
+              filteredGroups.map(
+                ({ coinName, coinLogo, groupName, arr, totalTvl }) => (
+                  <div
+                    key={groupName}
+                    className="rounded-3xl bg-light-gray/[0.03]"
+                  >
+                    <button
+                      className="w-full px-6 py-6 focus:outline-none select-none group grid grid-cols-4"
+                      onClick={() => updateOpenState(groupName, !open[groupName])}
+                      style={{ borderRadius: "24px 24px 0 0" }}
+                    >
+                      <div className="flex items-center gap-2 text-2xl font-bold col-span-1">
+                        <Image
+                          width={24}
+                          height={24}
+                          src={coinLogo}
+                          alt={coinName}
+                        />
+                        <span className="font-[500] text-[20px]">{coinName}</span>
+                        <span className="text-white/60 font-[500] text-[20px]">
+                          {arr.length}
+                        </span>
+                        <ChevronDown
+                          className={`transition-transform duration-200  ${
+                            open[groupName] ? "rotate-180" : ""
+                          } text-white/70`}
+                          size={24}
+                        />
+                      </div>
+                      <div className="text-[20px] font-[500] flex items-center gap-x-4 col-span-1">
+                        <span className="text-[#FCFCFC]/40">Total TVL</span>
+                        <span className="text-white">
+                          ${totalTvl.toLocaleString()}
+                        </span>
+                      </div>
+                    </button>
+                    {open[groupName] && (
+                      <div className="px-6 pb-8 pt-2">
+                        <div className="overflow-x-auto border-l border-light-gray/10">
+                          <DataTable columns={columns} data={arr} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              )
+            )}
+          </div>
+        </div>
+      )
+    )
+  }
 
   return (
     // listMode 未准备好时不渲染主内容

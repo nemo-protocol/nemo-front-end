@@ -103,3 +103,25 @@ input[type="number"] {
   font-weight: 700;
   font-style: normal;
 }
+
+.custom-box {
+  position: relative;
+}
+
+.custom-box > div {
+  padding: 24px 0;
+}
+
+.custom-box > div:nth-child(even) {
+  position: relative;
+}
+
+.custom-box > div:nth-child(even)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -12.5px;
+  width: 1px;
+  height: 100%;
+  background-color: rgba(252, 252, 252, 0.10);
+}

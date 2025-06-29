@@ -7,6 +7,7 @@ interface StripedBarProps {
   rounded?: boolean // 是否圆角
   className?: string
   activeCount: number // 高亮条数
+  width?: number
 }
 
 const FIXED_WIDTH = 148
@@ -19,11 +20,12 @@ const StripedBar: React.FC<StripedBarProps> = ({
   rounded = true,
   className = "",
   activeCount,
+  width,
 }) => {
   return (
     <div
       className={`flex items-center ${className}`}
-      style={{ width: `${FIXED_WIDTH}px`, height: `${FIXED_HEIGHT}px` }}
+      style={{ width: `${width || FIXED_WIDTH}px`, height: `${FIXED_HEIGHT}px` }}
     >
       {Array.from({ length: count }).map((_, i) => {
         let style
