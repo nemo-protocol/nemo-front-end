@@ -1,9 +1,10 @@
+"use client"
 import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import Slider from '@/components/Slider';
 import { CoinConfig } from '@/queries/types/market';
-import { formatDecimalValue } from '@/lib/utils';
+import { formatDecimalValue, getIsMobile } from '@/lib/utils';
 import { getMaturityStat } from './StatCard';
 
 type Props = {
@@ -68,6 +69,7 @@ export default function Calculator({
   setTradeValue,
   rate
 }: Props) {
+  const isMobile = getIsMobile();
   const [input, setInput] = useState(inputYT)
 
   const [targetAPY, setTargetAPY] = useState<string>("20");
@@ -120,7 +122,7 @@ export default function Calculator({
         <button className="absolute top-4 right-4 text-white/60 hover:text-white cursor-pointer" onClick={onClose}>
           <X size={20} />
         </button>
-        <div className="px-0 py-0">
+        <div className={`py-0 ${isMobile ? 'px-[18px]' : 'px-0'}`}>
           <div className="flex gap-1">
             <h1
               className="fallback #FCFCFC text-[color:var(--typo-primary,#FCFCFC)]
@@ -184,7 +186,7 @@ export default function Calculator({
           <p className="mt-6 text-sm text-[#FCFCFC66] font-[550]">
             <span>Average Future APY&nbsp;
               <span className="text-[#FCFCFC] ml-2.5 font-[550]">{Number(targetAPY)}%</span></span>
-            {rate && <span className='ml-10'>YT Rates&nbsp;
+            {rate && !isMobile && <span className='ml-10'>YT Rates&nbsp;
               <span className="text-[#FCFCFC] ml-2.5 font-[550]">
                 {`1 ${coinConfig.underlyingCoinName} = ${rate} YT-${coinConfig.coinName} `}
               </span>

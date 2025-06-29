@@ -1,5 +1,5 @@
 "use client"
-import { cn } from "@/lib/utils"
+import { cn, getIsMobile } from "@/lib/utils"
 
 import { useEffect, useState } from "react"
 import copy from "clipboard-copy"
@@ -73,7 +73,7 @@ export default function Header({ className }: { className?: string }) {
     <header className={cn("h-24.5 shrink-0", className)}>
       <div
         className=" w-full h-full mx-auto flex bg-[#080E16] justify-between text-xs"
-        style={{ padding: "32px 30px" }}
+        style={{ padding: getIsMobile() ? "16px 15px" : "32px 30px" }}
       >
         <div className="flex items-center gap-x-14">
           <Link href="/" className="flex gap-x-2 items-center">
@@ -217,7 +217,7 @@ export default function Header({ className }: { className?: string }) {
               </button>
             </ConnectModal>
           )}
-          <LayoutGrid
+          <LayoutGrid // todo 替换移动端icon
             className="md:hidden text-white cursor-pointer"
             onClick={() => setIsOpen((isOpen) => !isOpen)}
           />

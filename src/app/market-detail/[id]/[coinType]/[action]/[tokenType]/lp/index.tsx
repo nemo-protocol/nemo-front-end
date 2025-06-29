@@ -5,6 +5,7 @@ import SimpleTabs from "../components/SimpleTabs"
 import { CoinConfig } from "@/queries/types/market"
 import AddLiquidity from "./components/AddLiquidity"
 import { useSearchParams, useRouter } from "next/navigation"
+import { getIsMobile } from "@/lib/utils"
 
 interface Props {
   currentTab: string
@@ -35,7 +36,7 @@ export default function LPMarketDetail({
         onChange={handleTabChange}
         tabs={[
           { key: "0", label: "Add Liquidity" },
-          { key: "1", label: "Remove Liquidity" },
+          { key: "1", label: getIsMobile() ? "Remove" : "Remove Liquidity" },
         ]}
       />
       {currentTab === "0" ? (

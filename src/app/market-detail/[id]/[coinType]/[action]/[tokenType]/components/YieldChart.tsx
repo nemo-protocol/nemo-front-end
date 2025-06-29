@@ -25,9 +25,12 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 import Decimal from "decimal.js"
+import { getIsMobile } from "@/lib/utils"
+
+const h1: { label: string; granularity: Granularity; seconds: number }[] = getIsMobile() ? [] : [{ label: "1m", granularity: "MINUTELY", seconds: 60 * 60 }];
 
 const TABS: { label: string; granularity: Granularity; seconds: number }[] = [
-  { label: "1m", granularity: "MINUTELY", seconds: 60 * 60 },
+  ...h1,
   { label: "1H", granularity: "HOURLY", seconds: 60 * 60 * 72 },
   { label: "1D", granularity: "DAILY", seconds: 60 * 60 * 24 * 60 },
   { label: "1M", granularity: "MONTHLY", seconds: 60 * 60 * 24 * 120 },

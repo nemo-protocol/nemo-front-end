@@ -12,7 +12,7 @@ import useAllPyPositions from "@/hooks/fetch/useAllPyPositions"
 import useAllLpPositions from "@/hooks/fetch/useAllLpPositions"
 import useMultiMarketState from "@/hooks/query/useMultiMarketState"
 
-import { formatTVL, isValidAmount } from "@/lib/utils"
+import { formatTVL, getIsMobile, isValidAmount } from "@/lib/utils"
 import { useParams } from "next/navigation"
 import useCoinData from "@/hooks/query/useCoinData"
 import { useWallet } from "@nemoprotocol/wallet-kit"
@@ -32,8 +32,10 @@ import VaultsPositon from "./Vaults"
 import { useUserVaultInfo } from "@/hooks/useUserVaultInfo"
 import { useJwtStore } from "@/stores/jwt"
 import AuthorizeButton from "@/components/AuthorizeButton"
+import MobileTransactions from "./MobileTransactions"
 
 export default function PortfolioPage() {
+    const isMobile = getIsMobile()
     const { data: list, isLoading } = usePortfolioList()
     const { type } = useParams()
     const { address } = useWallet()
@@ -224,6 +226,74 @@ export default function PortfolioPage() {
             setTotalClaim("0")
         }
     }, [lpReward, ytReward, filteredLists, address])
+
+    if (isMobile) {
+        return (
+            <div className="py-4 bg-[#080d16] mt-8 px-[15px] font-serif">
+                <h1 className="text-[32px] w-full flex justify-center gap-2 items-start font-normal font-serif font-[470] text-[#FCFCFC]">
+                    My Portfolio
+                    <Image
+                        src={"/folder-open.svg"}
+                        alt={""}
+                        width={16}
+                        height={16}
+                        className="shrink-0 mt-1.5"
+                    />
+                </h1>
+                <div className="flex align-center justify-between mt-12 mb-6 gap-6">
+                    <div className="flex flex-col h-[118px] items-center gap-4 flex-1">
+                        <div className="text-[12px] font-serif font-[650] text-[rgba(252,252,252,0.40)] uppercase tracking-[0.12px] leading-[100%]">
+                            Balance
+                        </div>
+                        {loading ? (
+                            <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div>
+                        ) : (
+                            <div className="text-[32px] font-serif font-[470] text-[#FCFCFC] tracking-[-0.32px] leading-[100%]">
+                                {formatTVL(balance)}
+                            </div>
+                        )}
+                    </div>
+                    <div className="w-[1px] bg-[rgba(252,252,252,0.10)] flex-grow-0 flex-shrink-0"></div>
+                    <div className="flex flex-col h-[118px] items-center gap-4 flex-1">
+                        <div className="text-[12px] font-serif font-[650] text-[rgba(252,252,252,0.40)] uppercase tracking-[0.12px] leading-[100%]">
+                            Total Claimable Yield
+                        </div>
+                        {loading ? (
+                            <div className="w-[290px] font-[470] h-[36px] rounded-[15px] bg-gradient-to-r from-[rgba(38,48,66,0.5)] to-[rgba(15,23,33,0.5)] mt-4"></div>
+                        ) : (
+                            <>
+                                <div className="text-[32px] font-serif font-[470] text-[#FCFCFC] tracking-[-0.32px] leading-[100%]">
+                                    {formatTVL(totalClaim)}
+                                </div>
+                                <div
+                                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-[24px] text-light-gray/40 text-[14px] font-[550] leading-[120%]"
+                                    onClick={() => setOpen(true)}
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Claim All
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+                <Assets
+                    pyPositionsMap={pyPositionsMap}
+                    marketStates={marketStates}
+                    lpPositionsMap={lpPositionsMap}
+                    filteredLists={filteredLists}
+                    ytReward={ytReward}
+                    lpReward={lpReward}
+                    loading={
+                        isLpPositionsLoading ||
+                        isMarketStatesLoading ||
+                        isPositionsLoading ||
+                        isLoading
+                    }
+                />
+                <MobileTransactions />
+            </div>
+        )
+    }
 
     return (
         <>
